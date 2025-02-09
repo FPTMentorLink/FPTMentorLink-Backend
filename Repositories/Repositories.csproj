@@ -9,8 +9,7 @@
     <ItemGroup>
       <Folder Include="Data\" />
       <Folder Include="Migrations\" />
-      <Folder Include="Repositories\" />
-      <Folder Include="UnitOfWork\" />
+      <Folder Include="UnitOfWork\Interfaces\" />
     </ItemGroup>
 
     <ItemGroup>
