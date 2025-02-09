@@ -10,7 +10,7 @@ public class Transactions : AuditableEntity
     public TransactionType Type { get; set; }
     public int Amount { get; set; }
     [ForeignKey(nameof(Account))] public Guid AccountId { get; set; }
-    public required string TransactionMethod { get; set; }
+    [MaxLength(255)] public required string TransactionMethod { get; set; }
     public TransactionStatus Status { get; set; }
 
     public virtual Account Account { get; set; } = null!;

@@ -29,53 +29,134 @@ public class ApplicationDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Account>()
-            .Property(a => a.Roles)
-            .HasConversion(
-                // Convert AccountRole[] to string when saving to database
-                v => string.Join(',', v.Select(r => (int)r)),
-                // Convert string back to AccountRole[] when reading from database
-                v => v.Split(',', StringSplitOptions.RemoveEmptyEntries)
-                     .Select(r => (AccountRole)int.Parse(r))
-                     .ToArray(),
-                // Value comparer for proper change tracking
-                new ValueComparer<AccountRole[]>(
-                    // Equality comparison function
-                    // Determines if two arrays are equal by comparing their elements in sequence
-                    (c1, c2) => c1!.SequenceEqual(c2!),
-                    
-                    // Hash code generation function
-                    // Creates a hash code by combining hash codes of all elements
-                    // Used for dictionary keys and hash-based collections
-                    c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
-                    
-                    // Snapshot function
-                    // Creates a copy of the array for change tracking
-                    // EF Core uses this to detect changes between original and current values
-                    c => c.ToArray()
-                )
-            );
-        modelBuilder.Entity<Appointment>(entity =>
+        modelBuilder.Entity<Account>(entity =>
         {
-            entity.Property(a => a.Status)
+            entity.Property(a => a.Roles)
                 .HasConversion(
-                    v => v.ToString(),
-                    v => (AppointmentStatus)Enum.Parse(typeof(AppointmentStatus), v));
+                    // Convert AccountRole[] to string when saving to database
+                    v => string.Join(',', v.Select(r => (int)r)),
+                    // Convert string back to AccountRole[] when reading from database
+                    v => v.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                        .Select(r => (AccountRole)int.Parse(r))
+                        .ToArray(),
+                    // Value comparer for proper change tracking
+                    new ValueComparer<AccountRole[]>(
+                        // Equality comparison function
+                        // Determines if two arrays are equal by comparing their elements in sequence
+                        (c1, c2) => c1!.SequenceEqual(c2!),
+
+                        // Hash code generation function
+                        // Creates a hash code by combining hash codes of all elements
+                        // Used for dictionary keys and hash-based collections
+                        c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+
+                        // Snapshot function
+                        // Creates a copy of the array for change tracking
+                        // EF Core uses this to detect changes between original and current values
+                        c => c.ToArray()
+                    ));
+            entity.Property(p => p.Email)
+                .HasCharSet("utf8mb4")
+                .UseCollation("utf8mb4_0900_ai_ci");
+            entity.Property(p => p.FirstName)
+                .HasCharSet("utf8mb4")
+                .UseCollation("utf8mb4_0900_ai_ci");
+            entity.Property(p => p.LastName)
+                .HasCharSet("utf8mb4")
+                .UseCollation("utf8mb4_0900_ai_ci");
         });
-        modelBuilder.Entity<Project>(entity =>
+        
+        modelBuilder.Entity<Appointment>(entity =>
         {
             entity.Property(p => p.Status)
                 .HasConversion(
                     v => v.ToString(),
-                    v => (ProjectStatus)Enum.Parse(typeof(ProjectStatus), v));
+                    v => (AppointmentStatus)Enum.Parse(typeof(AppointmentStatus), v));
         });
+        
+        modelBuilder.Entity<Checkpoint>(entity =>
+        {
+            entity.Property(p => p.Name)
+                .HasCharSet("utf8mb4")
+                .UseCollation("utf8mb4_0900_ai_ci");
+            entity.Property(p => p.Description)
+                .HasCharSet("utf8mb4")
+                .UseCollation("utf8mb4_0900_ai_ci");
+        });
+        
         modelBuilder.Entity<CheckpointTask>(entity =>
         {
             entity.Property(p => p.Status)
                 .HasConversion(
                     v => v.ToString(),
                     v => (CheckpointTaskStatus)Enum.Parse(typeof(CheckpointTaskStatus), v));
+            entity.Property(p => p.Name)
+                .HasCharSet("utf8mb4")
+                .UseCollation("utf8mb4_0900_ai_ci");
+            entity.Property(p => p.Description)
+                .HasCharSet("utf8mb4")
+                .UseCollation("utf8mb4_0900_ai_ci");
         });
+        
+        modelBuilder.Entity<Feedback>(entity =>
+        {
+            entity.Property(p => p.Content)
+                .HasCharSet("utf8mb4")
+                .UseCollation("utf8mb4_0900_ai_ci");
+        });
+        
+        modelBuilder.Entity<Group>(entity =>
+        {
+            entity.Property(p => p.Name)
+                .HasCharSet("utf8mb4")
+                .UseCollation("utf8mb4_0900_ai_ci");
+        });
+        
+        modelBuilder.Entity<Lecturer>(entity =>
+        {
+            entity.Property(p => p.Description)
+                .HasCharSet("utf8mb4")
+                .UseCollation("utf8mb4_0900_ai_ci");
+            entity.Property(p => p.Faculty)
+                .HasCharSet("utf8mb4")
+                .UseCollation("utf8mb4_0900_ai_ci");
+        });
+        
+        modelBuilder.Entity<Mentor>(entity =>
+        {
+            entity.Property(p => p.BankName)
+                .HasCharSet("utf8mb4")
+                .UseCollation("utf8mb4_0900_ai_ci");
+            entity.Property(p => p.BankCode)
+                .HasCharSet("utf8mb4")
+                .UseCollation("utf8mb4_0900_ai_ci");
+        });
+        
+        modelBuilder.Entity<Project>(entity =>
+        {
+            entity.Property(p => p.Status)
+                .HasConversion(
+                    v => v.ToString(),
+                    v => (ProjectStatus)Enum.Parse(typeof(ProjectStatus), v));
+            entity.Property(p => p.Name)
+                .HasCharSet("utf8mb4")
+                .UseCollation("utf8mb4_0900_ai_ci");
+            entity.Property(p => p.Description)
+                .HasCharSet("utf8mb4")
+                .UseCollation("utf8mb4_0900_ai_ci");
+        });
+        
+        modelBuilder.Entity<Proposal>(entity =>
+        {
+            entity.Property(p => p.Status)
+                .HasConversion(
+                    v => v.ToString(),
+                    v => (ProposalStatus)Enum.Parse(typeof(ProposalStatus), v));
+            entity.Property(p => p.Name)
+                .HasCharSet("utf8mb4")
+                .UseCollation("utf8mb4_0900_ai_ci");
+        });
+
         modelBuilder.Entity<Transactions>(entity =>
         {
             entity.Property(p => p.Type)
@@ -86,13 +167,19 @@ public class ApplicationDbContext : DbContext
                 .HasConversion(
                     v => v.ToString(),
                     v => (TransactionStatus)Enum.Parse(typeof(TransactionStatus), v));
+            entity.Property(p => p.TransactionMethod)
+                .HasCharSet("utf8mb4")
+                .UseCollation("utf8mb4_0900_ai_ci");
         });
-        modelBuilder.Entity<Proposal>(entity =>
+
+        modelBuilder.Entity<WeeklyReports>(entity =>
         {
-            entity.Property(p => p.Status)
-                .HasConversion(
-                    v => v.ToString(),
-                    v => (ProposalStatus)Enum.Parse(typeof(ProposalStatus), v));
+            entity.Property(p => p.Title)
+                .HasCharSet("utf8mb4")
+                .UseCollation("utf8mb4_0900_ai_ci");
+            entity.Property(p => p.Content)
+                .HasCharSet("utf8mb4")
+                .UseCollation("utf8mb4_0900_ai_ci");
         });
 
         base.OnModelCreating(modelBuilder);

@@ -6,6 +6,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <RootNamespace>FPTMentorLink_Backend</RootNamespace>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+        <UserSecretsId>f5cfa4eb-f68d-43e1-80d6-1d36cfefc227</UserSecretsId>
     </PropertyGroup>
 
     <ItemGroup>
