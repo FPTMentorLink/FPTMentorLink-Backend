@@ -182,6 +182,22 @@ public class ApplicationDbContext : DbContext
                 .UseCollation("utf8mb4_0900_ai_ci");
         });
 
+        // Configure one-to-one relationships
+        modelBuilder.Entity<Account>()
+            .HasOne(a => a.Student)
+            .WithOne(s => s.Account)
+            .HasForeignKey<Student>(s => s.Id);
+
+        modelBuilder.Entity<Account>()
+            .HasOne(a => a.Mentor)
+            .WithOne(m => m.Account)
+            .HasForeignKey<Mentor>(m => m.Id);
+
+        modelBuilder.Entity<Account>()
+            .HasOne(a => a.Lecturer)
+            .WithOne(l => l.Account)
+            .HasForeignKey<Lecturer>(l => l.Id);
+
         base.OnModelCreating(modelBuilder);
     }
 }

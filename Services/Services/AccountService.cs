@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Repositories.Entities;
 using Repositories.UnitOfWork.Interfaces;
 using Services.DTOs;
@@ -16,12 +17,12 @@ public class AccountService : IAccountService
     private readonly IPasswordHasher _passwordHasher;
     private readonly JwtSettings _jwtSettings;
 
-    public AccountService(IUnitOfWork unitOfWork, IMapper mapper, IPasswordHasher passwordHasher, JwtSettings jwtSettings)
+    public AccountService(IUnitOfWork unitOfWork, IMapper mapper, IPasswordHasher passwordHasher, IOptions<JwtSettings> jwtSettings)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _passwordHasher = passwordHasher;
-        _jwtSettings = jwtSettings;
+        _jwtSettings = jwtSettings.Value;
     }
 
     public async Task<Result<AccountDto>> GetByIdAsync(Guid id)

@@ -17,6 +17,11 @@ public class Account : AuditableEntity
     public string? ImageUrl { get; set; }
 
     public AccountRole[] Roles { get; set; } = [];
+
+    // Navigation properties for 1:1 relationships
+    public virtual Student? Student { get; set; }
+    public virtual Mentor? Mentor { get; set; }
+    public virtual Lecturer? Lecturer { get; set; }
 }
 
 public enum AccountRole

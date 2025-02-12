@@ -8,6 +8,10 @@ builder.ConfigureServices();
 builder.ConfigureCors();
 builder.ApplyMigration();
 
+builder.Services.AddControllers();
+builder.ConfigureSwagger();
+builder.Services.AddHealthChecks();
+
 var app = builder.Build();
 
 app.Configure();
