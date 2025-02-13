@@ -1,4 +1,4 @@
-using AutoMapper;
+using MapsterMapper;
 using Repositories.Entities;
 using Repositories.UnitOfWork.Interfaces;
 using Services.DTOs;
@@ -9,8 +9,8 @@ namespace Services.Services;
 
 public class GroupService : IGroupService
 {
-    private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
+    private readonly IUnitOfWork _unitOfWork;
 
     public GroupService(IUnitOfWork unitOfWork, IMapper mapper)
     {
@@ -30,8 +30,9 @@ public class GroupService : IGroupService
     public async Task<Result<PaginationResult<GroupDto>>> GetPagedAsync(PaginationParams paginationParams)
     {
         var query = _unitOfWork.Groups.GetQueryable();
-        var result = await query.ProjectToPaginatedListAsync<Group, GroupDto>(paginationParams, _mapper.ConfigurationProvider);
-            
+        var result =
+            await query.ProjectToPaginatedListAsync<Group, GroupDto>(paginationParams);
+
         return Result.Success(result);
     }
 
@@ -39,7 +40,7 @@ public class GroupService : IGroupService
     {
         var group = _mapper.Map<Group>(dto);
         _unitOfWork.Groups.Add(group);
-        
+
         try
         {
             await _unitOfWork.SaveChangesAsync();
@@ -59,7 +60,7 @@ public class GroupService : IGroupService
 
         _mapper.Map(dto, group);
         _unitOfWork.Groups.Update(group);
-        
+
         try
         {
             await _unitOfWork.SaveChangesAsync();
@@ -78,7 +79,7 @@ public class GroupService : IGroupService
             return Result.Failure("Group not found");
 
         _unitOfWork.Groups.Delete(group);
-        
+
         try
         {
             await _unitOfWork.SaveChangesAsync();
@@ -89,4 +90,4 @@ public class GroupService : IGroupService
             return Result.Failure($"Failed to delete group: {ex.Message}");
         }
     }
-} 
+}

@@ -1,5 +1,8 @@
-﻿using System.Text;
+﻿using System.Reflection;
+using System.Text;
 using FPTMentorLink_Backend.Middlewares;
+using Mapster;
+using MapsterMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -72,8 +75,9 @@ public static class Startup
     /// </summary>
     public static void ConfigureServices(this WebApplicationBuilder builder)
     {
-        // Register AutoMapper
-        builder.Services.AddAutoMapper(typeof(Program).Assembly, typeof(MappingProfile).Assembly);
+        // Register Mappings
+        MappingConfig.RegisterMappings();
+        builder.Services.AddScoped<IMapper, Mapper>();
 
         // Register Unit of Work
         builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -90,7 +94,6 @@ public static class Startup
         builder.Services.AddScoped<IProposalService, ProposalService>();
         builder.Services.AddScoped<ITaskLogService, TaskLogService>();
         builder.Services.AddScoped<IWeeklyReportService, WeeklyReportService>();
-
 
         // Register Utils
         builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
@@ -185,7 +188,7 @@ public static class Startup
         {
             app.UseCors("AllowAll");
             app.UseSwagger();
-            app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "HocVienCaRong API V1"); });
+            app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "FPTMentorLink API V1"); });
         }
 
         app.UseRouting();

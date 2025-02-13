@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using MapsterMapper;
 using Repositories.Entities;
 using Repositories.UnitOfWork.Interfaces;
 using Services.DTOs;
@@ -9,8 +9,8 @@ namespace Services.Services;
 
 public class AppointmentService : IAppointmentService
 {
-    private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
+    private readonly IUnitOfWork _unitOfWork;
 
     public AppointmentService(IUnitOfWork unitOfWork, IMapper mapper)
     {
@@ -30,8 +30,8 @@ public class AppointmentService : IAppointmentService
     public async Task<Result<PaginationResult<AppointmentDto>>> GetPagedAsync(PaginationParams paginationParams)
     {
         var query = _unitOfWork.Appointments.GetQueryable();
-        var result = await query.ProjectToPaginatedListAsync<Appointment, AppointmentDto>(paginationParams, _mapper.ConfigurationProvider);
-            
+        var result = await query.ProjectToPaginatedListAsync<Appointment, AppointmentDto>(paginationParams);
+
         return Result.Success(result);
     }
 
@@ -39,7 +39,7 @@ public class AppointmentService : IAppointmentService
     {
         var appointment = _mapper.Map<Appointment>(dto);
         _unitOfWork.Appointments.Add(appointment);
-        
+
         try
         {
             await _unitOfWork.SaveChangesAsync();
@@ -59,7 +59,7 @@ public class AppointmentService : IAppointmentService
 
         _mapper.Map(dto, appointment);
         _unitOfWork.Appointments.Update(appointment);
-        
+
         try
         {
             await _unitOfWork.SaveChangesAsync();
@@ -78,7 +78,7 @@ public class AppointmentService : IAppointmentService
             return Result.Failure("Appointment not found");
 
         _unitOfWork.Appointments.Delete(appointment);
-        
+
         try
         {
             await _unitOfWork.SaveChangesAsync();

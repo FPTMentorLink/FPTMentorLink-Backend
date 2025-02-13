@@ -1,5 +1,5 @@
 ﻿using System.Security.Claims;
-using AutoMapper;
+using Mapster;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Repositories.Entities;
@@ -12,15 +12,13 @@ namespace Services.Services;
 
 public class AccountService : IAccountService
 {
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly IMapper _mapper;
-    private readonly IPasswordHasher _passwordHasher;
     private readonly JwtSettings _jwtSettings;
+    private readonly IPasswordHasher _passwordHasher;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public AccountService(IUnitOfWork unitOfWork, IMapper mapper, IPasswordHasher passwordHasher, IOptions<JwtSettings> jwtSettings)
+    public AccountService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher, IOptions<JwtSettings> jwtSettings)
     {
         _unitOfWork = unitOfWork;
-        _mapper = mapper;
         _passwordHasher = passwordHasher;
         _jwtSettings = jwtSettings.Value;
     }
@@ -31,22 +29,23 @@ public class AccountService : IAccountService
         if (account == null)
             return Result.Failure<AccountDto>("Account not found");
 
-        return Result.Success(_mapper.Map<AccountDto>(account));
+        return Result.Success(account.Adapt<AccountDto>());
     }
 
     public async Task<Result<AccountDto>> CreateAsync(CreateAccountDto dto)
     {
-        if (await _unitOfWork.Accounts.AnyAsync(a => a.Email == dto.Email))
-            return Result.Failure<AccountDto>("Email already exists");
-
-        var account = _mapper.Map<Account>(dto);
-        account.PasswordHash = _passwordHasher.HashPassword(dto.Password);
-        account.Roles = [dto.Role];
-
+        var account = dto.Adapt<Account>();
         _unitOfWork.Accounts.Add(account);
-        await _unitOfWork.SaveChangesAsync();
 
-        return Result.Success(_mapper.Map<AccountDto>(account));
+        try
+        {
+            await _unitOfWork.SaveChangesAsync();
+            return Result.Success(account.Adapt<AccountDto>());
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure<AccountDto>($"Failed to create account: {ex.Message}");
+        }
     }
 
     public async Task<Result<AccountDto>> UpdateAsync(Guid id, UpdateAccountDto dto)
@@ -55,11 +54,11 @@ public class AccountService : IAccountService
         if (account == null)
             return Result.Failure<AccountDto>("Account not found");
 
-        _mapper.Map(dto, account);
+        dto.Adapt(account);
         _unitOfWork.Accounts.Update(account);
         await _unitOfWork.SaveChangesAsync();
 
-        return Result.Success(_mapper.Map<AccountDto>(account));
+        return Result.Success(account.Adapt<AccountDto>());
     }
 
     public async Task<Result> DeleteAsync(Guid id)
@@ -86,15 +85,12 @@ public class AccountService : IAccountService
             new(ClaimTypes.Email, account.Email)
         };
 
-        foreach (var role in account.Roles)
-        {
-            claims.Add(new Claim(ClaimTypes.Role, role.ToString()));
-        }
+        foreach (var role in account.Roles) claims.Add(new Claim(ClaimTypes.Role, role.ToString()));
 
         var accessToken = TokenGenerator.GenerateAccessToken(_jwtSettings, claims);
         var refreshToken = TokenGenerator.GenerateRefreshToken();
-        
-        var response = _mapper.Map<LoginResponse>(account);
+
+        var response = account.Adapt<LoginResponse>();
         response.AccessToken = accessToken;
         response.RefreshToken = refreshToken;
 
@@ -114,7 +110,7 @@ public class AccountService : IAccountService
         var claims = principal.Claims.ToList();
         var newAccessToken = TokenGenerator.GenerateAccessToken(_jwtSettings, claims);
         var newRefreshToken = TokenGenerator.GenerateRefreshToken();
-        
+
         // TODO: implement refresh token invalidation and database update logic
         await Task.Delay(100);
 
@@ -130,14 +126,14 @@ public class AccountService : IAccountService
         if (await _unitOfWork.Accounts.AnyAsync(a => a.Email == request.Email))
             return Result.Failure<AccountDto>("Email already exists");
 
-        var account = _mapper.Map<Account>(request);
+        var account = request.Adapt<Account>();
         account.PasswordHash = _passwordHasher.HashPassword(request.Password);
         account.Roles = [request.Role];
 
         _unitOfWork.Accounts.Add(account);
         await _unitOfWork.SaveChangesAsync();
 
-        return Result.Success(_mapper.Map<AccountDto>(account));
+        return Result.Success(account.Adapt<AccountDto>());
     }
 
     public async Task<Result> IsEmailUniqueAsync(string email)
@@ -149,19 +145,16 @@ public class AccountService : IAccountService
     public async Task<Result<PaginationResult<AccountDto>>> GetPagedAsync(PaginationParams paginationParams)
     {
         var query = _unitOfWork.Accounts.GetQueryable();
-        var result = await query.ProjectToPaginatedListAsync<Account, AccountDto>(paginationParams, _mapper.ConfigurationProvider);
-        
+        var result = await query.ProjectToPaginatedListAsync<Account, AccountDto>(paginationParams);
+
         return Result.Success(result);
     }
 
     public async Task<Result<int>> GetTotalAsync(AccountRole[] roles)
     {
         var query = _unitOfWork.Accounts.GetQueryable();
-        if (roles.Length > 0)
-        {
-            query = query.Where(a => a.Roles.Any(roles.Contains));
-        }
-        
+        if (roles.Length > 0) query = query.Where(a => a.Roles.Any(roles.Contains));
+
         var total = await query.CountAsync();
         return Result.Success(total);
     }

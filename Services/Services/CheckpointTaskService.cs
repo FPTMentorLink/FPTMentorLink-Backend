@@ -1,4 +1,4 @@
-using AutoMapper;
+using MapsterMapper;
 using Repositories.Entities;
 using Repositories.UnitOfWork.Interfaces;
 using Services.DTOs;
@@ -9,8 +9,8 @@ namespace Services.Services;
 
 public class CheckpointTaskService : ICheckpointTaskService
 {
-    private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
+    private readonly IUnitOfWork _unitOfWork;
 
     public CheckpointTaskService(IUnitOfWork unitOfWork, IMapper mapper)
     {
@@ -30,8 +30,9 @@ public class CheckpointTaskService : ICheckpointTaskService
     public async Task<Result<PaginationResult<CheckpointTaskDto>>> GetPagedAsync(PaginationParams paginationParams)
     {
         var query = _unitOfWork.CheckpointTasks.GetQueryable();
-        var result = await query.ProjectToPaginatedListAsync<CheckpointTask, CheckpointTaskDto>(paginationParams, _mapper.ConfigurationProvider);
-            
+        var result =
+            await query.ProjectToPaginatedListAsync<CheckpointTask, CheckpointTaskDto>(paginationParams);
+
         return Result.Success(result);
     }
 
@@ -39,7 +40,7 @@ public class CheckpointTaskService : ICheckpointTaskService
     {
         var checkpointTask = _mapper.Map<CheckpointTask>(dto);
         _unitOfWork.CheckpointTasks.Add(checkpointTask);
-        
+
         try
         {
             await _unitOfWork.SaveChangesAsync();
@@ -59,7 +60,7 @@ public class CheckpointTaskService : ICheckpointTaskService
 
         _mapper.Map(dto, checkpointTask);
         _unitOfWork.CheckpointTasks.Update(checkpointTask);
-        
+
         try
         {
             await _unitOfWork.SaveChangesAsync();
@@ -78,7 +79,7 @@ public class CheckpointTaskService : ICheckpointTaskService
             return Result.Failure("Checkpoint task not found");
 
         _unitOfWork.CheckpointTasks.Delete(checkpointTask);
-        
+
         try
         {
             await _unitOfWork.SaveChangesAsync();
@@ -89,4 +90,4 @@ public class CheckpointTaskService : ICheckpointTaskService
             return Result.Failure($"Failed to delete checkpoint task: {ex.Message}");
         }
     }
-} 
+}

@@ -1,4 +1,4 @@
-using AutoMapper;
+using MapsterMapper;
 using Repositories.Entities;
 using Repositories.UnitOfWork.Interfaces;
 using Services.DTOs;
@@ -9,8 +9,8 @@ namespace Services.Services;
 
 public class TaskLogService : ITaskLogService
 {
-    private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
+    private readonly IUnitOfWork _unitOfWork;
 
     public TaskLogService(IUnitOfWork unitOfWork, IMapper mapper)
     {
@@ -30,8 +30,9 @@ public class TaskLogService : ITaskLogService
     public async Task<Result<PaginationResult<TaskLogDto>>> GetPagedAsync(PaginationParams paginationParams)
     {
         var query = _unitOfWork.TaskLogs.GetQueryable();
-        var result = await query.ProjectToPaginatedListAsync<TaskLog, TaskLogDto>(paginationParams, _mapper.ConfigurationProvider);
-            
+        var result =
+            await query.ProjectToPaginatedListAsync<TaskLog, TaskLogDto>(paginationParams);
+
         return Result.Success(result);
     }
 
@@ -39,7 +40,7 @@ public class TaskLogService : ITaskLogService
     {
         var taskLog = _mapper.Map<TaskLog>(dto);
         _unitOfWork.TaskLogs.Add(taskLog);
-        
+
         try
         {
             await _unitOfWork.SaveChangesAsync();
@@ -59,7 +60,7 @@ public class TaskLogService : ITaskLogService
 
         _mapper.Map(dto, taskLog);
         _unitOfWork.TaskLogs.Update(taskLog);
-        
+
         try
         {
             await _unitOfWork.SaveChangesAsync();
@@ -78,7 +79,7 @@ public class TaskLogService : ITaskLogService
             return Result.Failure("Task log not found");
 
         _unitOfWork.TaskLogs.Delete(taskLog);
-        
+
         try
         {
             await _unitOfWork.SaveChangesAsync();
@@ -89,4 +90,4 @@ public class TaskLogService : ITaskLogService
             return Result.Failure($"Failed to delete task log: {ex.Message}");
         }
     }
-} 
+}

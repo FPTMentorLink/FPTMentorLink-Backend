@@ -1,0 +1,24 @@
+using Microsoft.AspNetCore.Mvc;
+using Services.Interfaces;
+using Services.Utils;
+
+namespace FPTMentorLink_Backend.Controllers;
+
+[ApiController]
+[Route("api/account")]
+public class AccountController : ControllerBase
+{
+    private readonly IAccountService _accountService;
+
+    public AccountController(IAccountService accountService)
+    {
+        _accountService = accountService;
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetAccounts([FromQuery] PaginationParams request)
+    {
+        var result = await _accountService.GetPagedAsync(request);
+        return result.IsSuccess ? Ok(result.Value) : BadRequest(result.Error);
+    }
+}
