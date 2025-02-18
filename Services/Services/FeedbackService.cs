@@ -1,4 +1,4 @@
-using AutoMapper;
+using MapsterMapper;
 using Repositories.Entities;
 using Repositories.UnitOfWork.Interfaces;
 using Services.DTOs;
@@ -9,8 +9,8 @@ namespace Services.Services;
 
 public class FeedbackService : IFeedbackService
 {
-    private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
+    private readonly IUnitOfWork _unitOfWork;
 
     public FeedbackService(IUnitOfWork unitOfWork, IMapper mapper)
     {
@@ -30,8 +30,9 @@ public class FeedbackService : IFeedbackService
     public async Task<Result<PaginationResult<FeedbackDto>>> GetPagedAsync(PaginationParams paginationParams)
     {
         var query = _unitOfWork.Feedbacks.GetQueryable();
-        var result = await query.ProjectToPaginatedListAsync<Feedback, FeedbackDto>(paginationParams, _mapper.ConfigurationProvider);
-            
+        var result =
+            await query.ProjectToPaginatedListAsync<Feedback, FeedbackDto>(paginationParams);
+
         return Result.Success(result);
     }
 
@@ -39,7 +40,7 @@ public class FeedbackService : IFeedbackService
     {
         var feedback = _mapper.Map<Feedback>(dto);
         _unitOfWork.Feedbacks.Add(feedback);
-        
+
         try
         {
             await _unitOfWork.SaveChangesAsync();
@@ -59,7 +60,7 @@ public class FeedbackService : IFeedbackService
 
         _mapper.Map(dto, feedback);
         _unitOfWork.Feedbacks.Update(feedback);
-        
+
         try
         {
             await _unitOfWork.SaveChangesAsync();
@@ -78,7 +79,7 @@ public class FeedbackService : IFeedbackService
             return Result.Failure("Feedback not found");
 
         _unitOfWork.Feedbacks.Delete(feedback);
-        
+
         try
         {
             await _unitOfWork.SaveChangesAsync();
@@ -89,4 +90,4 @@ public class FeedbackService : IFeedbackService
             return Result.Failure($"Failed to delete feedback: {ex.Message}");
         }
     }
-} 
+}

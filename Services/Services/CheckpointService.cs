@@ -1,4 +1,4 @@
-using AutoMapper;
+using MapsterMapper;
 using Repositories.Entities;
 using Repositories.UnitOfWork.Interfaces;
 using Services.DTOs;
@@ -9,8 +9,8 @@ namespace Services.Services;
 
 public class CheckpointService : ICheckpointService
 {
-    private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
+    private readonly IUnitOfWork _unitOfWork;
 
     public CheckpointService(IUnitOfWork unitOfWork, IMapper mapper)
     {
@@ -86,8 +86,7 @@ public class CheckpointService : ICheckpointService
     {
         var query = _unitOfWork.Checkpoints.GetQueryable();
         var result =
-            await query.ProjectToPaginatedListAsync<Checkpoint, CheckpointDto>(paginationParams,
-                _mapper.ConfigurationProvider);
+            await query.ProjectToPaginatedListAsync<Checkpoint, CheckpointDto>(paginationParams);
 
         return Result.Success(result);
     }

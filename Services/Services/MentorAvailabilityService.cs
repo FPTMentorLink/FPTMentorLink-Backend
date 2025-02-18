@@ -1,4 +1,4 @@
-using AutoMapper;
+using MapsterMapper;
 using Repositories.Entities;
 using Repositories.UnitOfWork.Interfaces;
 using Services.DTOs;
@@ -9,8 +9,8 @@ namespace Services.Services;
 
 public class MentorAvailabilityService : IMentorAvailabilityService
 {
-    private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
+    private readonly IUnitOfWork _unitOfWork;
 
     public MentorAvailabilityService(IUnitOfWork unitOfWork, IMapper mapper)
     {
@@ -30,8 +30,9 @@ public class MentorAvailabilityService : IMentorAvailabilityService
     public async Task<Result<PaginationResult<MentorAvailabilityDto>>> GetPagedAsync(PaginationParams paginationParams)
     {
         var query = _unitOfWork.MentorAvailabilities.GetQueryable();
-        var result = await query.ProjectToPaginatedListAsync<MentorAvailability, MentorAvailabilityDto>(paginationParams, _mapper.ConfigurationProvider);
-            
+        var result =
+            await query.ProjectToPaginatedListAsync<MentorAvailability, MentorAvailabilityDto>(paginationParams);
+
         return Result.Success(result);
     }
 
@@ -39,7 +40,7 @@ public class MentorAvailabilityService : IMentorAvailabilityService
     {
         var mentorAvailability = _mapper.Map<MentorAvailability>(dto);
         _unitOfWork.MentorAvailabilities.Add(mentorAvailability);
-        
+
         try
         {
             await _unitOfWork.SaveChangesAsync();
@@ -59,7 +60,7 @@ public class MentorAvailabilityService : IMentorAvailabilityService
 
         _mapper.Map(dto, mentorAvailability);
         _unitOfWork.MentorAvailabilities.Update(mentorAvailability);
-        
+
         try
         {
             await _unitOfWork.SaveChangesAsync();
@@ -78,7 +79,7 @@ public class MentorAvailabilityService : IMentorAvailabilityService
             return Result.Failure("Mentor availability not found");
 
         _unitOfWork.MentorAvailabilities.Delete(mentorAvailability);
-        
+
         try
         {
             await _unitOfWork.SaveChangesAsync();
@@ -89,4 +90,4 @@ public class MentorAvailabilityService : IMentorAvailabilityService
             return Result.Failure($"Failed to delete mentor availability: {ex.Message}");
         }
     }
-} 
+}

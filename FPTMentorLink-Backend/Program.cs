@@ -1,7 +1,9 @@
+using System.Reflection;
 using FPTMentorLink_Backend;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Configuration.AddUserSecrets(Assembly.GetExecutingAssembly(), true);
 builder.ConfigureDatabase();
 builder.ConfigureJwt();
 builder.ConfigureServices();

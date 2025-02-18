@@ -1,4 +1,4 @@
-using AutoMapper;
+using MapsterMapper;
 using Repositories.Entities;
 using Repositories.UnitOfWork.Interfaces;
 using Services.DTOs;
@@ -9,8 +9,8 @@ namespace Services.Services;
 
 public class ProjectService : IProjectService
 {
-    private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
+    private readonly IUnitOfWork _unitOfWork;
 
     public ProjectService(IUnitOfWork unitOfWork, IMapper mapper)
     {
@@ -30,8 +30,9 @@ public class ProjectService : IProjectService
     public async Task<Result<PaginationResult<ProjectDto>>> GetPagedAsync(PaginationParams paginationParams)
     {
         var query = _unitOfWork.Projects.GetQueryable();
-        var result = await query.ProjectToPaginatedListAsync<Project, ProjectDto>(paginationParams, _mapper.ConfigurationProvider);
-            
+        var result =
+            await query.ProjectToPaginatedListAsync<Project, ProjectDto>(paginationParams);
+
         return Result.Success(result);
     }
 
@@ -39,7 +40,7 @@ public class ProjectService : IProjectService
     {
         var project = _mapper.Map<Project>(dto);
         _unitOfWork.Projects.Add(project);
-        
+
         try
         {
             await _unitOfWork.SaveChangesAsync();
@@ -59,7 +60,7 @@ public class ProjectService : IProjectService
 
         _mapper.Map(dto, project);
         _unitOfWork.Projects.Update(project);
-        
+
         try
         {
             await _unitOfWork.SaveChangesAsync();
@@ -78,7 +79,7 @@ public class ProjectService : IProjectService
             return Result.Failure("Project not found");
 
         _unitOfWork.Projects.Delete(project);
-        
+
         try
         {
             await _unitOfWork.SaveChangesAsync();
@@ -89,4 +90,4 @@ public class ProjectService : IProjectService
             return Result.Failure($"Failed to delete project: {ex.Message}");
         }
     }
-} 
+}

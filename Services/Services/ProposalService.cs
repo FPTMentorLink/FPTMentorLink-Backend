@@ -1,4 +1,4 @@
-using AutoMapper;
+using MapsterMapper;
 using Repositories.Entities;
 using Repositories.UnitOfWork.Interfaces;
 using Services.DTOs;
@@ -9,8 +9,8 @@ namespace Services.Services;
 
 public class ProposalService : IProposalService
 {
-    private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
+    private readonly IUnitOfWork _unitOfWork;
 
     public ProposalService(IUnitOfWork unitOfWork, IMapper mapper)
     {
@@ -30,8 +30,9 @@ public class ProposalService : IProposalService
     public async Task<Result<PaginationResult<ProposalDto>>> GetPagedAsync(PaginationParams paginationParams)
     {
         var query = _unitOfWork.Proposals.GetQueryable();
-        var result = await query.ProjectToPaginatedListAsync<Proposal, ProposalDto>(paginationParams, _mapper.ConfigurationProvider);
-            
+        var result =
+            await query.ProjectToPaginatedListAsync<Proposal, ProposalDto>(paginationParams);
+
         return Result.Success(result);
     }
 
@@ -39,7 +40,7 @@ public class ProposalService : IProposalService
     {
         var proposal = _mapper.Map<Proposal>(dto);
         _unitOfWork.Proposals.Add(proposal);
-        
+
         try
         {
             await _unitOfWork.SaveChangesAsync();
@@ -59,7 +60,7 @@ public class ProposalService : IProposalService
 
         _mapper.Map(dto, proposal);
         _unitOfWork.Proposals.Update(proposal);
-        
+
         try
         {
             await _unitOfWork.SaveChangesAsync();
@@ -78,7 +79,7 @@ public class ProposalService : IProposalService
             return Result.Failure("Proposal not found");
 
         _unitOfWork.Proposals.Delete(proposal);
-        
+
         try
         {
             await _unitOfWork.SaveChangesAsync();
@@ -89,4 +90,4 @@ public class ProposalService : IProposalService
             return Result.Failure($"Failed to delete proposal: {ex.Message}");
         }
     }
-} 
+}
