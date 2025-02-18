@@ -35,5 +35,9 @@ public class UpdateAppointmentDto
 {
     public DateTime? StartTime { get; set; }
     public DateTime? EndTime { get; set; }
+}
+
+public class UpdateAppointmentStatusDto
+{
     public AppointmentStatus? Status { get; set; }
 }

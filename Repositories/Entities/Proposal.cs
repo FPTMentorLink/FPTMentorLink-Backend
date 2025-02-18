@@ -13,7 +13,8 @@ public class Proposal : AuditableEntity
 
 public enum ProposalStatus
 {
-    Pending = 1,
-    Approved = 2,
-    Rejected = 3
+    Draft = 1,
+    Submitted = 2,
+    Approved = 3,
+    Rejected = 4
 }

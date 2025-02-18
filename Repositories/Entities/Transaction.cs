@@ -4,7 +4,7 @@ using Repositories.Entities.Base;
 
 namespace Repositories.Entities;
 
-public class Transactions : AuditableEntity
+public class Transaction : AuditableEntity
 {
     [MaxLength(255)] public required string Code { get; set; }
     public TransactionType Type { get; set; }

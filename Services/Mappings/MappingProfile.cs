@@ -38,14 +38,7 @@ public class MappingProfile : Profile
         CreateMap<CreateFeedbackDto, Feedback>();
         CreateMap<UpdateFeedbackDto, Feedback>()
             .ForAllMembers(opts => opts.Condition((_, _, srcMember) => srcMember != null));
-
-
-        //Group
-        CreateMap<Group, GroupDto>();
-        CreateMap<CreateGroupDto, Group>();
-        CreateMap<UpdateGroupDto, Group>()
-            .ForAllMembers(opts => opts.Condition((_, _, srcMember) => srcMember != null));
-            
+        
         //Lecturer
         CreateMap<Lecturer, LecturerDto>();
         CreateMap<CreateLecturerDto, Lecturer>();
@@ -83,27 +76,22 @@ public class MappingProfile : Profile
             .ForAllMembers(opts => opts.Condition((_, _, srcMember) => srcMember != null));
             
         //StudentGroup
-        CreateMap<StudentGroup, StudentGroupDto>();
-        CreateMap<CreateStudentGroupDto, StudentGroup>();
-        CreateMap<UpdateStudentGroupDto, StudentGroup>()
+        CreateMap<ProjectStudent, ProjectStudentDto>();
+        CreateMap<CreateProjectStudentDto, ProjectStudent>();
+        CreateMap<UpdateProjectStudentDto, ProjectStudent>()
             .ForAllMembers(opts => opts.Condition((_, _, srcMember) => srcMember != null));
             
-        //TaskLog
-        CreateMap<TaskLog, TaskLogDto>();
-        CreateMap<CreateTaskLogDto, TaskLog>();
-        CreateMap<UpdateTaskLogDto, TaskLog>()
-            .ForAllMembers(opts => opts.Condition((_, _, srcMember) => srcMember != null));
-            
+                    
         //Transactions
-        CreateMap<Transactions, TransactionsDto>();
-        CreateMap<CreateTransactionsDto, Transactions>();
-        CreateMap<UpdateTransactionsDto, Transactions>()
+        CreateMap<Transaction, TransactionDto>();
+        CreateMap<CreateTransactionDto, Transaction>();
+        CreateMap<UpdateTransactionDto, Transaction>()
             .ForAllMembers(opts => opts.Condition((_, _, srcMember) => srcMember != null)); 
 
         //WeeklyReports
-        CreateMap<WeeklyReports, WeeklyReportsDto>();
-        CreateMap<CreateWeeklyReportsDto, WeeklyReports>();
-        CreateMap<UpdateWeeklyReportsDto, WeeklyReports>()
+        CreateMap<WeeklyReport, WeeklyReportDto>();
+        CreateMap<CreateWeeklyReportDto, WeeklyReport>();
+        CreateMap<UpdateWeeklyReportDto, WeeklyReport>()
             .ForAllMembers(opts => opts.Condition((_, _, srcMember) => srcMember != null));
 
     }

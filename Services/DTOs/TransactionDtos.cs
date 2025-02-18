@@ -2,7 +2,7 @@ using Repositories.Entities;
 
 namespace Services.DTOs;
 
-public class TransactionsDto
+public class TransactionDto
 {
     public Guid Id { get; set; }
     public required string Code { get; set; }
@@ -15,7 +15,7 @@ public class TransactionsDto
     public DateTime? UpdatedAt { get; set; }
 }
 
-public class CreateTransactionsDto
+public class CreateTransactionDto
 {
     public required string Code { get; set; }
     public TransactionType Type { get; set; }
@@ -25,11 +25,15 @@ public class CreateTransactionsDto
     public TransactionStatus Status { get; set; }
 }
 
-public class UpdateTransactionsDto
+public class UpdateTransactionDto
 {
     public string? Code { get; set; }
     public TransactionType? Type { get; set; }
     public int? Amount { get; set; }
     public string? TransactionMethod { get; set; }
+}
+
+public class UpdateTransactionStatus
+{
     public TransactionStatus? Status { get; set; }
-} 
+}

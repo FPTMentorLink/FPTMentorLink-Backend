@@ -84,11 +84,9 @@ public static class Startup
         builder.Services.AddScoped<ICheckpointService, CheckpointService>();
         builder.Services.AddScoped<ICheckpointTaskService, CheckpointTaskService>();
         builder.Services.AddScoped<IFeedbackService, FeedbackService>();
-        builder.Services.AddScoped<IGroupService, GroupService>();
         builder.Services.AddScoped<IMentorAvailabilityService, MentorAvailabilityService>();
         builder.Services.AddScoped<IProjectService, ProjectService>();
         builder.Services.AddScoped<IProposalService, ProposalService>();
-        builder.Services.AddScoped<ITaskLogService, TaskLogService>();
         builder.Services.AddScoped<IWeeklyReportService, WeeklyReportService>();
 
 

@@ -8,7 +8,8 @@ public class AccountDto
     public required string FirstName { get; set; }
     public required string LastName { get; set; }
     public string? ImageUrl { get; set; }
-    public AccountRole[] Roles { get; set; } = [];
+    public bool IsSuspended { get; set; }
+    public AccountRole Role { get; set; }
 }
 
 public class CreateAccountDto
@@ -18,6 +19,7 @@ public class CreateAccountDto
     public required string FirstName { get; set; }
     public required string LastName { get; set; }
     public string? ImageUrl { get; set; }
+    public bool IsSuspended { get; set; }
     public AccountRole Role { get; set; }
 }
 
@@ -26,21 +28,7 @@ public class UpdateAccountDto
     public string? FirstName { get; set; }
     public string? LastName { get; set; }
     public string? ImageUrl { get; set; }
-}
-
-public class UpdateAccountRoleDto
-{
-    public AccountRole[] Roles { get; set; } = [];
-}
-
-public class RegisterRequest
-{
-    public required string Email { get; set; }
-    public required string Password { get; set; }
-    public required string FirstName { get; set; }
-    public required string LastName { get; set; }
-    public string? ImageUrl { get; set; }
-    public AccountRole Role { get; set; }
+    public bool? IsSuspended { get; set; }
 }
 
 public class LoginRequest
@@ -56,7 +44,7 @@ public class LoginResponse
     public required string FirstName { get; set; }
     public required string LastName { get; set; }
     public string? ImageUrl { get; set; }
-    public AccountRole[] Roles { get; set; } = [];
+    public AccountRole Role { get; set; }
     public required string AccessToken { get; set; }
     public required string RefreshToken { get; set; }
 }

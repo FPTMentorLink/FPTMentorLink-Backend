@@ -4,7 +4,7 @@ using Repositories.Entities.Base;
 
 namespace Repositories.Entities;
 
-public class WeeklyReports : AuditableEntity
+public class WeeklyReport : AuditableEntity
 {
     [ForeignKey(nameof(Project))] public Guid ProjectId { get; set; }
     [MaxLength(255)] public required string Title { get; set; }

@@ -5,9 +5,9 @@ namespace Services.Interfaces;
 
 public interface IWeeklyReportService
 {
-    Task<Result<WeeklyReportsDto>> GetByIdAsync(Guid id);
-    Task<Result<PaginationResult<WeeklyReportsDto>>> GetPagedAsync(PaginationParams paginationParams);
-    Task<Result<WeeklyReportsDto>> CreateAsync(CreateWeeklyReportsDto dto);
-    Task<Result<WeeklyReportsDto>> UpdateAsync(Guid id, UpdateWeeklyReportsDto dto);
+    Task<Result<WeeklyReportDto>> GetByIdAsync(Guid id);
+    Task<Result<PaginationResult<WeeklyReportDto>>> GetPagedAsync(PaginationParams paginationParams);
+    Task<Result<WeeklyReportDto>> CreateAsync(CreateWeeklyReportDto dto);
+    Task<Result<WeeklyReportDto>> UpdateAsync(Guid id, UpdateWeeklyReportDto dto);
     Task<Result> DeleteAsync(Guid id);
 } 

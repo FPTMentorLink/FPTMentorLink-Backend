@@ -16,17 +16,15 @@ public class UnitOfWork : IUnitOfWork
     private IGenericRepository<Checkpoint>? _checkpoints;
     private IGenericRepository<CheckpointTask>? _checkpointTasks;
     private IGenericRepository<Feedback>? _feedbacks;
-    private IGenericRepository<Group>? _groups;
     private IGenericRepository<Lecturer>? _lecturers;
     private IGenericRepository<Mentor>? _mentors;
     private IGenericRepository<MentorAvailability>? _mentorAvailabilities;
     private IGenericRepository<Project>? _projects;
     private IGenericRepository<Proposal>? _proposals;
     private IGenericRepository<Student>? _students;
-    private IGenericRepository<StudentGroup>? _studentGroups;
-    private IGenericRepository<TaskLog>? _taskLogs;
-    private IGenericRepository<Transactions>? _transactions;
-    private IGenericRepository<WeeklyReports>? _weeklyReports;
+    private IGenericRepository<ProjectStudent>? _studentGroups;
+    private IGenericRepository<Transaction>? _transactions;
+    private IGenericRepository<WeeklyReport>? _weeklyReports;
 
 
     public UnitOfWork(ApplicationDbContext context)
@@ -48,9 +46,6 @@ public class UnitOfWork : IUnitOfWork
 
     public IGenericRepository<Feedback> Feedbacks =>
         _feedbacks ??= new GenericRepository<Feedback>(_context);
-
-    public IGenericRepository<Group> Groups =>
-        _groups ??= new GenericRepository<Group>(_context);
 
     public IGenericRepository<Lecturer> Lecturers =>
         _lecturers ??= new GenericRepository<Lecturer>(_context);
@@ -75,20 +70,16 @@ public class UnitOfWork : IUnitOfWork
         _students ??= new GenericRepository<Student>(_context);
 
 
-    public IGenericRepository<StudentGroup> StudentGroups =>
-        _studentGroups ??= new GenericRepository<StudentGroup>(_context);
+    public IGenericRepository<ProjectStudent> StudentGroups =>
+        _studentGroups ??= new GenericRepository<ProjectStudent>(_context);
+    
+
+    public IGenericRepository<Transaction> Transactions =>
+        _transactions ??= new GenericRepository<Transaction>(_context);
 
 
-    public IGenericRepository<TaskLog> TaskLogs =>
-        _taskLogs ??= new GenericRepository<TaskLog>(_context);
-
-
-    public IGenericRepository<Transactions> Transactions =>
-        _transactions ??= new GenericRepository<Transactions>(_context);
-
-
-    public IGenericRepository<WeeklyReports> WeeklyReports =>
-        _weeklyReports ??= new GenericRepository<WeeklyReports>(_context);
+    public IGenericRepository<WeeklyReport> WeeklyReports =>
+        _weeklyReports ??= new GenericRepository<WeeklyReport>(_context);
 
     public async Task<int> SaveChangesAsync(bool trackAudit = true, bool trackSoftDelete = true)
     {

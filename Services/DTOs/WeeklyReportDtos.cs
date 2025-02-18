@@ -1,6 +1,6 @@
 namespace Services.DTOs;
 
-public class WeeklyReportsDto
+public class WeeklyReportDto
 {
     public Guid Id { get; set; }
     public Guid ProjectId { get; set; }
@@ -10,14 +10,14 @@ public class WeeklyReportsDto
     public DateTime? UpdatedAt { get; set; }
 }
 
-public class CreateWeeklyReportsDto
+public class CreateWeeklyReportDto
 {
     public Guid ProjectId { get; set; }
     public required string Title { get; set; }
     public required string Content { get; set; }
 }
 
-public class UpdateWeeklyReportsDto
+public class UpdateWeeklyReportDto
 {
     public string? Title { get; set; }
     public string? Content { get; set; }
