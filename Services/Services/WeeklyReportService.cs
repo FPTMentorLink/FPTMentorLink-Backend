@@ -1,4 +1,4 @@
-using AutoMapper;
+using MapsterMapper;
 using Repositories.Entities;
 using Repositories.UnitOfWork.Interfaces;
 using Services.DTOs;
@@ -30,8 +30,8 @@ public class WeeklyReportService : IWeeklyReportService
     public async Task<Result<PaginationResult<WeeklyReportDto>>> GetPagedAsync(PaginationParams paginationParams)
     {
         var query = _unitOfWork.WeeklyReports.GetQueryable();
-        var result = await query.ProjectToPaginatedListAsync<WeeklyReport, WeeklyReportDto>(paginationParams, _mapper.ConfigurationProvider);
-            
+        var result = await query.ProjectToPaginatedListAsync<WeeklyReport, WeeklyReportDto>(paginationParams);
+
         return Result.Success(result);
     }
 
@@ -39,7 +39,7 @@ public class WeeklyReportService : IWeeklyReportService
     {
         var weeklyReport = _mapper.Map<WeeklyReport>(dto);
         _unitOfWork.WeeklyReports.Add(weeklyReport);
-        
+
         try
         {
             await _unitOfWork.SaveChangesAsync();
@@ -59,7 +59,7 @@ public class WeeklyReportService : IWeeklyReportService
 
         _mapper.Map(dto, weeklyReport);
         _unitOfWork.WeeklyReports.Update(weeklyReport);
-        
+
         try
         {
             await _unitOfWork.SaveChangesAsync();
@@ -78,7 +78,7 @@ public class WeeklyReportService : IWeeklyReportService
             return Result.Failure("Weekly report not found");
 
         _unitOfWork.WeeklyReports.Delete(weeklyReport);
-        
+
         try
         {
             await _unitOfWork.SaveChangesAsync();
@@ -89,4 +89,4 @@ public class WeeklyReportService : IWeeklyReportService
             return Result.Failure($"Failed to delete weekly report: {ex.Message}");
         }
     }
-} 
+}

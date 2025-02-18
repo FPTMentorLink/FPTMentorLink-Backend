@@ -1,5 +1,3 @@
-using Repositories.Entities;
-
 namespace Services.DTOs;
 
 public class CheckpointDto

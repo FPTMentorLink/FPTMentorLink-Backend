@@ -82,11 +82,9 @@ public class AccountService : IAccountService
         var claims = new List<Claim>
         {
             new(ClaimTypes.NameIdentifier, account.Id.ToString()),
-            new(ClaimTypes.Email, account.Email)
+            new(ClaimTypes.Email, account.Email),
+            new(ClaimTypes.Role, account.Role.ToString())
         };
-
-        foreach (var role in account.Roles) claims.Add(new Claim(ClaimTypes.Role, role.ToString()));
-
         var accessToken = TokenGenerator.GenerateAccessToken(_jwtSettings, claims);
         var refreshToken = TokenGenerator.GenerateRefreshToken();
 
@@ -121,21 +119,6 @@ public class AccountService : IAccountService
         });
     }
 
-    public async Task<Result<AccountDto>> RegisterAsync(RegisterRequest request)
-    {
-        if (await _unitOfWork.Accounts.AnyAsync(a => a.Email == request.Email))
-            return Result.Failure<AccountDto>("Email already exists");
-
-        var account = request.Adapt<Account>();
-        account.PasswordHash = _passwordHasher.HashPassword(request.Password);
-        account.Roles = [request.Role];
-
-        _unitOfWork.Accounts.Add(account);
-        await _unitOfWork.SaveChangesAsync();
-
-        return Result.Success(account.Adapt<AccountDto>());
-    }
-
     public async Task<Result> IsEmailUniqueAsync(string email)
     {
         var exists = await _unitOfWork.Accounts.AnyAsync(a => a.Email == email);
@@ -153,7 +136,7 @@ public class AccountService : IAccountService
     public async Task<Result<int>> GetTotalAsync(AccountRole[] roles)
     {
         var query = _unitOfWork.Accounts.GetQueryable();
-        if (roles.Length > 0) query = query.Where(a => a.Roles.Any(roles.Contains));
+        if (roles.Length > 0) query = query.Where(a => roles.Contains(a.Role));
 
         var total = await query.CountAsync();
         return Result.Success(total);

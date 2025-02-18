@@ -39,12 +39,6 @@ public static class MappingConfig
         TypeAdapterConfig<UpdateFeedbackDto, Feedback>.NewConfig()
             .IgnoreNullValues(true);
 
-        // Group
-        TypeAdapterConfig<Group, GroupDto>.NewConfig();
-        TypeAdapterConfig<CreateGroupDto, Group>.NewConfig();
-        TypeAdapterConfig<UpdateGroupDto, Group>.NewConfig()
-            .IgnoreNullValues(true);
-
         // Lecturer
         TypeAdapterConfig<Lecturer, LecturerDto>.NewConfig();
         TypeAdapterConfig<CreateLecturerDto, Lecturer>.NewConfig();
@@ -80,23 +74,20 @@ public static class MappingConfig
         TypeAdapterConfig<CreateStudentDto, Student>.NewConfig();
         TypeAdapterConfig<UpdateStudentDto, Student>.NewConfig()
             .IgnoreNullValues(true);
+        
+        // TODO: Add mapping config for term
+        
 
-        // StudentGroup
-        TypeAdapterConfig<StudentGroup, StudentGroupDto>.NewConfig();
-        TypeAdapterConfig<CreateStudentGroupDto, StudentGroup>.NewConfig();
-        TypeAdapterConfig<UpdateStudentGroupDto, StudentGroup>.NewConfig()
+        // ProjectStudent
+        TypeAdapterConfig<ProjectStudent, ProjectStudentDto>.NewConfig();
+        TypeAdapterConfig<CreateProjectStudentDto, ProjectStudent>.NewConfig();
+        TypeAdapterConfig<UpdateProjectStudentDto, ProjectStudent>.NewConfig()
             .IgnoreNullValues(true);
 
-        // TaskLog
-        TypeAdapterConfig<TaskLog, TaskLogDto>.NewConfig();
-        TypeAdapterConfig<CreateTaskLogDto, TaskLog>.NewConfig();
-        TypeAdapterConfig<UpdateTaskLogDto, TaskLog>.NewConfig()
-            .IgnoreNullValues(true);
-
-        // WeeklyReports
-        TypeAdapterConfig<WeeklyReports, WeeklyReportsDto>.NewConfig();
-        TypeAdapterConfig<CreateWeeklyReportsDto, WeeklyReports>.NewConfig();
-        TypeAdapterConfig<UpdateWeeklyReportsDto, WeeklyReports>.NewConfig()
+        // WeeklyReport
+        TypeAdapterConfig<WeeklyReport, WeeklyReportDto>.NewConfig();
+        TypeAdapterConfig<CreateWeeklyReportDto, WeeklyReport>.NewConfig();
+        TypeAdapterConfig<UpdateWeeklyReportDto, WeeklyReport>.NewConfig()
             .IgnoreNullValues(true);
     }
 }
