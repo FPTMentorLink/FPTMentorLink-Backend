@@ -1,3 +1,8 @@
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services.Interfaces;
 using Services.Utils;
@@ -20,5 +25,17 @@ public class AccountController : ControllerBase
     {
         var result = await _accountService.GetPagedAsync(request);
         return result.IsSuccess ? Ok(result.Value) : BadRequest(result.Error);
+    }
+
+    /// <summary>
+    /// Test login google
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [HttpGet("{id}")]
+    [Authorize(AuthenticationSchemes = GoogleDefaults.AuthenticationScheme)]
+    public IActionResult GetAccounts(int id)
+    {
+        return Ok(id);
     }
 }
