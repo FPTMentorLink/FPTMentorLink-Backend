@@ -1,13 +1,14 @@
-using Services.DTOs;
+using Services.Models.Request.Feedback;
+using Services.Models.Response.Feedback;
 using Services.Utils;
 
 namespace Services.Interfaces;
 
 public interface IFeedbackService
 {
-    Task<Result<FeedbackDto>> GetByIdAsync(Guid id);
-    Task<Result<PaginationResult<FeedbackDto>>> GetPagedAsync(PaginationParams paginationParams);
-    Task<Result<FeedbackDto>> CreateAsync(CreateFeedbackDto dto);
-    Task<Result<FeedbackDto>> UpdateAsync(Guid id, UpdateFeedbackDto dto);
+    Task<Result<FeedbackResponse>> GetByIdAsync(Guid id);
+    Task<Result<PaginationResult<FeedbackResponse>>> GetPagedAsync(PaginationParams paginationParams);
+    Task<Result> CreateAsync(CreateFeedbackRequest request);
+    Task<Result> UpdateAsync(Guid id, UpdateFeedbackRequest request);
     Task<Result> DeleteAsync(Guid id);
 } 

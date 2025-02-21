@@ -3,9 +3,19 @@ using Repositories.Entities;
 using Services.DTOs;
 using Services.Models.Request.Account;
 using Services.Models.Request.Appointment;
+using Services.Models.Request.Checkpoint;
+using Services.Models.Request.CheckpointTask;
+using Services.Models.Request.Feedback;
+using Services.Models.Request.Lecturer;
+using Services.Models.Request.Mentor;
 using Services.Models.Response.Account;
 using Services.Models.Response.Appointment;
 using Services.Models.Response.Authentication;
+using Services.Models.Response.Checkpoint;
+using Services.Models.Response.CheckpointTask;
+using Services.Models.Response.Feedback;
+using Services.Models.Response.Lecturer;
+using Services.Models.Response.Mentor;
 
 namespace Services.Mappings;
 
@@ -29,33 +39,33 @@ public static class MappingConfig
             .IgnoreNullValues(true);
 
         // Checkpoint
-        TypeAdapterConfig<Checkpoint, CheckpointDto>.NewConfig();
-        TypeAdapterConfig<CreateCheckpointDto, Checkpoint>.NewConfig();
-        TypeAdapterConfig<UpdateCheckpointDto, Checkpoint>.NewConfig()
+        TypeAdapterConfig<Checkpoint, CheckpointResponse>.NewConfig();
+        TypeAdapterConfig<CreateCheckpointRequest, Checkpoint>.NewConfig();
+        TypeAdapterConfig<UpdateCheckpointRequest, Checkpoint>.NewConfig()
             .IgnoreNullValues(true);
 
         // CheckpointTask
-        TypeAdapterConfig<CheckpointTask, CheckpointTaskDto>.NewConfig();
-        TypeAdapterConfig<CreateCheckpointTaskDto, CheckpointTask>.NewConfig();
-        TypeAdapterConfig<UpdateCheckpointTaskDto, CheckpointTask>.NewConfig()
+        TypeAdapterConfig<CheckpointTask, CheckpointTaskResponse>.NewConfig();
+        TypeAdapterConfig<CreateCheckpointTaskRequest, CheckpointTask>.NewConfig();
+        TypeAdapterConfig<UpdateCheckpointTaskRequest, CheckpointTask>.NewConfig()
             .IgnoreNullValues(true);
 
         // Feedback
-        TypeAdapterConfig<Feedback, FeedbackDto>.NewConfig();
-        TypeAdapterConfig<CreateFeedbackDto, Feedback>.NewConfig();
-        TypeAdapterConfig<UpdateFeedbackDto, Feedback>.NewConfig()
+        TypeAdapterConfig<Feedback, FeedbackResponse>.NewConfig();
+        TypeAdapterConfig<CreateFeedbackRequest, Feedback>.NewConfig();
+        TypeAdapterConfig<UpdateFeedbackRequest, Feedback>.NewConfig()
             .IgnoreNullValues(true);
 
         // Lecturer
-        TypeAdapterConfig<Lecturer, LecturerDto>.NewConfig();
-        TypeAdapterConfig<CreateLecturerDto, Lecturer>.NewConfig();
-        TypeAdapterConfig<UpdateLecturerDto, Lecturer>.NewConfig()
+        TypeAdapterConfig<Lecturer, LecturerResponse>.NewConfig();
+        TypeAdapterConfig<CreateLecturerRequest, Lecturer>.NewConfig();
+        TypeAdapterConfig<UpdateLecturerRequest, Lecturer>.NewConfig()
             .IgnoreNullValues(true);
 
         // Mentor
-        TypeAdapterConfig<Mentor, MentorDto>.NewConfig();
-        TypeAdapterConfig<CreateMentorDto, Mentor>.NewConfig();
-        TypeAdapterConfig<UpdateMentorDto, Mentor>.NewConfig()
+        TypeAdapterConfig<Mentor, MentorResponse>.NewConfig();
+        TypeAdapterConfig<CreateMentorRequest, Mentor>.NewConfig();
+        TypeAdapterConfig<UpdateMentorRequest, Mentor>.NewConfig()
             .IgnoreNullValues(true);
 
         // MentorAvailability

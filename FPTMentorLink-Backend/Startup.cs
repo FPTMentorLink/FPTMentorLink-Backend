@@ -22,16 +22,22 @@ public static class Startup
     public static void ConfigureGoogleAuth(this WebApplicationBuilder builder)
     {
         var googleAuthSettings = builder.Configuration.GetSection("GoogleAuthSettings").Get<GoogleSettings>()
-                                 ?? throw new InvalidOperationException(
-                                     "GoogleAuthSettings is not configured properly.");
-        builder.Services.AddAuthentication(options =>
-        {
-            options.DefaultScheme = GoogleDefaults.AuthenticationScheme;
-            options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
-        }).AddGoogle(options =>
+                            ?? throw new InvalidOperationException("GoogleAuthSettings is not configured properly.");
+                            
+        builder.Services.AddAuthentication().AddGoogle("Google", options =>
         {
             options.ClientId = googleAuthSettings.ClientId;
             options.ClientSecret = googleAuthSettings.ClientSecret;
+            options.CallbackPath = "/api/authentication/google-callback";
+            options.AccessType = "offline";
+            options.CorrelationCookie.SameSite = SameSiteMode.Lax;
+            options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
+            options.Events.OnRedirectToAuthorizationEndpoint = context =>
+            {
+                context.Response.Redirect(context.RedirectUri);
+                return Task.CompletedTask;
+            };
+            options.SignInScheme = JwtBearerDefaults.AuthenticationScheme;
         });
     }
 
@@ -158,9 +164,10 @@ public static class Startup
         {
             options.AddPolicy("AllowAll", x =>
             {
-                x.AllowAnyOrigin()
+                x.WithOrigins("https://accounts.google.com")
                     .AllowAnyMethod()
-                    .AllowAnyHeader();
+                    .AllowAnyHeader()
+                    .AllowCredentials();
             });
             // TODO: Add production policy for specific domain
             // options.AddPolicy("Production", x =>

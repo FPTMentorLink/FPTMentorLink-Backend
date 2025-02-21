@@ -1,8 +1,9 @@
 using MapsterMapper;
 using Repositories.Entities;
 using Repositories.UnitOfWork.Interfaces;
-using Services.DTOs;
 using Services.Interfaces;
+using Services.Models.Request.Checkpoint;
+using Services.Models.Response.Checkpoint;
 using Services.Utils;
 
 namespace Services.Services;
@@ -18,48 +19,48 @@ public class CheckpointService : ICheckpointService
         _mapper = mapper;
     }
 
-    public async Task<Result<CheckpointDto>> GetByIdAsync(Guid id)
+    public async Task<Result<CheckpointResponse>> GetByIdAsync(Guid id)
     {
         var checkpoint = await _unitOfWork.Checkpoints.GetByIdAsync(id);
         if (checkpoint == null)
-            return Result.Failure<CheckpointDto>("Checkpoint not found");
+            return Result.Failure<CheckpointResponse>("Checkpoint not found");
 
-        return Result.Success(_mapper.Map<CheckpointDto>(checkpoint));
+        return Result.Success(_mapper.Map<CheckpointResponse>(checkpoint));
     }
 
-    public async Task<Result<CheckpointDto>> CreateAsync(CreateCheckpointDto dto)
+    public async Task<Result> CreateAsync(CreateCheckpointRequest request)
     {
-        var checkpoint = _mapper.Map<Checkpoint>(dto);
+        var checkpoint = _mapper.Map<Checkpoint>(request);
         _unitOfWork.Checkpoints.Add(checkpoint);
 
         try
         {
             await _unitOfWork.SaveChangesAsync();
-            return Result.Success(_mapper.Map<CheckpointDto>(checkpoint));
+            return Result.Success();
         }
         catch (Exception ex)
         {
-            return Result.Failure<CheckpointDto>($"Failed to create checkpoint: {ex.Message}");
+            return Result.Failure($"Failed to create checkpoint: {ex.Message}");
         }
     }
 
-    public async Task<Result<CheckpointDto>> UpdateAsync(Guid id, UpdateCheckpointDto dto)
+    public async Task<Result> UpdateAsync(Guid id, UpdateCheckpointRequest request)
     {
         var checkpoint = await _unitOfWork.Checkpoints.GetByIdAsync(id);
         if (checkpoint == null)
-            return Result.Failure<CheckpointDto>("Checkpoint not found");
+            return Result.Failure("Checkpoint not found");
 
-        _mapper.Map(dto, checkpoint);
+        _mapper.Map(request, checkpoint);
         _unitOfWork.Checkpoints.Update(checkpoint);
 
         try
         {
             await _unitOfWork.SaveChangesAsync();
-            return Result.Success(_mapper.Map<CheckpointDto>(checkpoint));
+            return Result.Success();
         }
         catch (Exception ex)
         {
-            return Result.Failure<CheckpointDto>($"Failed to update checkpoint: {ex.Message}");
+            return Result.Failure($"Failed to update checkpoint: {ex.Message}");
         }
     }
 
@@ -82,11 +83,11 @@ public class CheckpointService : ICheckpointService
         }
     }
 
-    public async Task<Result<PaginationResult<CheckpointDto>>> GetPagedAsync(PaginationParams paginationParams)
+    public async Task<Result<PaginationResult<CheckpointResponse>>> GetPagedAsync(PaginationParams paginationParams)
     {
         var query = _unitOfWork.Checkpoints.GetQueryable();
         var result =
-            await query.ProjectToPaginatedListAsync<Checkpoint, CheckpointDto>(paginationParams);
+            await query.ProjectToPaginatedListAsync<Checkpoint, CheckpointResponse>(paginationParams);
 
         return Result.Success(result);
     }
