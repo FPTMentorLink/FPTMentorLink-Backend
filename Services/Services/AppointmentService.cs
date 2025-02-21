@@ -1,8 +1,9 @@
 ﻿using MapsterMapper;
 using Repositories.Entities;
 using Repositories.UnitOfWork.Interfaces;
-using Services.DTOs;
 using Services.Interfaces;
+using Services.Models.Request.Appointment;
+using Services.Models.Response.Appointment;
 using Services.Utils;
 
 namespace Services.Services;
@@ -18,56 +19,56 @@ public class AppointmentService : IAppointmentService
         _mapper = mapper;
     }
 
-    public async Task<Result<AppointmentDto>> GetByIdAsync(Guid id)
+    public async Task<Result<AppointmentResponse>> GetByIdAsync(Guid id)
     {
         var appointment = await _unitOfWork.Appointments.GetByIdAsync(id);
         if (appointment == null)
-            return Result.Failure<AppointmentDto>("Appointment not found");
+            return Result.Failure<AppointmentResponse>("Appointment not found");
 
-        return Result.Success(_mapper.Map<AppointmentDto>(appointment));
+        return Result.Success(_mapper.Map<AppointmentResponse>(appointment));
     }
 
-    public async Task<Result<PaginationResult<AppointmentDto>>> GetPagedAsync(PaginationParams paginationParams)
+    public async Task<Result<PaginationResult<AppointmentResponse>>> GetPagedAsync(PaginationParams paginationParams)
     {
         var query = _unitOfWork.Appointments.GetQueryable();
-        var result = await query.ProjectToPaginatedListAsync<Appointment, AppointmentDto>(paginationParams);
+        var result = await query.ProjectToPaginatedListAsync<Appointment, AppointmentResponse>(paginationParams);
 
         return Result.Success(result);
     }
 
-    public async Task<Result<AppointmentDto>> CreateAsync(CreateAppointmentDto dto)
+    public async Task<Result> CreateAsync(CreateAppointmentRequest request)
     {
-        var appointment = _mapper.Map<Appointment>(dto);
+        var appointment = _mapper.Map<Appointment>(request);
         _unitOfWork.Appointments.Add(appointment);
 
         try
         {
             await _unitOfWork.SaveChangesAsync();
-            return Result.Success(_mapper.Map<AppointmentDto>(appointment));
+            return Result.Success();
         }
         catch (Exception ex)
         {
-            return Result.Failure<AppointmentDto>($"Failed to create appointment: {ex.Message}");
+            return Result.Failure($"Failed to create appointment: {ex.Message}");
         }
     }
 
-    public async Task<Result<AppointmentDto>> UpdateAsync(Guid id, UpdateAppointmentDto dto)
+    public async Task<Result> UpdateAsync(Guid id, UpdateAppointmentRequest request)
     {
         var appointment = await _unitOfWork.Appointments.GetByIdAsync(id);
         if (appointment == null)
-            return Result.Failure<AppointmentDto>("Appointment not found");
+            return Result.Failure<AppointmentResponse>("Appointment not found");
 
-        _mapper.Map(dto, appointment);
+        _mapper.Map(request, appointment);
         _unitOfWork.Appointments.Update(appointment);
 
         try
         {
             await _unitOfWork.SaveChangesAsync();
-            return Result.Success(_mapper.Map<AppointmentDto>(appointment));
+            return Result.Success();
         }
         catch (Exception ex)
         {
-            return Result.Failure<AppointmentDto>($"Failed to update appointment: {ex.Message}");
+            return Result.Failure($"Failed to update appointment: {ex.Message}");
         }
     }
 

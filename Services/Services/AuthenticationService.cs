@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using Repositories.UnitOfWork.Interfaces;
 using Services.DTOs;
 using Services.Interfaces;
+using Services.Models.Response.Authentication;
 using Services.Utils;
 
 namespace Services.Services;

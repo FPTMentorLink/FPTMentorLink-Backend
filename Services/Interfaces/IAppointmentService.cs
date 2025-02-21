@@ -1,13 +1,14 @@
-﻿using Services.DTOs;
+﻿using Services.Models.Request.Appointment;
+using Services.Models.Response.Appointment;
 using Services.Utils;
 
 namespace Services.Interfaces;
 
 public interface IAppointmentService
 {
-    Task<Result<AppointmentDto>> GetByIdAsync(Guid id);
-    Task<Result<PaginationResult<AppointmentDto>>> GetPagedAsync(PaginationParams paginationParams);
-    Task<Result<AppointmentDto>> CreateAsync(CreateAppointmentDto dto);
-    Task<Result<AppointmentDto>> UpdateAsync(Guid id, UpdateAppointmentDto dto);
+    Task<Result<AppointmentResponse>> GetByIdAsync(Guid id);
+    Task<Result<PaginationResult<AppointmentResponse>>> GetPagedAsync(PaginationParams paginationParams);
+    Task<Result> CreateAsync(CreateAppointmentRequest request);
+    Task<Result> UpdateAsync(Guid id, UpdateAppointmentRequest request);
     Task<Result> DeleteAsync(Guid id);
 }

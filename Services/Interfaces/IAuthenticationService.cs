@@ -1,5 +1,5 @@
 using System.Security.Claims;
-using Services.DTOs;
+using Services.Models.Response.Authentication;
 using Services.Utils;
 
 namespace Services.Interfaces;

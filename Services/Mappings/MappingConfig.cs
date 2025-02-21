@@ -1,6 +1,11 @@
 using Mapster;
 using Repositories.Entities;
 using Services.DTOs;
+using Services.Models.Request.Account;
+using Services.Models.Request.Appointment;
+using Services.Models.Response.Account;
+using Services.Models.Response.Appointment;
+using Services.Models.Response.Authentication;
 
 namespace Services.Mappings;
 
@@ -9,16 +14,18 @@ public static class MappingConfig
     public static void RegisterMappings()
     {
         // Appointment
-        TypeAdapterConfig<Appointment, AppointmentDto>.NewConfig();
-        TypeAdapterConfig<CreateAppointmentDto, Appointment>.NewConfig();
-        TypeAdapterConfig<UpdateAppointmentDto, Appointment>.NewConfig()
+        TypeAdapterConfig<Appointment, AppointmentResponse>.NewConfig();
+        TypeAdapterConfig<CreateAppointmentRequest, Appointment>.NewConfig();
+        TypeAdapterConfig<UpdateAppointmentRequest, Appointment>.NewConfig()
+            .IgnoreNullValues(true);
+        TypeAdapterConfig<UpdateAppointmentStatusRequest, Appointment>.NewConfig()
             .IgnoreNullValues(true);
 
         // Account
-        TypeAdapterConfig<Account, AccountDto>.NewConfig();
-        TypeAdapterConfig<CreateAccountDto, Account>.NewConfig();
+        TypeAdapterConfig<Account, AccountResponse>.NewConfig();
+        TypeAdapterConfig<CreateAccountRequest, Account>.NewConfig();
         TypeAdapterConfig<Account, LoginResponse>.NewConfig();
-        TypeAdapterConfig<UpdateAccountDto, Account>.NewConfig()
+        TypeAdapterConfig<UpdateAccountRequest, Account>.NewConfig()
             .IgnoreNullValues(true);
 
         // Checkpoint
@@ -74,9 +81,9 @@ public static class MappingConfig
         TypeAdapterConfig<CreateStudentDto, Student>.NewConfig();
         TypeAdapterConfig<UpdateStudentDto, Student>.NewConfig()
             .IgnoreNullValues(true);
-        
+
         // TODO: Add mapping config for term
-        
+
 
         // ProjectStudent
         TypeAdapterConfig<ProjectStudent, ProjectStudentDto>.NewConfig();
