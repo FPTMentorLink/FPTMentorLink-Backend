@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Repositories.Entities;
+using Repositories.Entities.Base;
 
 namespace Repositories.Data;
 
@@ -24,6 +25,11 @@ public class ApplicationDbContext : DbContext
     public DbSet<Term> Terms { get; set; }
     public DbSet<Transaction> Transactions { get; set; }
     public DbSet<WeeklyReport> WeeklyReports { get; set; }
+
+    //Archived tables
+    public DbSet<ArchiveAppointment> ArchiveAppointments { get; set; }
+    public DbSet<ArchiveCheckpointTask> ArchiveCheckpointTasks { get; set; }
+    public DbSet<ArchiveProjectStudent> ArchiveProjectStudents { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -221,6 +227,26 @@ public class ApplicationDbContext : DbContext
                 .HasCharSet("utf8mb4")
                 .UseCollation("utf8mb4_0900_ai_ci");
         });
+
+        modelBuilder.Entity<ArchiveAppointment>(entity =>
+        {
+            entity.ToTable(nameof(ArchiveAppointment));
+            entity.Property(p => p.Status)
+                .HasConversion(
+                    v => v.ToString(),
+                    v => (AppointmentStatus)Enum.Parse(typeof(AppointmentStatus), v));
+        });
+
+        modelBuilder.Entity<ArchiveCheckpointTask>(entity =>
+        {
+            entity.ToTable(nameof(ArchiveCheckpointTask));
+            entity.Property(p => p.Status)
+                .HasConversion(
+                    v => v.ToString(),
+                    v => (CheckpointTaskStatus)Enum.Parse(typeof(CheckpointTaskStatus), v));
+        });
+
+        modelBuilder.Entity<ArchiveProjectStudent>(entity => { entity.ToTable(nameof(ArchiveProjectStudent)); });
 
         base.OnModelCreating(modelBuilder);
     }
