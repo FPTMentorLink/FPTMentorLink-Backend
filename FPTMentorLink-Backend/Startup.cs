@@ -26,9 +26,10 @@ public static class Startup
                                      "GoogleAuthSettings is not configured properly.");
         builder.Services.AddAuthentication(options =>
         {
+            options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
             options.DefaultScheme = GoogleDefaults.AuthenticationScheme;
             options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
-        }).AddGoogle(options =>
+        }).AddCookie().AddGoogle(options =>
         {
             options.ClientId = googleAuthSettings.ClientId;
             options.ClientSecret = googleAuthSettings.ClientSecret;

@@ -17,7 +17,7 @@ public class AuthenticationController : ControllerBase
         _authenticationService = authenticationService;
     }
 
-    [HttpPost("signin-google")]
+    [HttpGet("signin-google")]
     [Authorize(AuthenticationSchemes = GoogleDefaults.AuthenticationScheme)]
     public async Task<IActionResult> LoginByGoogle()
     {
