@@ -3,8 +3,8 @@ using FPTMentorLink_Backend;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Configuration.AddUserSecrets(Assembly.GetExecutingAssembly(), true);
 builder.ConfigureDatabase();
+builder.ConfigureGoogleAuth();
 builder.ConfigureJwt();
 builder.ConfigureServices();
 builder.ConfigureCors();

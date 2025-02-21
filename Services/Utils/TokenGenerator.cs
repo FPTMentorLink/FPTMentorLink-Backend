@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
+using Repositories.Entities;
 
 namespace Services.Utils;
 
@@ -28,6 +29,49 @@ public static class TokenGenerator
         return tokenHandler.WriteToken(token);
     }
 
+    public static IEnumerable<Claim> GetClaims(Account account)
+    {
+        switch (account.Role)
+        {
+            case AccountRole.Admin:
+                return new List<Claim>
+                {
+                    new(ClaimTypes.NameIdentifier, account.Id.ToString()),
+                    new(ClaimTypes.Email, account.Email),
+                    new(ClaimTypes.Role, account.Role.ToString())
+                };
+            case AccountRole.Student:
+                return new List<Claim>
+                {
+                    new(ClaimTypes.NameIdentifier, account.Id.ToString()),
+                    new(ClaimTypes.Email, account.Email),
+                    new(ClaimTypes.Role, account.Role.ToString())
+                };
+            case AccountRole.Mentor:
+                return new List<Claim>
+                {
+                    new(ClaimTypes.NameIdentifier, account.Id.ToString()),
+                    new(ClaimTypes.Email, account.Email),
+                    new(ClaimTypes.Role, account.Role.ToString())
+                };
+            case AccountRole.Lecturer:
+                return new List<Claim>
+                {
+                    new(ClaimTypes.NameIdentifier, account.Id.ToString()),
+                    new(ClaimTypes.Email, account.Email),
+                    new(ClaimTypes.Role, account.Role.ToString())
+                };
+            default:
+                return new List<Claim>
+                {
+                    new(ClaimTypes.NameIdentifier, account.Id.ToString()),
+                    new(ClaimTypes.Email, account.Email),
+                    new(ClaimTypes.Role, account.Role.ToString())
+                };
+        }
+    }
+
+
     public static string GenerateRefreshToken()
     {
         var randomNumber = new byte[64];
@@ -52,12 +96,13 @@ public static class TokenGenerator
         var tokenHandler = new JwtSecurityTokenHandler();
         var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out var securityToken);
 
-        if (securityToken is not JwtSecurityToken jwtSecurityToken || 
-            !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+        if (securityToken is not JwtSecurityToken jwtSecurityToken ||
+            !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256,
+                StringComparison.InvariantCultureIgnoreCase))
         {
             return null;
         }
 
         return principal;
     }
-} 
+}

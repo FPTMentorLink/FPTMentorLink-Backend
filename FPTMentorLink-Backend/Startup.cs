@@ -1,6 +1,8 @@
 ﻿using System.Text;
 using FPTMentorLink_Backend.Middlewares;
 using MapsterMapper;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -17,6 +19,22 @@ namespace FPTMentorLink_Backend;
 
 public static class Startup
 {
+    public static void ConfigureGoogleAuth(this WebApplicationBuilder builder)
+    {
+        var googleAuthSettings = builder.Configuration.GetSection("GoogleAuthSettings").Get<GoogleSettings>()
+                                 ?? throw new InvalidOperationException(
+                                     "GoogleAuthSettings is not configured properly.");
+        builder.Services.AddAuthentication(options =>
+        {
+            options.DefaultScheme = GoogleDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
+        }).AddGoogle(options =>
+        {
+            options.ClientId = googleAuthSettings.ClientId;
+            options.ClientSecret = googleAuthSettings.ClientSecret;
+        });
+    }
+
     /// <summary>
     /// Configures JWT authentication with bearer token support
     /// - Sets up token validation parameters
@@ -90,6 +108,7 @@ public static class Startup
         builder.Services.AddScoped<IProjectService, ProjectService>();
         builder.Services.AddScoped<IProposalService, ProposalService>();
         builder.Services.AddScoped<IWeeklyReportService, WeeklyReportService>();
+        builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 
         // Register Utils
         builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
@@ -189,6 +208,7 @@ public static class Startup
 
         app.UseRouting();
         app.UseHttpsRedirection();
+        app.UseAuthentication();
         app.UseAuthorization();
         app.MapControllers();
         app.MapHealthChecks("/health");

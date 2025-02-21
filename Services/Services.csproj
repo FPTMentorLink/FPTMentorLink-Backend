@@ -11,12 +11,9 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Utils\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <PackageReference Include="BCrypt.Net-Core" Version="1.0.0" />
       <PackageReference Include="Mapster" Version="7.4.0" />
+      <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.13" />
       <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.4.0" />
       <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.4.0" />
     </ItemGroup>
