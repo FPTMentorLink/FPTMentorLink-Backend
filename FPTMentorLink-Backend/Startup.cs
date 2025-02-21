@@ -22,22 +22,17 @@ public static class Startup
     public static void ConfigureGoogleAuth(this WebApplicationBuilder builder)
     {
         var googleAuthSettings = builder.Configuration.GetSection("GoogleAuthSettings").Get<GoogleSettings>()
-                            ?? throw new InvalidOperationException("GoogleAuthSettings is not configured properly.");
-                            
-        builder.Services.AddAuthentication().AddGoogle("Google", options =>
+                                 ?? throw new InvalidOperationException(
+                                     "GoogleAuthSettings is not configured properly.");
+        builder.Services.AddAuthentication(options =>
+        {
+            options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            options.DefaultScheme = GoogleDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
+        }).AddCookie().AddGoogle(options =>
         {
             options.ClientId = googleAuthSettings.ClientId;
             options.ClientSecret = googleAuthSettings.ClientSecret;
-            options.CallbackPath = "/api/authentication/google-callback";
-            options.AccessType = "offline";
-            options.CorrelationCookie.SameSite = SameSiteMode.Lax;
-            options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
-            options.Events.OnRedirectToAuthorizationEndpoint = context =>
-            {
-                context.Response.Redirect(context.RedirectUri);
-                return Task.CompletedTask;
-            };
-            options.SignInScheme = JwtBearerDefaults.AuthenticationScheme;
         });
     }
 
@@ -164,10 +159,9 @@ public static class Startup
         {
             options.AddPolicy("AllowAll", x =>
             {
-                x.WithOrigins("https://accounts.google.com")
+                x.AllowAnyOrigin()
                     .AllowAnyMethod()
-                    .AllowAnyHeader()
-                    .AllowCredentials();
+                    .AllowAnyHeader();
             });
             // TODO: Add production policy for specific domain
             // options.AddPolicy("Production", x =>
