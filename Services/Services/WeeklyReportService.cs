@@ -3,6 +3,8 @@ using Repositories.Entities;
 using Repositories.UnitOfWork.Interfaces;
 using Services.DTOs;
 using Services.Interfaces;
+using Services.Models.Request.WeeklyReport;
+using Services.Models.Response.WeeklyReport;
 using Services.Utils;
 
 namespace Services.Services;
@@ -18,24 +20,24 @@ public class WeeklyReportService : IWeeklyReportService
         _mapper = mapper;
     }
 
-    public async Task<Result<WeeklyReportDto>> GetByIdAsync(Guid id)
+    public async Task<Result<WeeklyReportResponse>> GetByIdAsync(Guid id)
     {
         var weeklyReport = await _unitOfWork.WeeklyReports.GetByIdAsync(id);
         if (weeklyReport == null)
-            return Result.Failure<WeeklyReportDto>("Weekly report not found");
+            return Result.Failure<WeeklyReportResponse>("Weekly report not found");
 
-        return Result.Success(_mapper.Map<WeeklyReportDto>(weeklyReport));
+        return Result.Success(_mapper.Map<WeeklyReportResponse>(weeklyReport));
     }
 
-    public async Task<Result<PaginationResult<WeeklyReportDto>>> GetPagedAsync(PaginationParams paginationParams)
+    public async Task<Result<PaginationResult<WeeklyReportResponse>>> GetPagedAsync(PaginationParams paginationParams)
     {
         var query = _unitOfWork.WeeklyReports.GetQueryable();
-        var result = await query.ProjectToPaginatedListAsync<WeeklyReport, WeeklyReportDto>(paginationParams);
+        var result = await query.ProjectToPaginatedListAsync<WeeklyReport, WeeklyReportResponse>(paginationParams);
 
         return Result.Success(result);
     }
 
-    public async Task<Result<WeeklyReportDto>> CreateAsync(CreateWeeklyReportDto dto)
+    public async Task<Result<WeeklyReportResponse>> CreateAsync(CreateWeeklyReportRequest dto)
     {
         var weeklyReport = _mapper.Map<WeeklyReport>(dto);
         _unitOfWork.WeeklyReports.Add(weeklyReport);
@@ -43,19 +45,19 @@ public class WeeklyReportService : IWeeklyReportService
         try
         {
             await _unitOfWork.SaveChangesAsync();
-            return Result.Success(_mapper.Map<WeeklyReportDto>(weeklyReport));
+            return Result.Success(_mapper.Map<WeeklyReportResponse>(weeklyReport));
         }
         catch (Exception ex)
         {
-            return Result.Failure<WeeklyReportDto>($"Failed to create weekly report: {ex.Message}");
+            return Result.Failure<WeeklyReportResponse>($"Failed to create weekly report: {ex.Message}");
         }
     }
 
-    public async Task<Result<WeeklyReportDto>> UpdateAsync(Guid id, UpdateWeeklyReportDto dto)
+    public async Task<Result<WeeklyReportResponse>> UpdateAsync(Guid id, UpdateWeeklyReportRequest dto)
     {
         var weeklyReport = await _unitOfWork.WeeklyReports.GetByIdAsync(id);
         if (weeklyReport == null)
-            return Result.Failure<WeeklyReportDto>("Weekly report not found");
+            return Result.Failure<WeeklyReportResponse>("Weekly report not found");
 
         _mapper.Map(dto, weeklyReport);
         _unitOfWork.WeeklyReports.Update(weeklyReport);
@@ -63,11 +65,11 @@ public class WeeklyReportService : IWeeklyReportService
         try
         {
             await _unitOfWork.SaveChangesAsync();
-            return Result.Success(_mapper.Map<WeeklyReportDto>(weeklyReport));
+            return Result.Success(_mapper.Map<WeeklyReportResponse>(weeklyReport));
         }
         catch (Exception ex)
         {
-            return Result.Failure<WeeklyReportDto>($"Failed to update weekly report: {ex.Message}");
+            return Result.Failure<WeeklyReportResponse>($"Failed to update weekly report: {ex.Message}");
         }
     }
 

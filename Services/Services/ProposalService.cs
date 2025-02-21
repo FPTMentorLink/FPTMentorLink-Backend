@@ -3,6 +3,8 @@ using Repositories.Entities;
 using Repositories.UnitOfWork.Interfaces;
 using Services.DTOs;
 using Services.Interfaces;
+using Services.Models.Request.Proposal;
+using Services.Models.Response.Proposal;
 using Services.Utils;
 
 namespace Services.Services;
@@ -18,25 +20,25 @@ public class ProposalService : IProposalService
         _mapper = mapper;
     }
 
-    public async Task<Result<ProposalDto>> GetByIdAsync(Guid id)
+    public async Task<Result<ProposalResponse>> GetByIdAsync(Guid id)
     {
         var proposal = await _unitOfWork.Proposals.GetByIdAsync(id);
         if (proposal == null)
-            return Result.Failure<ProposalDto>("Proposal not found");
+            return Result.Failure<ProposalResponse>("Proposal not found");
 
-        return Result.Success(_mapper.Map<ProposalDto>(proposal));
+        return Result.Success(_mapper.Map<ProposalResponse>(proposal));
     }
 
-    public async Task<Result<PaginationResult<ProposalDto>>> GetPagedAsync(PaginationParams paginationParams)
+    public async Task<Result<PaginationResult<ProposalResponse>>> GetPagedAsync(PaginationParams paginationParams)
     {
         var query = _unitOfWork.Proposals.GetQueryable();
         var result =
-            await query.ProjectToPaginatedListAsync<Proposal, ProposalDto>(paginationParams);
+            await query.ProjectToPaginatedListAsync<Proposal, ProposalResponse>(paginationParams);
 
         return Result.Success(result);
     }
 
-    public async Task<Result<ProposalDto>> CreateAsync(CreateProposalDto dto)
+    public async Task<Result<ProposalResponse>> CreateAsync(CreateProposalRequest dto)
     {
         var proposal = _mapper.Map<Proposal>(dto);
         _unitOfWork.Proposals.Add(proposal);
@@ -44,19 +46,19 @@ public class ProposalService : IProposalService
         try
         {
             await _unitOfWork.SaveChangesAsync();
-            return Result.Success(_mapper.Map<ProposalDto>(proposal));
+            return Result.Success(_mapper.Map<ProposalResponse>(proposal));
         }
         catch (Exception ex)
         {
-            return Result.Failure<ProposalDto>($"Failed to create proposal: {ex.Message}");
+            return Result.Failure<ProposalResponse>($"Failed to create proposal: {ex.Message}");
         }
     }
 
-    public async Task<Result<ProposalDto>> UpdateAsync(Guid id, UpdateProposalDto dto)
+    public async Task<Result<ProposalResponse>> UpdateAsync(Guid id, UpdateProposalRequest dto)
     {
         var proposal = await _unitOfWork.Proposals.GetByIdAsync(id);
         if (proposal == null)
-            return Result.Failure<ProposalDto>("Proposal not found");
+            return Result.Failure<ProposalResponse>("Proposal not found");
 
         _mapper.Map(dto, proposal);
         _unitOfWork.Proposals.Update(proposal);
@@ -64,11 +66,11 @@ public class ProposalService : IProposalService
         try
         {
             await _unitOfWork.SaveChangesAsync();
-            return Result.Success(_mapper.Map<ProposalDto>(proposal));
+            return Result.Success(_mapper.Map<ProposalResponse>(proposal));
         }
         catch (Exception ex)
         {
-            return Result.Failure<ProposalDto>($"Failed to update proposal: {ex.Message}");
+            return Result.Failure<ProposalResponse>($"Failed to update proposal: {ex.Message}");
         }
     }
 

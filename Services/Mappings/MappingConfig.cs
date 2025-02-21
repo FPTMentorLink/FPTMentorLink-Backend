@@ -8,6 +8,11 @@ using Services.Models.Request.CheckpointTask;
 using Services.Models.Request.Feedback;
 using Services.Models.Request.Lecturer;
 using Services.Models.Request.Mentor;
+using Services.Models.Request.Project;
+using Services.Models.Request.ProjectStudent;
+using Services.Models.Request.Proposal;
+using Services.Models.Request.Student;
+using Services.Models.Request.WeeklyReport;
 using Services.Models.Response.Account;
 using Services.Models.Response.Appointment;
 using Services.Models.Response.Authentication;
@@ -16,6 +21,11 @@ using Services.Models.Response.CheckpointTask;
 using Services.Models.Response.Feedback;
 using Services.Models.Response.Lecturer;
 using Services.Models.Response.Mentor;
+using Services.Models.Response.Project;
+using Services.Models.Response.ProjectStudent;
+using Services.Models.Response.Proposal;
+using Services.Models.Response.Student;
+using Services.Models.Response.WeeklyReport;
 
 namespace Services.Mappings;
 
@@ -75,36 +85,36 @@ public static class MappingConfig
             .IgnoreNullValues(true);
 
         // Project
-        TypeAdapterConfig<Project, ProjectDto>.NewConfig();
-        TypeAdapterConfig<CreateProjectDto, Project>.NewConfig();
-        TypeAdapterConfig<UpdateProjectDto, Project>.NewConfig()
+        TypeAdapterConfig<Project, ProjectResponse>.NewConfig();
+        TypeAdapterConfig<CreateProjectRequest, Project>.NewConfig();
+        TypeAdapterConfig<UpdateProjectRequest, Project>.NewConfig()
             .IgnoreNullValues(true);
 
         // Proposal
-        TypeAdapterConfig<Proposal, ProposalDto>.NewConfig();
-        TypeAdapterConfig<CreateProposalDto, Proposal>.NewConfig();
-        TypeAdapterConfig<UpdateProposalDto, Proposal>.NewConfig()
+        TypeAdapterConfig<Proposal, ProposalResponse>.NewConfig();
+        TypeAdapterConfig<CreateProposalRequest, Proposal>.NewConfig();
+        TypeAdapterConfig<UpdateProposalRequest, Proposal>.NewConfig()
             .IgnoreNullValues(true);
 
         // Student
-        TypeAdapterConfig<Student, StudentDto>.NewConfig();
-        TypeAdapterConfig<CreateStudentDto, Student>.NewConfig();
-        TypeAdapterConfig<UpdateStudentDto, Student>.NewConfig()
+        TypeAdapterConfig<Student, StudentResponse>.NewConfig();
+        TypeAdapterConfig<CreateStudentRequest, Student>.NewConfig();
+        TypeAdapterConfig<UpdateStudentRequest, Student>.NewConfig()
             .IgnoreNullValues(true);
 
         // TODO: Add mapping config for term
 
 
         // ProjectStudent
-        TypeAdapterConfig<ProjectStudent, ProjectStudentDto>.NewConfig();
-        TypeAdapterConfig<CreateProjectStudentDto, ProjectStudent>.NewConfig();
-        TypeAdapterConfig<UpdateProjectStudentDto, ProjectStudent>.NewConfig()
+        TypeAdapterConfig<ProjectStudent, ProjectStudentResponse>.NewConfig();
+        TypeAdapterConfig<CreateProjectStudentRequest, ProjectStudent>.NewConfig();
+        TypeAdapterConfig<UpdateProjectStudentRequest, ProjectStudent>.NewConfig()
             .IgnoreNullValues(true);
 
         // WeeklyReport
-        TypeAdapterConfig<WeeklyReport, WeeklyReportDto>.NewConfig();
-        TypeAdapterConfig<CreateWeeklyReportDto, WeeklyReport>.NewConfig();
-        TypeAdapterConfig<UpdateWeeklyReportDto, WeeklyReport>.NewConfig()
+        TypeAdapterConfig<WeeklyReport, WeeklyReportResponse>.NewConfig();
+        TypeAdapterConfig<CreateWeeklyReportRequest, WeeklyReport>.NewConfig();
+        TypeAdapterConfig<UpdateWeeklyReportRequest, WeeklyReport>.NewConfig()
             .IgnoreNullValues(true);
     }
 }

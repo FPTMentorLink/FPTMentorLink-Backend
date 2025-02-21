@@ -3,6 +3,8 @@ using Repositories.Entities;
 using Repositories.UnitOfWork.Interfaces;
 using Services.DTOs;
 using Services.Interfaces;
+using Services.Models.Request.Project;
+using Services.Models.Response.Project;
 using Services.Utils;
 
 namespace Services.Services;
@@ -18,25 +20,25 @@ public class ProjectService : IProjectService
         _mapper = mapper;
     }
 
-    public async Task<Result<ProjectDto>> GetByIdAsync(Guid id)
+    public async Task<Result<ProjectResponse>> GetByIdAsync(Guid id)
     {
         var project = await _unitOfWork.Projects.GetByIdAsync(id);
         if (project == null)
-            return Result.Failure<ProjectDto>("Project not found");
+            return Result.Failure<ProjectResponse>("Project not found");
 
-        return Result.Success(_mapper.Map<ProjectDto>(project));
+        return Result.Success(_mapper.Map<ProjectResponse>(project));
     }
 
-    public async Task<Result<PaginationResult<ProjectDto>>> GetPagedAsync(PaginationParams paginationParams)
+    public async Task<Result<PaginationResult<ProjectResponse>>> GetPagedAsync(PaginationParams paginationParams)
     {
         var query = _unitOfWork.Projects.GetQueryable();
         var result =
-            await query.ProjectToPaginatedListAsync<Project, ProjectDto>(paginationParams);
+            await query.ProjectToPaginatedListAsync<Project, ProjectResponse>(paginationParams);
 
         return Result.Success(result);
     }
 
-    public async Task<Result<ProjectDto>> CreateAsync(CreateProjectDto dto)
+    public async Task<Result<ProjectResponse>> CreateAsync(CreateProjectRequest dto)
     {
         var project = _mapper.Map<Project>(dto);
         _unitOfWork.Projects.Add(project);
@@ -44,19 +46,19 @@ public class ProjectService : IProjectService
         try
         {
             await _unitOfWork.SaveChangesAsync();
-            return Result.Success(_mapper.Map<ProjectDto>(project));
+            return Result.Success(_mapper.Map<ProjectResponse>(project));
         }
         catch (Exception ex)
         {
-            return Result.Failure<ProjectDto>($"Failed to create project: {ex.Message}");
+            return Result.Failure<ProjectResponse>($"Failed to create project: {ex.Message}");
         }
     }
 
-    public async Task<Result<ProjectDto>> UpdateAsync(Guid id, UpdateProjectDto dto)
+    public async Task<Result<ProjectResponse>> UpdateAsync(Guid id, UpdateProjectRequest dto)
     {
         var project = await _unitOfWork.Projects.GetByIdAsync(id);
         if (project == null)
-            return Result.Failure<ProjectDto>("Project not found");
+            return Result.Failure<ProjectResponse>("Project not found");
 
         _mapper.Map(dto, project);
         _unitOfWork.Projects.Update(project);
@@ -64,11 +66,11 @@ public class ProjectService : IProjectService
         try
         {
             await _unitOfWork.SaveChangesAsync();
-            return Result.Success(_mapper.Map<ProjectDto>(project));
+            return Result.Success(_mapper.Map<ProjectResponse>(project));
         }
         catch (Exception ex)
         {
-            return Result.Failure<ProjectDto>($"Failed to update project: {ex.Message}");
+            return Result.Failure<ProjectResponse>($"Failed to update project: {ex.Message}");
         }
     }
 
