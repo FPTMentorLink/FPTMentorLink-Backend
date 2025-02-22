@@ -1,14 +1,14 @@
-using Services.Models.Request.Feedback;
-using Services.Models.Response.Feedback;
+using Services.Models.Request.AppointmentFeedback;
+using Services.Models.Response.AppointmentFeedback;
 using Services.Utils;
 
 namespace Services.Interfaces;
 
 public interface IFeedbackService
 {
-    Task<Result<FeedbackResponse>> GetByIdAsync(Guid id);
-    Task<Result<PaginationResult<FeedbackResponse>>> GetPagedAsync(PaginationParams paginationParams);
-    Task<Result> CreateAsync(CreateFeedbackRequest request);
-    Task<Result> UpdateAsync(Guid id, UpdateFeedbackRequest request);
+    Task<Result<AppointmentFeedbackResponse>> GetByIdAsync(Guid id);
+    Task<Result<PaginationResult<AppointmentFeedbackResponse>>> GetPagedAsync(PaginationParams paginationParams);
+    Task<Result> CreateAsync(CreateAppointmentFeedbackRequest request);
+    Task<Result> UpdateAsync(Guid id, UpdateAppointmentFeedbackRequest request);
     Task<Result> DeleteAsync(Guid id);
 } 

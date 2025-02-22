@@ -11,12 +11,15 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<Account> Accounts { get; set; }
     public DbSet<Appointment> Appointments { get; set; }
+    public DbSet<AppointmentFeedback> AppointmentFeedbacks { get; set; }
     public DbSet<Checkpoint> Checkpoints { get; set; }
     public DbSet<CheckpointTask> CheckpointTasks { get; set; }
-    public DbSet<Feedback> Feedbacks { get; set; }
     public DbSet<Lecturer> Lecturers { get; set; }
     public DbSet<Mentor> Mentors { get; set; }
     public DbSet<MentorAvailability> MentorAvailabilities { get; set; }
+    public DbSet<MentorFeedback> MentorFeedbacks { get; set; }
+    public DbSet<MentoringProposal> MentoringProposals { get; set; }
+    public DbSet<Notification> Notifications { get; set; }
     public DbSet<Project> Projects { get; set; }
     public DbSet<ProjectStudent> ProjectStudents { get; set; }
     public DbSet<Proposal> Proposals { get; set; }
@@ -24,7 +27,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<Term> Terms { get; set; }
     public DbSet<Transaction> Transactions { get; set; }
     public DbSet<WeeklyReport> WeeklyReports { get; set; }
-
+    public DbSet<WeeklyReportFeedback> WeeklyReportFeedbacks { get; set; }
+    
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Account>(entity =>
@@ -118,9 +122,9 @@ public class ApplicationDbContext : DbContext
                     v => (CheckpointTaskStatus)Enum.Parse(typeof(CheckpointTaskStatus), v));
         });
 
-        modelBuilder.Entity<Feedback>(entity =>
+        modelBuilder.Entity<AppointmentFeedback>(entity =>
         {
-            entity.ToTable(nameof(Feedback));
+            entity.ToTable(nameof(AppointmentFeedback));
             entity.Property(p => p.Content)
                 .HasCharSet("utf8mb4")
                 .UseCollation("utf8mb4_0900_ai_ci");
@@ -148,7 +152,39 @@ public class ApplicationDbContext : DbContext
                 .UseCollation("utf8mb4_0900_ai_ci");
         });
 
-        modelBuilder.Entity<MentorAvailability>(entity => { entity.ToTable(nameof(MentorAvailability)); });
+        modelBuilder.Entity<MentorAvailability>(entity =>
+        {
+            entity.ToTable(nameof(MentorAvailability));
+            entity.Property(p => p.TimeMap)
+                .HasColumnType("binary(12)");
+        });
+        
+        modelBuilder.Entity<MentorFeedback>(entity =>
+        {
+            entity.ToTable(nameof(MentorFeedback));
+            entity.Property(p => p.Content)
+                .HasCharSet("utf8mb4")
+                .UseCollation("utf8mb4_0900_ai_ci");
+        });
+        
+        modelBuilder.Entity<MentoringProposal>(entity =>
+        {
+            entity.ToTable(nameof(MentoringProposal));
+            entity.Property(p => p.StudentNote)
+                .HasCharSet("utf8mb4")
+                .UseCollation("utf8mb4_0900_ai_ci");
+            entity.Property(p => p.MentorNote)
+                .HasCharSet("utf8mb4")
+                .UseCollation("utf8mb4_0900_ai_ci");
+        });
+
+        modelBuilder.Entity<Notification>(entity =>
+        {
+            entity.ToTable(nameof(Notification));
+            entity.Property(p => p.Content)
+                .HasCharSet("utf8mb4")
+                .UseCollation("utf8mb4_0900_ai_ci");
+        });
 
         modelBuilder.Entity<Project>(entity =>
         {
@@ -187,6 +223,14 @@ public class ApplicationDbContext : DbContext
                 .UseCollation("utf8mb4_0900_ai_ci");
         });
 
+        modelBuilder.Entity<Term>(entity =>
+        {
+            entity.ToTable(nameof(Term));
+            entity.Property(p => p.Code)
+                .HasCharSet("utf8mb4")
+                .UseCollation("utf8mb4_0900_ai_ci");
+        });
+
         modelBuilder.Entity<Transaction>(entity =>
         {
             entity.ToTable(nameof(Transaction));
@@ -214,10 +258,10 @@ public class ApplicationDbContext : DbContext
                 .UseCollation("utf8mb4_0900_ai_ci");
         });
 
-        modelBuilder.Entity<Term>(entity =>
+        modelBuilder.Entity<WeeklyReportFeedback>(entity =>
         {
-            entity.ToTable(nameof(Term));
-            entity.Property(p => p.Code)
+            entity.ToTable(nameof(WeeklyReportFeedback));
+            entity.Property(p => p.Content)
                 .HasCharSet("utf8mb4")
                 .UseCollation("utf8mb4_0900_ai_ci");
         });

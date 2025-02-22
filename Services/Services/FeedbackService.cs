@@ -2,8 +2,8 @@ using MapsterMapper;
 using Repositories.Entities;
 using Repositories.UnitOfWork.Interfaces;
 using Services.Interfaces;
-using Services.Models.Request.Feedback;
-using Services.Models.Response.Feedback;
+using Services.Models.Request.AppointmentFeedback;
+using Services.Models.Response.AppointmentFeedback;
 using Services.Utils;
 
 namespace Services.Services;
@@ -19,28 +19,28 @@ public class FeedbackService : IFeedbackService
         _mapper = mapper;
     }
 
-    public async Task<Result<FeedbackResponse>> GetByIdAsync(Guid id)
+    public async Task<Result<AppointmentFeedbackResponse>> GetByIdAsync(Guid id)
     {
-        var feedback = await _unitOfWork.Feedbacks.GetByIdAsync(id);
+        var feedback = await _unitOfWork.AppointmentFeedbacks.GetByIdAsync(id);
         if (feedback == null)
-            return Result.Failure<FeedbackResponse>("Feedback not found");
+            return Result.Failure<AppointmentFeedbackResponse>("Feedback not found");
 
-        return Result.Success(_mapper.Map<FeedbackResponse>(feedback));
+        return Result.Success(_mapper.Map<AppointmentFeedbackResponse>(feedback));
     }
 
-    public async Task<Result<PaginationResult<FeedbackResponse>>> GetPagedAsync(PaginationParams paginationParams)
+    public async Task<Result<PaginationResult<AppointmentFeedbackResponse>>> GetPagedAsync(PaginationParams paginationParams)
     {
-        var query = _unitOfWork.Feedbacks.GetQueryable();
+        var query = _unitOfWork.AppointmentFeedbacks.GetQueryable();
         var result =
-            await query.ProjectToPaginatedListAsync<Feedback, FeedbackResponse>(paginationParams);
+            await query.ProjectToPaginatedListAsync<AppointmentFeedback, AppointmentFeedbackResponse>(paginationParams);
 
         return Result.Success(result);
     }
 
-    public async Task<Result> CreateAsync(CreateFeedbackRequest request)
+    public async Task<Result> CreateAsync(CreateAppointmentFeedbackRequest request)
     {
-        var feedback = _mapper.Map<Feedback>(request);
-        _unitOfWork.Feedbacks.Add(feedback);
+        var feedback = _mapper.Map<AppointmentFeedback>(request);
+        _unitOfWork.AppointmentFeedbacks.Add(feedback);
 
         try
         {
@@ -53,14 +53,14 @@ public class FeedbackService : IFeedbackService
         }
     }
 
-    public async Task<Result> UpdateAsync(Guid id, UpdateFeedbackRequest request)
+    public async Task<Result> UpdateAsync(Guid id, UpdateAppointmentFeedbackRequest request)
     {
-        var feedback = await _unitOfWork.Feedbacks.GetByIdAsync(id);
+        var feedback = await _unitOfWork.AppointmentFeedbacks.GetByIdAsync(id);
         if (feedback == null)
             return Result.Failure("Feedback not found");
 
         _mapper.Map(request, feedback);
-        _unitOfWork.Feedbacks.Update(feedback);
+        _unitOfWork.AppointmentFeedbacks.Update(feedback);
 
         try
         {
@@ -75,11 +75,11 @@ public class FeedbackService : IFeedbackService
 
     public async Task<Result> DeleteAsync(Guid id)
     {
-        var feedback = await _unitOfWork.Feedbacks.GetByIdAsync(id);
+        var feedback = await _unitOfWork.AppointmentFeedbacks.GetByIdAsync(id);
         if (feedback == null)
             return Result.Failure("Feedback not found");
 
-        _unitOfWork.Feedbacks.Delete(feedback);
+        _unitOfWork.AppointmentFeedbacks.Delete(feedback);
 
         try
         {

@@ -15,7 +15,7 @@ public class UnitOfWork : IUnitOfWork
     private IGenericRepository<Appointment>? _appointments;
     private IGenericRepository<Checkpoint>? _checkpoints;
     private IGenericRepository<CheckpointTask>? _checkpointTasks;
-    private IGenericRepository<Feedback>? _feedbacks;
+    private IGenericRepository<AppointmentFeedback>? _appointmentFeedbacks;
     private IGenericRepository<Lecturer>? _lecturers;
     private IGenericRepository<Mentor>? _mentors;
     private IGenericRepository<MentorAvailability>? _mentorAvailabilities;
@@ -44,8 +44,8 @@ public class UnitOfWork : IUnitOfWork
     public IGenericRepository<CheckpointTask> CheckpointTasks =>
         _checkpointTasks ??= new GenericRepository<CheckpointTask>(_context);
 
-    public IGenericRepository<Feedback> Feedbacks =>
-        _feedbacks ??= new GenericRepository<Feedback>(_context);
+    public IGenericRepository<AppointmentFeedback> AppointmentFeedbacks =>
+        _appointmentFeedbacks ??= new GenericRepository<AppointmentFeedback>(_context);
 
     public IGenericRepository<Lecturer> Lecturers =>
         _lecturers ??= new GenericRepository<Lecturer>(_context);

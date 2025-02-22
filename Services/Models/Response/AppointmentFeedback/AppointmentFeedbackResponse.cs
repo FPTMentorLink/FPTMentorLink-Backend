@@ -1,8 +1,8 @@
 ﻿using Services.Models.Response.Base;
 
-namespace Services.Models.Response.Feedback;
+namespace Services.Models.Response.AppointmentFeedback;
 
-public class FeedbackResponse : AuditableResponse
+public class AppointmentFeedbackResponse : AuditableResponse
 {
     public Guid Id { get; set; }
     public Guid AppointmentId { get; set; }

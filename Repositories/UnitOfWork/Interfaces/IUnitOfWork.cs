@@ -9,7 +9,7 @@ public interface IUnitOfWork : IDisposable
     IGenericRepository<Appointment> Appointments { get; }
     IGenericRepository<Checkpoint> Checkpoints { get; }
     IGenericRepository<CheckpointTask> CheckpointTasks { get; }
-    IGenericRepository<Feedback> Feedbacks { get; }
+    IGenericRepository<AppointmentFeedback> AppointmentFeedbacks { get; }
     IGenericRepository<Lecturer> Lecturers { get; }
     IGenericRepository<Mentor> Mentors { get; }
     IGenericRepository<MentorAvailability> MentorAvailabilities { get; }

@@ -3,9 +3,9 @@ using Repositories.Entities;
 using Services.DTOs;
 using Services.Models.Request.Account;
 using Services.Models.Request.Appointment;
+using Services.Models.Request.AppointmentFeedback;
 using Services.Models.Request.Checkpoint;
 using Services.Models.Request.CheckpointTask;
-using Services.Models.Request.Feedback;
 using Services.Models.Request.Lecturer;
 using Services.Models.Request.Mentor;
 using Services.Models.Request.Project;
@@ -15,10 +15,10 @@ using Services.Models.Request.Student;
 using Services.Models.Request.WeeklyReport;
 using Services.Models.Response.Account;
 using Services.Models.Response.Appointment;
+using Services.Models.Response.AppointmentFeedback;
 using Services.Models.Response.Authentication;
 using Services.Models.Response.Checkpoint;
 using Services.Models.Response.CheckpointTask;
-using Services.Models.Response.Feedback;
 using Services.Models.Response.Lecturer;
 using Services.Models.Response.Mentor;
 using Services.Models.Response.Project;
@@ -61,9 +61,9 @@ public static class MappingConfig
             .IgnoreNullValues(true);
 
         // Feedback
-        TypeAdapterConfig<Feedback, FeedbackResponse>.NewConfig();
-        TypeAdapterConfig<CreateFeedbackRequest, Feedback>.NewConfig();
-        TypeAdapterConfig<UpdateFeedbackRequest, Feedback>.NewConfig()
+        TypeAdapterConfig<AppointmentFeedback, AppointmentFeedbackResponse>.NewConfig();
+        TypeAdapterConfig<CreateAppointmentFeedbackRequest, AppointmentFeedback>.NewConfig();
+        TypeAdapterConfig<UpdateAppointmentFeedbackRequest, AppointmentFeedback>.NewConfig()
             .IgnoreNullValues(true);
 
         // Lecturer
