@@ -1,5 +1,3 @@
-using Services.DTOs;
-using Services.Models.Request.Project;
 using Services.Models.Request.Proposal;
 using Services.Models.Response.Proposal;
 using Services.Utils;

@@ -1,6 +1,5 @@
 using Mapster;
 using Repositories.Entities;
-using Services.DTOs;
 using Services.Models.Request.Account;
 using Services.Models.Request.Appointment;
 using Services.Models.Request.AppointmentFeedback;
@@ -8,6 +7,7 @@ using Services.Models.Request.Checkpoint;
 using Services.Models.Request.CheckpointTask;
 using Services.Models.Request.Lecturer;
 using Services.Models.Request.Mentor;
+using Services.Models.Request.MentorAvailability;
 using Services.Models.Request.Project;
 using Services.Models.Request.ProjectStudent;
 using Services.Models.Request.Proposal;
@@ -21,6 +21,7 @@ using Services.Models.Response.Checkpoint;
 using Services.Models.Response.CheckpointTask;
 using Services.Models.Response.Lecturer;
 using Services.Models.Response.Mentor;
+using Services.Models.Response.MentorAvailability;
 using Services.Models.Response.Project;
 using Services.Models.Response.ProjectStudent;
 using Services.Models.Response.Proposal;
@@ -79,9 +80,9 @@ public static class MappingConfig
             .IgnoreNullValues(true);
 
         // MentorAvailability
-        TypeAdapterConfig<MentorAvailability, MentorAvailabilityDto>.NewConfig();
-        TypeAdapterConfig<CreateMentorAvailabilityDto, MentorAvailability>.NewConfig();
-        TypeAdapterConfig<UpdateMentorAvailabilityDto, MentorAvailability>.NewConfig()
+        TypeAdapterConfig<MentorAvailability, MentorAvailabilityResponse>.NewConfig();
+        TypeAdapterConfig<CreateMentorAvailabilityRequest, MentorAvailability>.NewConfig();
+        TypeAdapterConfig<UpdateMentorAvailabilityRequest, MentorAvailability>.NewConfig()
             .IgnoreNullValues(true);
 
         // Project
