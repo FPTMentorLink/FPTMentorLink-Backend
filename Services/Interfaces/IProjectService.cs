@@ -8,7 +8,7 @@ public interface IProjectService
 {
     Task<Result<ProjectResponse>> GetByIdAsync(Guid id);
     Task<Result<PaginationResult<ProjectResponse>>> GetPagedAsync(PaginationParams paginationParams);
-    Task<Result<ProjectResponse>> CreateAsync(CreateProjectRequest dto);
-    Task<Result<ProjectResponse>> UpdateAsync(Guid id, UpdateProjectRequest dto);
+    Task<Result> CreateAsync(CreateProjectRequest dto);
+    Task<Result> UpdateAsync(Guid id, UpdateProjectRequest dto);
     Task<Result> DeleteAsync(Guid id);
 }

@@ -1,12 +1,11 @@
-using System.Reflection;
 using FPTMentorLink_Backend;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.ConfigureDatabase();
 builder.ConfigureJwt();
-builder.ConfigureGoogleAuth();
 builder.ConfigureServices();
+builder.ConfigureEmailService();
 builder.ConfigureCors();
 builder.ApplyMigration();
 

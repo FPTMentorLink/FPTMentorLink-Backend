@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Repositories.Entities;
-using Repositories.Entities.Base;
 
 namespace Repositories.Data;
 
@@ -15,6 +14,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<AppointmentFeedback> AppointmentFeedbacks { get; set; }
     public DbSet<Checkpoint> Checkpoints { get; set; }
     public DbSet<CheckpointTask> CheckpointTasks { get; set; }
+    public DbSet<Faculty> Faculties { get; set; }
     public DbSet<Lecturer> Lecturers { get; set; }
     public DbSet<Mentor> Mentors { get; set; }
     public DbSet<MentorAvailability> MentorAvailabilities { get; set; }
@@ -29,7 +29,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Transaction> Transactions { get; set; }
     public DbSet<WeeklyReport> WeeklyReports { get; set; }
     public DbSet<WeeklyReportFeedback> WeeklyReportFeedbacks { get; set; }
-    
+
 
     //Archived tables
     public DbSet<ArchiveAppointment> ArchiveAppointments { get; set; }
@@ -129,6 +129,14 @@ public class ApplicationDbContext : DbContext
                     v => (CheckpointTaskStatus)Enum.Parse(typeof(CheckpointTaskStatus), v));
         });
 
+        modelBuilder.Entity<Faculty>(entity =>
+        {
+            entity.ToTable(nameof(Faculty));
+            entity.Property(p => p.Name)
+                .HasCharSet("utf8mb4")
+                .UseCollation("utf8mb4_0900_ai_ci");
+        });
+
         modelBuilder.Entity<AppointmentFeedback>(entity =>
         {
             entity.ToTable(nameof(AppointmentFeedback));
@@ -141,9 +149,6 @@ public class ApplicationDbContext : DbContext
         {
             entity.ToTable(nameof(Lecturer));
             entity.Property(p => p.Description)
-                .HasCharSet("utf8mb4")
-                .UseCollation("utf8mb4_0900_ai_ci");
-            entity.Property(p => p.Faculty)
                 .HasCharSet("utf8mb4")
                 .UseCollation("utf8mb4_0900_ai_ci");
         });
@@ -165,7 +170,7 @@ public class ApplicationDbContext : DbContext
             entity.Property(p => p.TimeMap)
                 .HasColumnType("binary(12)");
         });
-        
+
         modelBuilder.Entity<MentorFeedback>(entity =>
         {
             entity.ToTable(nameof(MentorFeedback));
@@ -173,7 +178,7 @@ public class ApplicationDbContext : DbContext
                 .HasCharSet("utf8mb4")
                 .UseCollation("utf8mb4_0900_ai_ci");
         });
-        
+
         modelBuilder.Entity<MentoringProposal>(entity =>
         {
             entity.ToTable(nameof(MentoringProposal));
@@ -222,20 +227,15 @@ public class ApplicationDbContext : DbContext
                 .UseCollation("utf8mb4_0900_ai_ci");
         });
 
-        modelBuilder.Entity<Student>(entity =>
-        {
-            entity.ToTable(nameof(Student));
-            entity.Property(p => p.Code)
-                .HasCharSet("utf8mb4")
-                .UseCollation("utf8mb4_0900_ai_ci");
-        });
+        modelBuilder.Entity<Student>(entity => { entity.ToTable(nameof(Student)); });
 
         modelBuilder.Entity<Term>(entity =>
         {
             entity.ToTable(nameof(Term));
-            entity.Property(p => p.Code)
-                .HasCharSet("utf8mb4")
-                .UseCollation("utf8mb4_0900_ai_ci");
+            entity.Property(p => p.Status)
+                .HasConversion(
+                    v => v.ToString(),
+                    v => (TermStatus)Enum.Parse(typeof(TermStatus), v));
         });
 
         modelBuilder.Entity<Transaction>(entity =>

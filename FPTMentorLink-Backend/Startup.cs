@@ -35,6 +35,15 @@ public static class Startup
             options.ClientSecret = googleAuthSettings.ClientSecret;
         });
     }
+    
+    public static void ConfigureEmailService(this WebApplicationBuilder builder)
+    {
+        var emailSettings = builder.Configuration.GetSection("EmailSettings").Get<EmailSettings>()
+                            ?? throw new InvalidOperationException("EmailSettings is not configured properly.");
+        
+        builder.Services.AddSingleton(emailSettings);
+        builder.Services.AddSingleton<IEmailService, EmailService>();
+    }
 
     /// <summary>
     /// Configures JWT authentication with bearer token support

@@ -20,6 +20,7 @@ public enum CheckpointTaskStatus
 {
     Pending = 1,
     InProgress = 2,
+    PendingReview = 3,
     Completed = 4,
     Failed = 5
 }
