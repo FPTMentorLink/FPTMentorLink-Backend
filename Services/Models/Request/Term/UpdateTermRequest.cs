@@ -1,13 +1,13 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
+using Repositories.Entities;
 using System.Text;
 using Services.Utils;
 
-namespace Services.Models.Request.Checkpoint;
+namespace Services.Models.Request.Term;
 
-public class UpdateCheckpointRequest : IValidatableObject
+public class UpdateTermRequest : IValidatableObject
 {
-    public string? Name { get; set; }
-    public Guid? TermId { get; set; }
+    [MaxLength(255)] public string? Code { get; set; }
     public DateTime? StartTime { get; set; }
     public DateTime? EndTime { get; set; }
 
@@ -15,7 +15,7 @@ public class UpdateCheckpointRequest : IValidatableObject
     {
         var errorBuilder = new StringBuilder();
 
-        if (StartTime.HasValue && EndTime.HasValue && StartTime > EndTime)
+        if (StartTime.HasValue && EndTime.HasValue && StartTime >= EndTime)
         {
             errorBuilder.Append("Start time must be before end time");
         }

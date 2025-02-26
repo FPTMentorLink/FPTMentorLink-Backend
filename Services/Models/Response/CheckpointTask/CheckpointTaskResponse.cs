@@ -1,8 +1,9 @@
 ﻿using Repositories.Entities;
+using Services.Models.Response.Base;
 
 namespace Services.Models.Response.CheckpointTask;
 
-public class CheckpointTaskResponse
+public class CheckpointTaskResponse : AuditableResponse
 {
     public Guid Id { get; set; }
     public Guid CheckpointId { get; set; }
@@ -10,6 +11,5 @@ public class CheckpointTaskResponse
     public string Name { get; set; } = null!;
     public string? Description { get; set; }
     public CheckpointTaskStatus Status { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public DateTime? UpdatedAt { get; set; }
+    public double? Score { get; set; }
 }

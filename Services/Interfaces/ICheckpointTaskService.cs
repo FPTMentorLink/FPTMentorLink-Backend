@@ -7,8 +7,8 @@ namespace Services.Interfaces;
 public interface ICheckpointTaskService
 {
     Task<Result<CheckpointTaskResponse>> GetByIdAsync(Guid id);
-    Task<Result<PaginationResult<CheckpointTaskResponse>>> GetPagedAsync(PaginationParams paginationParams);
-    Task<Result> CreateAsync(CreateCheckpointTaskRequest request);
-    Task<Result> UpdateAsync(Guid id, UpdateCheckpointTaskRequest request);
-    Task<Result> DeleteAsync(Guid id);
-} 
+    Task<Result<PaginationResult<CheckpointTaskResponse>>> GetPagedAsync(GetCheckpointTasksRequest request);
+    Task<Result> CreateCheckpointTaskAsync(CreateCheckpointTaskRequest request);
+    Task<Result> UpdateCheckpointTaskAsync(Guid id, UpdateCheckpointTaskRequest request);
+    Task<Result> DeleteCheckpointTaskAsync(Guid id);
+}

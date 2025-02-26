@@ -21,7 +21,7 @@ public class WeeklyReportService : IWeeklyReportService
 
     public async Task<Result<WeeklyReportResponse>> GetByIdAsync(Guid id)
     {
-        var weeklyReport = await _unitOfWork.WeeklyReports.GetByIdAsync(id);
+        var weeklyReport = await _unitOfWork.WeeklyReports.FindByIdAsync(id);
         if (weeklyReport == null)
             return Result.Failure<WeeklyReportResponse>("Weekly report not found");
 
@@ -54,7 +54,7 @@ public class WeeklyReportService : IWeeklyReportService
 
     public async Task<Result<WeeklyReportResponse>> UpdateAsync(Guid id, UpdateWeeklyReportRequest dto)
     {
-        var weeklyReport = await _unitOfWork.WeeklyReports.GetByIdAsync(id);
+        var weeklyReport = await _unitOfWork.WeeklyReports.FindByIdAsync(id);
         if (weeklyReport == null)
             return Result.Failure<WeeklyReportResponse>("Weekly report not found");
 
@@ -74,7 +74,7 @@ public class WeeklyReportService : IWeeklyReportService
 
     public async Task<Result> DeleteAsync(Guid id)
     {
-        var weeklyReport = await _unitOfWork.WeeklyReports.GetByIdAsync(id);
+        var weeklyReport = await _unitOfWork.WeeklyReports.FindByIdAsync(id);
         if (weeklyReport == null)
             return Result.Failure("Weekly report not found");
 

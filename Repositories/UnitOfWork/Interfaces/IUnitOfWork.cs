@@ -20,5 +20,7 @@ public interface IUnitOfWork : IDisposable
     IGenericRepository<Transaction> Transactions { get; }
     IGenericRepository<WeeklyReport> WeeklyReports { get; }
 
+    IGenericRepository<Term> Terms { get; }
+
     Task<int> SaveChangesAsync(bool trackAudit = true, bool trackSoftDelete = true);
 }

@@ -21,7 +21,7 @@ public class MentorAvailabilityService : IMentorAvailabilityService
 
     public async Task<Result<MentorAvailabilityResponse>> GetByIdAsync(Guid id)
     {
-        var mentorAvailability = await _unitOfWork.MentorAvailabilities.GetByIdAsync(id);
+        var mentorAvailability = await _unitOfWork.MentorAvailabilities.FindByIdAsync(id);
         if (mentorAvailability == null)
             return Result.Failure<MentorAvailabilityResponse>("Mentor availability not found");
 
@@ -56,7 +56,7 @@ public class MentorAvailabilityService : IMentorAvailabilityService
 
     public async Task<Result<MentorAvailabilityResponse>> UpdateAsync(Guid id, UpdateMentorAvailabilityRequest dto)
     {
-        var mentorAvailability = await _unitOfWork.MentorAvailabilities.GetByIdAsync(id);
+        var mentorAvailability = await _unitOfWork.MentorAvailabilities.FindByIdAsync(id);
         if (mentorAvailability == null)
             return Result.Failure<MentorAvailabilityResponse>("Mentor availability not found");
 
@@ -76,7 +76,7 @@ public class MentorAvailabilityService : IMentorAvailabilityService
 
     public async Task<Result> DeleteAsync(Guid id)
     {
-        var mentorAvailability = await _unitOfWork.MentorAvailabilities.GetByIdAsync(id);
+        var mentorAvailability = await _unitOfWork.MentorAvailabilities.FindByIdAsync(id);
         if (mentorAvailability == null)
             return Result.Failure("Mentor availability not found");
 

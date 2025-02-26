@@ -12,6 +12,7 @@ using Services.Models.Request.Project;
 using Services.Models.Request.ProjectStudent;
 using Services.Models.Request.Proposal;
 using Services.Models.Request.Student;
+using Services.Models.Request.Term;
 using Services.Models.Request.WeeklyReport;
 using Services.Models.Response.Account;
 using Services.Models.Response.Appointment;
@@ -26,6 +27,7 @@ using Services.Models.Response.Project;
 using Services.Models.Response.ProjectStudent;
 using Services.Models.Response.Proposal;
 using Services.Models.Response.Student;
+using Services.Models.Response.Term;
 using Services.Models.Response.WeeklyReport;
 
 namespace Services.Mappings;
@@ -116,6 +118,12 @@ public static class MappingConfig
         TypeAdapterConfig<WeeklyReport, WeeklyReportResponse>.NewConfig();
         TypeAdapterConfig<CreateWeeklyReportRequest, WeeklyReport>.NewConfig();
         TypeAdapterConfig<UpdateWeeklyReportRequest, WeeklyReport>.NewConfig()
+            .IgnoreNullValues(true);
+
+        // Term
+        TypeAdapterConfig<Term, TermResponse>.NewConfig();
+        TypeAdapterConfig<CreateTermRequest, Term>.NewConfig();
+        TypeAdapterConfig<UpdateTermRequest, Term>.NewConfig()
             .IgnoreNullValues(true);
     }
 }

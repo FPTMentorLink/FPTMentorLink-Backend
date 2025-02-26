@@ -22,46 +22,70 @@ public class GenericRepository<TEntity, TKey> : IGenericRepository<TEntity, TKey
         return DbSet.AsQueryable();
     }
 
-    public virtual async Task<TEntity?> GetByIdAsync(TKey id)
+    public async Task<TEntity?> FindByIdAsync(TKey id, CancellationToken cancellationToken = default,
+        params Expression<Func<TEntity, object>>[] includes)
     {
-        return await DbSet.FindAsync(id);
+        return await FindAll(null, includes)
+            .AsTracking()
+            .SingleOrDefaultAsync(e => e.Id!.Equals(id), cancellationToken);
     }
 
-    public virtual async Task<IEnumerable<TEntity>> GetAllAsync()
+    public async Task<TEntity?> FindByIdAsNoTrackingAsync(TKey id, CancellationToken cancellationToken = default,
+        params Expression<Func<TEntity, object>>[] includes)
     {
-        return await DbSet.ToListAsync();
+        return await FindAll(null, includes)
+            .AsNoTracking()
+            .SingleOrDefaultAsync(e => e.Id!.Equals(id), cancellationToken);
     }
 
-    public async Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>>? expression)
+    public async Task<TEntity?> FindSingleAsync(Expression<Func<TEntity, bool>>? predicate = null,
+        CancellationToken cancellationToken = default,
+        params Expression<Func<TEntity, object>>[] includes)
     {
-        var query = DbSet.AsQueryable();
-        if (expression != null)
+        var query = FindAll(predicate, includes);
+        return await query
+            .AsTracking()
+            .SingleOrDefaultAsync(cancellationToken);
+    }
+
+    public async Task<TEntity?> FindFirstAsync(Expression<Func<TEntity, bool>>? predicate = null,
+        CancellationToken cancellationToken = default,
+        params Expression<Func<TEntity, object>>[] includes)
+    {
+        var query = FindAll(predicate, includes);
+        return await query
+            .AsTracking()
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public async Task<bool> AnyAsync(Expression<Func<TEntity, bool>>? predicate = null,
+        CancellationToken cancellationToken = default,
+        params Expression<Func<TEntity, object>>[] includes)
+    {
+        var query = FindAll(predicate, includes);
+        return await query
+            .AsNoTracking()
+            .AnyAsync(cancellationToken);
+    }
+
+    public IQueryable<TEntity> FindAll(Expression<Func<TEntity, bool>>? predicate = null,
+        params Expression<Func<TEntity, object>>[] includes)
+    {
+        var query = Context.Set<TEntity>().AsNoTracking();
+        if (includes.Length != 0)
         {
-            query = query.Where(expression);
-        }
-        return await query.ToListAsync();
-    }
-    
-    public async Task<TEntity?> FindSingleAsync(Expression<Func<TEntity, bool>>? expression)
-    {
-        var query = DbSet.AsQueryable();
-        if (expression != null)
-        {
-            query = query.Where(expression);
+            foreach (var include in includes)
+            {
+                query = query.Include(include);
+            }
         }
 
-        return await query.SingleOrDefaultAsync();
-    }
-    
-    public async Task<bool> AnyAsync(Expression<Func<TEntity, bool>>? expression)
-    {
-        var query = DbSet.AsQueryable();
-        if (expression != null)
+        if (predicate != null)
         {
-            query = query.Where(expression);
+            query = query.Where(predicate);
         }
 
-        return await query.AnyAsync();
+        return query;
     }
 
     public virtual void Add(TEntity entity)

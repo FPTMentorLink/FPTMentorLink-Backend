@@ -21,14 +21,15 @@ public class FeedbackService : IFeedbackService
 
     public async Task<Result<AppointmentFeedbackResponse>> GetByIdAsync(Guid id)
     {
-        var feedback = await _unitOfWork.AppointmentFeedbacks.GetByIdAsync(id);
+        var feedback = await _unitOfWork.AppointmentFeedbacks.FindByIdAsync(id);
         if (feedback == null)
             return Result.Failure<AppointmentFeedbackResponse>("Feedback not found");
 
         return Result.Success(_mapper.Map<AppointmentFeedbackResponse>(feedback));
     }
 
-    public async Task<Result<PaginationResult<AppointmentFeedbackResponse>>> GetPagedAsync(PaginationParams paginationParams)
+    public async Task<Result<PaginationResult<AppointmentFeedbackResponse>>> GetPagedAsync(
+        PaginationParams paginationParams)
     {
         var query = _unitOfWork.AppointmentFeedbacks.GetQueryable();
         var result =
@@ -55,7 +56,7 @@ public class FeedbackService : IFeedbackService
 
     public async Task<Result> UpdateAsync(Guid id, UpdateAppointmentFeedbackRequest request)
     {
-        var feedback = await _unitOfWork.AppointmentFeedbacks.GetByIdAsync(id);
+        var feedback = await _unitOfWork.AppointmentFeedbacks.FindByIdAsync(id);
         if (feedback == null)
             return Result.Failure("Feedback not found");
 
@@ -75,7 +76,7 @@ public class FeedbackService : IFeedbackService
 
     public async Task<Result> DeleteAsync(Guid id)
     {
-        var feedback = await _unitOfWork.AppointmentFeedbacks.GetByIdAsync(id);
+        var feedback = await _unitOfWork.AppointmentFeedbacks.FindByIdAsync(id);
         if (feedback == null)
             return Result.Failure("Feedback not found");
 

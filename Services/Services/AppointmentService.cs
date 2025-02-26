@@ -21,7 +21,7 @@ public class AppointmentService : IAppointmentService
 
     public async Task<Result<AppointmentResponse>> GetByIdAsync(Guid id)
     {
-        var appointment = await _unitOfWork.Appointments.GetByIdAsync(id);
+        var appointment = await _unitOfWork.Appointments.FindByIdAsync(id);
         if (appointment == null)
             return Result.Failure<AppointmentResponse>("Appointment not found");
 
@@ -54,7 +54,7 @@ public class AppointmentService : IAppointmentService
 
     public async Task<Result> UpdateAsync(Guid id, UpdateAppointmentRequest request)
     {
-        var appointment = await _unitOfWork.Appointments.GetByIdAsync(id);
+        var appointment = await _unitOfWork.Appointments.FindByIdAsync(id);
         if (appointment == null)
             return Result.Failure<AppointmentResponse>("Appointment not found");
 
@@ -74,7 +74,7 @@ public class AppointmentService : IAppointmentService
 
     public async Task<Result> DeleteAsync(Guid id)
     {
-        var appointment = await _unitOfWork.Appointments.GetByIdAsync(id);
+        var appointment = await _unitOfWork.Appointments.FindByIdAsync(id);
         if (appointment == null)
             return Result.Failure("Appointment not found");
 
