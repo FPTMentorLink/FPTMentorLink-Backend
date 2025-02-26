@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using MapsterMapper;
 using Repositories.Entities;
 using Repositories.UnitOfWork.Interfaces;
@@ -21,15 +22,27 @@ public class CheckpointService : ICheckpointService
 
     public async Task<Result<CheckpointResponse>> GetByIdAsync(Guid id)
     {
-        var checkpoint = await _unitOfWork.Checkpoints.GetByIdAsync(id);
+        var checkpoint = await _unitOfWork.Checkpoints.FindByIdAsync(id);
         if (checkpoint == null)
-            return Result.Failure<CheckpointResponse>("Checkpoint not found");
+            return Result.Failure<CheckpointResponse>(DomainError.Checkpoint.CheckpointNotFound);
 
         return Result.Success(_mapper.Map<CheckpointResponse>(checkpoint));
     }
 
-    public async Task<Result> CreateAsync(CreateCheckpointRequest request)
+    public async Task<Result> CreateCheckpointAsync(CreateCheckpointRequest request)
     {
+        var isExistTerm = await _unitOfWork.Terms.AnyAsync(x => x.Id == request.TermId);
+        if (!isExistTerm)
+        {
+            return Result.Failure(DomainError.Term.TermNotFound);
+        }
+
+        var numberOfCheckpoints = _unitOfWork.Checkpoints.FindAll(x => x.TermId == request.TermId);
+        if (numberOfCheckpoints.Count() >= 4)
+        {
+            return Result.Failure(DomainError.Checkpoint.ExceedCheckpoint);
+        }
+
         var checkpoint = _mapper.Map<Checkpoint>(request);
         _unitOfWork.Checkpoints.Add(checkpoint);
 
@@ -44,11 +57,38 @@ public class CheckpointService : ICheckpointService
         }
     }
 
-    public async Task<Result> UpdateAsync(Guid id, UpdateCheckpointRequest request)
+    public async Task<Result> UpdateCheckpointAsync(Guid id, UpdateCheckpointRequest request)
     {
-        var checkpoint = await _unitOfWork.Checkpoints.GetByIdAsync(id);
+        var checkpoint = await _unitOfWork.Checkpoints.FindByIdAsync(id);
         if (checkpoint == null)
-            return Result.Failure("Checkpoint not found");
+        {
+            return Result.Failure(DomainError.Checkpoint.CheckpointNotFound);
+        }
+
+        if (request.TermId.HasValue && request.TermId.Value != Guid.Empty && request.TermId != checkpoint.TermId)
+        {
+            var isExistTerm = await _unitOfWork.Terms.AnyAsync(x => x.Id == request.TermId);
+            if (!isExistTerm)
+            {
+                return Result.Failure(DomainError.Term.TermNotFound);
+            }
+
+            var numberOfCheckpoints = _unitOfWork.Checkpoints.FindAll(x => x.TermId == request.TermId);
+            if (numberOfCheckpoints.Count() > 4)
+            {
+                return Result.Failure(DomainError.Checkpoint.ExceedCheckpoint);
+            }
+
+            checkpoint.TermId = request.TermId.Value;
+        }
+
+        checkpoint.StartTime = request.StartTime ?? checkpoint.StartTime;
+        checkpoint.EndTime = request.EndTime ?? checkpoint.EndTime;
+
+        if (checkpoint.StartTime > checkpoint.EndTime)
+        {
+            return Result.Failure(DomainError.Checkpoint.InvalidTime);
+        }
 
         _mapper.Map(request, checkpoint);
         _unitOfWork.Checkpoints.Update(checkpoint);
@@ -64,11 +104,13 @@ public class CheckpointService : ICheckpointService
         }
     }
 
-    public async Task<Result> DeleteAsync(Guid id)
+    public async Task<Result> DeleteCheckpointAsync(Guid id)
     {
-        var checkpoint = await _unitOfWork.Checkpoints.GetByIdAsync(id);
+        var checkpoint = await _unitOfWork.Checkpoints.FindByIdAsync(id);
         if (checkpoint == null)
-            return Result.Failure("Checkpoint not found");
+        {
+            return Result.Failure(DomainError.Checkpoint.CheckpointNotFound);
+        }
 
         _unitOfWork.Checkpoints.Delete(checkpoint);
 
@@ -83,12 +125,42 @@ public class CheckpointService : ICheckpointService
         }
     }
 
-    public async Task<Result<PaginationResult<CheckpointResponse>>> GetPagedAsync(PaginationParams paginationParams)
+    public async Task<Result<PaginationResult<CheckpointResponse>>> GetPagedAsync(
+        GetCheckpointsRequest paginationParams)
     {
-        var query = _unitOfWork.Checkpoints.GetQueryable();
-        var result =
-            await query.ProjectToPaginatedListAsync<Checkpoint, CheckpointResponse>(paginationParams);
+        Expression<Func<Checkpoint, bool>> filter = checkpoint => true;
+        if (!string.IsNullOrEmpty(paginationParams.SearchTerm))
+        {
+            Expression<Func<Checkpoint, bool>> searchTermFilter = checkpoint =>
+                checkpoint.Name.Contains(paginationParams.SearchTerm);
+            filter = Helper.CombineAndAlsoExpressions(filter, searchTermFilter);
+        }
 
+        if (paginationParams.TermId != Guid.Empty)
+        {
+            Expression<Func<Checkpoint, bool>> termIdFilter = checkpoint =>
+                checkpoint.TermId == paginationParams.TermId;
+            filter = Helper.CombineAndAlsoExpressions(filter, termIdFilter);
+        }
+
+        var query = _unitOfWork.Checkpoints.FindAll(filter);
+        if (!string.IsNullOrEmpty(paginationParams.OrderBy))
+        {
+            var sortProperty = GetSortProperty(paginationParams.OrderBy);
+            query = query.ApplySorting(paginationParams.IsDescending, sortProperty);
+        }
+
+        var result = await query.ProjectToPaginatedListAsync<Checkpoint, CheckpointResponse>(paginationParams);
         return Result.Success(result);
     }
+
+    private Expression<Func<Checkpoint, object>> GetSortProperty(string sortBy) =>
+        sortBy.ToLower().Replace(" ", "") switch
+        {
+            "name" => checkpoint => checkpoint.Name,
+            "term" => checkpoint => checkpoint.TermId,
+            "starttime" => checkpoint => checkpoint.StartTime,
+            "endtime" => checkpoint => checkpoint.EndTime,
+            _ => checkpoint => checkpoint.Id
+        };
 }
