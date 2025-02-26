@@ -15,47 +15,47 @@ public class TermController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetByIdAsync(Guid id)
+    public async Task<IActionResult> GetTermByIdAsync(Guid id)
     {
         var result = await _termService.GetByIdAsync(id);
         return result.IsSuccess ? Ok(result.Value) : BadRequest(result);
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetPagedAsync([FromQuery] GetTermsRequest paginationParams)
+    public async Task<IActionResult> GetTermPagedAsync([FromQuery] GetTermsRequest paginationParams)
     {
         var result = await _termService.GetPagedAsync(paginationParams);
         return result.IsSuccess ? Ok(result.Value) : BadRequest(result);
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateAsync([FromBody] CreateTermRequest request)
+    public async Task<IActionResult> CreateTermAsync([FromBody] CreateTermRequest request)
     {
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
 
-        var result = await _termService.CreateAsync(request);
+        var result = await _termService.CreateTermAsync(request);
         return result.IsSuccess ? Ok() : BadRequest(result);
     }
 
     [HttpPatch("{id}")]
-    public async Task<IActionResult> UpdateAsync(Guid id, [FromBody] UpdateTermRequest request)
+    public async Task<IActionResult> UpdateTermAsync(Guid id, [FromBody] UpdateTermRequest request)
     {
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
 
-        var result = await _termService.UpdateAsync(id, request);
+        var result = await _termService.UpdateTermAsync(id, request);
         return result.IsSuccess ? Ok() : BadRequest(result);
     }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteAsync(Guid id)
+    public async Task<IActionResult> DeleteTermAsync(Guid id)
     {
-        var result = await _termService.DeleteAsync(id);
+        var result = await _termService.DeleteTermAsync(id);
         return result.IsSuccess ? Ok() : BadRequest(result);
     }
 }

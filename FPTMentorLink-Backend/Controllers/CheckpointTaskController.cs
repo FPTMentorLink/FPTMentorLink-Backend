@@ -16,14 +16,14 @@ public class CheckpointTaskController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetByIdAsync(Guid id)
+    public async Task<IActionResult> GetCheckpointTaskByIdAsync(Guid id)
     {
         var result = await _checkpointTaskService.GetByIdAsync(id);
         return result.IsSuccess ? Ok(result.Value) : BadRequest(result);
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetPagedAsync([FromQuery] GetCheckpointTasksRequest request)
+    public async Task<IActionResult> GetCheckpointTaskPagedAsync([FromQuery] GetCheckpointTasksRequest request)
     {
         var result = await _checkpointTaskService.GetPagedAsync(request);
         return result.IsSuccess ? Ok(result.Value) : BadRequest(result);

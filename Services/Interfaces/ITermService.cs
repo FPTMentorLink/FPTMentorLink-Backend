@@ -8,7 +8,7 @@ public interface ITermService
 {
     Task<Result<TermResponse>> GetByIdAsync(Guid id);
     Task<Result<PaginationResult<TermResponse>>> GetPagedAsync(GetTermsRequest paginationParams);
-    Task<Result> CreateAsync(CreateTermRequest request);
-    Task<Result> UpdateAsync(Guid id, UpdateTermRequest request);
-    Task<Result> DeleteAsync(Guid id);
+    Task<Result> CreateTermAsync(CreateTermRequest request);
+    Task<Result> UpdateTermAsync(Guid id, UpdateTermRequest request);
+    Task<Result> DeleteTermAsync(Guid id);
 }

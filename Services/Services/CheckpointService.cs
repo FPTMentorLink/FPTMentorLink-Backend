@@ -90,7 +90,7 @@ public class CheckpointService : ICheckpointService
             return Result.Failure(DomainError.Checkpoint.InvalidTime);
         }
 
-        _mapper.Map(request, checkpoint);
+        checkpoint.Name = request.Name ?? checkpoint.Name;
         _unitOfWork.Checkpoints.Update(checkpoint);
 
         try

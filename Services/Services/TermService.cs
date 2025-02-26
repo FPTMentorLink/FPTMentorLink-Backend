@@ -32,7 +32,7 @@ public class TermService : ITermService
         return Result.Success(_mapper.Map<TermResponse>(term));
     }
 
-    public async Task<Result> CreateAsync(CreateTermRequest request)
+    public async Task<Result> CreateTermAsync(CreateTermRequest request)
     {
         var isExistingCode = await _unitOfWork.Terms.AnyAsync(x => x.Code == request.Code);
         if (isExistingCode)
@@ -55,7 +55,7 @@ public class TermService : ITermService
         }
     }
 
-    public async Task<Result> UpdateAsync(Guid id, UpdateTermRequest request)
+    public async Task<Result> UpdateTermAsync(Guid id, UpdateTermRequest request)
     {
         var term = await _unitOfWork.Terms.FindByIdAsync(id);
         if (term == null)
@@ -82,7 +82,6 @@ public class TermService : ITermService
             return Result.Failure(DomainError.Term.InvalidTime);
         }
 
-        _mapper.Map(request, term);
         _unitOfWork.Terms.Update(term);
 
         try
@@ -96,7 +95,7 @@ public class TermService : ITermService
         }
     }
 
-    public async Task<Result> DeleteAsync(Guid id)
+    public async Task<Result> DeleteTermAsync(Guid id)
     {
         var term = await _unitOfWork.Terms.FindByIdAsync(id);
         if (term == null)
