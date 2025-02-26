@@ -25,6 +25,7 @@ public class UnitOfWork : IUnitOfWork
     private IGenericRepository<ProjectStudent>? _studentGroups;
     private IGenericRepository<Transaction>? _transactions;
     private IGenericRepository<WeeklyReport>? _weeklyReports;
+    private IGenericRepository<Term>? _terms;
 
 
     public UnitOfWork(ApplicationDbContext context)
@@ -72,7 +73,7 @@ public class UnitOfWork : IUnitOfWork
 
     public IGenericRepository<ProjectStudent> StudentGroups =>
         _studentGroups ??= new GenericRepository<ProjectStudent>(_context);
-    
+
 
     public IGenericRepository<Transaction> Transactions =>
         _transactions ??= new GenericRepository<Transaction>(_context);
@@ -80,6 +81,9 @@ public class UnitOfWork : IUnitOfWork
 
     public IGenericRepository<WeeklyReport> WeeklyReports =>
         _weeklyReports ??= new GenericRepository<WeeklyReport>(_context);
+
+    public IGenericRepository<Term> Terms =>
+        _terms ??= new GenericRepository<Term>(_context);
 
     public async Task<int> SaveChangesAsync(bool trackAudit = true, bool trackSoftDelete = true)
     {
@@ -119,6 +123,7 @@ public class UnitOfWork : IUnitOfWork
                             intEntity.UpdatedAt = DateTime.UtcNow;
                             break;
                     }
+
                     break;
 
                 case EntityState.Modified:
@@ -133,6 +138,7 @@ public class UnitOfWork : IUnitOfWork
                             entry.Property(nameof(AuditableEntity<int>.CreatedAt)).IsModified = false;
                             break;
                     }
+
                     break;
             }
         }

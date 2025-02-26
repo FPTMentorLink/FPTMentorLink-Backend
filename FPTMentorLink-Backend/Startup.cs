@@ -119,6 +119,7 @@ public static class Startup
         builder.Services.AddScoped<IProposalService, ProposalService>();
         builder.Services.AddScoped<IWeeklyReportService, WeeklyReportService>();
         builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+        builder.Services.AddScoped<ITermService, TermService>();
 
         // Register Utils
         builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();

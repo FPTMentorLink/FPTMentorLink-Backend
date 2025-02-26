@@ -21,7 +21,7 @@ public class ProposalService : IProposalService
 
     public async Task<Result<ProposalResponse>> GetByIdAsync(Guid id)
     {
-        var proposal = await _unitOfWork.Proposals.GetByIdAsync(id);
+        var proposal = await _unitOfWork.Proposals.FindByIdAsync(id);
         if (proposal == null)
             return Result.Failure<ProposalResponse>("Proposal not found");
 
@@ -55,7 +55,7 @@ public class ProposalService : IProposalService
 
     public async Task<Result<ProposalResponse>> UpdateAsync(Guid id, UpdateProposalRequest dto)
     {
-        var proposal = await _unitOfWork.Proposals.GetByIdAsync(id);
+        var proposal = await _unitOfWork.Proposals.FindByIdAsync(id);
         if (proposal == null)
             return Result.Failure<ProposalResponse>("Proposal not found");
 
@@ -75,7 +75,7 @@ public class ProposalService : IProposalService
 
     public async Task<Result> DeleteAsync(Guid id)
     {
-        var proposal = await _unitOfWork.Proposals.GetByIdAsync(id);
+        var proposal = await _unitOfWork.Proposals.FindByIdAsync(id);
         if (proposal == null)
             return Result.Failure("Proposal not found");
 

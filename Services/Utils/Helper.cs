@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Linq.Expressions;
 
 namespace Services.Utils;
 
@@ -50,16 +51,22 @@ public static class Helper
     {
         return isDescending ? source.OrderByDescending(sortProperty) : source.OrderBy(sortProperty);
     }
+
     // Apply more sorting
     public static IOrderedQueryable<T> ThenBy<T>(this IOrderedQueryable<T> source, bool isDescending,
         Expression<Func<T, object>> sortProperty)
     {
         return isDescending ? source.ThenByDescending(sortProperty) : source.ThenBy(sortProperty);
     }
-    
+
     public static long ToMilliseconds(this DateTime dateTime)
     {
         return new DateTimeOffset(dateTime).ToUnixTimeMilliseconds();
+    }
+
+    public static ValidationResult CreateValidationResult(string error)
+    {
+        return new ValidationResult(error, new[] { "Error" });
     }
 }
 

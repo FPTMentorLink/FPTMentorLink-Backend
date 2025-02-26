@@ -21,7 +21,7 @@ public class ProjectService : IProjectService
 
     public async Task<Result<ProjectResponse>> GetByIdAsync(Guid id)
     {
-        var project = await _unitOfWork.Projects.GetByIdAsync(id);
+        var project = await _unitOfWork.Projects.FindByIdAsync(id);
         if (project == null)
             return Result.Failure<ProjectResponse>("Project not found");
 
@@ -55,7 +55,7 @@ public class ProjectService : IProjectService
 
     public async Task<Result> UpdateAsync(Guid id, UpdateProjectRequest dto)
     {
-        var project = await _unitOfWork.Projects.GetByIdAsync(id);
+        var project = await _unitOfWork.Projects.FindByIdAsync(id);
         if (project == null)
             return Result.Failure("Project not found");
 
@@ -75,7 +75,7 @@ public class ProjectService : IProjectService
 
     public async Task<Result> DeleteAsync(Guid id)
     {
-        var project = await _unitOfWork.Projects.GetByIdAsync(id);
+        var project = await _unitOfWork.Projects.FindByIdAsync(id);
         if (project == null)
             return Result.Failure("Project not found");
 

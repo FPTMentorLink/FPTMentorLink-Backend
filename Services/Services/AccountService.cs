@@ -29,7 +29,7 @@ public class AccountService : IAccountService
 
     public async Task<Result<AccountResponse>> GetByIdAsync(Guid id)
     {
-        var account = await _unitOfWork.Accounts.GetByIdAsync(id);
+        var account = await _unitOfWork.Accounts.FindByIdAsync(id);
         if (account == null)
             return Result.Failure<AccountResponse>("Account not found");
 
@@ -54,7 +54,7 @@ public class AccountService : IAccountService
 
     public async Task<Result> UpdateAsync(Guid id, UpdateAccountRequest request)
     {
-        var account = await _unitOfWork.Accounts.GetByIdAsync(id);
+        var account = await _unitOfWork.Accounts.FindByIdAsync(id);
         if (account == null)
             return Result.Failure<AccountResponse>("Account not found");
 
@@ -67,7 +67,7 @@ public class AccountService : IAccountService
 
     public async Task<Result> DeleteAsync(Guid id)
     {
-        var account = await _unitOfWork.Accounts.GetByIdAsync(id);
+        var account = await _unitOfWork.Accounts.FindByIdAsync(id);
         if (account == null)
             return Result.Failure("Account not found");
 
