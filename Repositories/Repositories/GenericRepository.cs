@@ -102,6 +102,11 @@ public class GenericRepository<TEntity, TKey> : IGenericRepository<TEntity, TKey
     {
         DbSet.Remove(entity);
     }
+
+    public virtual void AddRange(IEnumerable<TEntity> entities)
+    {
+        DbSet.AddRange(entities);
+    }
 }
 
 // For convenience when using Guid as key

@@ -69,6 +69,7 @@ public interface IGenericRepository<TEntity, in TKey> where TEntity : class, IEn
     void Add(TEntity entity);
     void Update(TEntity entity);
     void Delete(TEntity entity);
+    void AddRange(IEnumerable<TEntity> entities);
 }
 
 // For convenience when using Guid as key
