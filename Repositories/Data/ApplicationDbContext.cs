@@ -1,5 +1,7 @@
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Repositories.Entities;
+using Repositories.Entities.Base;
 
 namespace Repositories.Data;
 
@@ -36,8 +38,23 @@ public class ApplicationDbContext : DbContext
     public DbSet<ArchiveCheckpointTask> ArchiveCheckpointTasks { get; set; }
     public DbSet<ArchiveProjectStudent> ArchiveProjectStudents { get; set; }
 
+    private void SoftDeleteFilter(ModelBuilder modelBuilder)
+    {
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            if (!typeof(ISoftDeletable).IsAssignableFrom(entityType.ClrType)) continue;
+            var parameter = Expression.Parameter(entityType.ClrType, "p");
+            var property = Expression.Property(parameter, nameof(ISoftDeletable.IsDeleted));
+            var condition = Expression.Equal(property, Expression.Constant(false));
+            var lambda = Expression.Lambda(condition, parameter);
+
+            modelBuilder.Entity(entityType.ClrType).HasQueryFilter(lambda);
+        }
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        SoftDeleteFilter(modelBuilder);
         modelBuilder.Entity<Account>(entity =>
         {
             entity.ToTable(nameof(Account));
