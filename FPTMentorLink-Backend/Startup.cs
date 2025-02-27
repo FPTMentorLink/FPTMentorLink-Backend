@@ -14,6 +14,7 @@ using Services.Interfaces;
 using Services.Mappings;
 using Services.Services;
 using Services.Utils;
+using Services.Utils.Email;
 
 namespace FPTMentorLink_Backend;
 
@@ -116,6 +117,7 @@ public static class Startup
         builder.Services.AddScoped<IFeedbackService, FeedbackService>();
         builder.Services.AddScoped<IMentorAvailabilityService, MentorAvailabilityService>();
         builder.Services.AddScoped<IProjectService, ProjectService>();
+        builder.Services.AddScoped<IProjectStudentService, ProjectStudentService>();
         builder.Services.AddScoped<IProposalService, ProposalService>();
         builder.Services.AddScoped<IWeeklyReportService, WeeklyReportService>();
         builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();

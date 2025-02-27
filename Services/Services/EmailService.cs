@@ -2,6 +2,7 @@ using MailKit.Net.Smtp;
 using MailKit.Security;
 using MimeKit;
 using Services.Interfaces;
+using Services.Utils.Email;
 
 namespace Services.Services;
 
@@ -14,19 +15,19 @@ public class EmailService : IEmailService
         _emailSettings = emailSettings;
     }
 
-    public async Task SendEmailAsync(string to, string subject, string htmlBody)
+    public async Task SendEmailAsync(string to, EmailContent content)
     {
-        await SendEmailAsync([to], subject, htmlBody);
+        await SendEmailAsync([to], content);
     }
 
-    public async Task SendEmailAsync(List<string> to, string subject, string htmlBody)
+    public async Task SendEmailAsync(List<string> to, EmailContent content)
     {
         var email = new MimeMessage();
         email.From.Add(new MailboxAddress(_emailSettings.SenderName, _emailSettings.SenderEmail));
         email.To.AddRange(to.Select(x => new MailboxAddress("", x)));
-        email.Subject = subject;
+        email.Subject = content.Subject;
 
-        var builder = new BodyBuilder { HtmlBody = htmlBody };
+        var builder = new BodyBuilder { HtmlBody = content.HtmlBody };
         email.Body = builder.ToMessageBody();
 
         using var smtp = new SmtpClient();
