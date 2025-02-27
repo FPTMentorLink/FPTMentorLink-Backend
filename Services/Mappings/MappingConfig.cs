@@ -51,6 +51,9 @@ public static class MappingConfig
         TypeAdapterConfig<Account, LoginResponse>.NewConfig();
         TypeAdapterConfig<UpdateAccountRequest, Account>.NewConfig()
             .IgnoreNullValues(true);
+        TypeAdapterConfig<CsvAccount, Account>.NewConfig()
+            .Map(x => x.PasswordHash, src => src.Password);
+
 
         // Checkpoint
         TypeAdapterConfig<Checkpoint, CheckpointResponse>.NewConfig();

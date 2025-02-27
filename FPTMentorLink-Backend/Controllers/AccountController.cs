@@ -15,7 +15,14 @@ public class AccountController : ControllerBase
     {
         _accountService = accountService;
     }
-
+    
+    [HttpPost("import-accounts")]
+    public async Task<IActionResult> ImportAccounts(IFormFile formFile,
+        CancellationToken cancellationToken)
+    {
+        var result = await _accountService.ImportAccountsAsync(formFile, cancellationToken);
+        return result.IsSuccess ? Ok() : BadRequest(result);
+    }
 
     [HttpGet]
     public async Task<IActionResult> GetAccounts([FromQuery] PaginationParams request)

@@ -1,4 +1,8 @@
-﻿using System.Security.Claims;
+﻿using System.Collections.Concurrent;
+using System.Globalization;
+using System.Security.Claims;
+using CsvHelper;
+using CsvHelper.Configuration;
 using MapsterMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -33,7 +37,7 @@ public class AccountService : IAccountService
 
     public async Task<Result<AccountResponse>> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
-        var account = await _unitOfWork.Accounts.FindByIdAsync(id,cancellationToken);
+        var account = await _unitOfWork.Accounts.FindByIdAsync(id, cancellationToken);
         if (account == null)
             return Result.Failure<AccountResponse>("Account not found");
 
@@ -79,7 +83,7 @@ public class AccountService : IAccountService
 
     public async Task<Result> UpdateAsync(Guid id, UpdateAccountRequest request, CancellationToken cancellationToken)
     {
-        var account = await _unitOfWork.Accounts.FindByIdAsync(id,cancellationToken);
+        var account = await _unitOfWork.Accounts.FindByIdAsync(id, cancellationToken);
 
         if (account == null)
             return Result.Failure<AccountResponse>(DomainError.Account.AccountNotFound);
@@ -95,7 +99,7 @@ public class AccountService : IAccountService
         return Result.Success();
     }
 
-    public async Task<Result> DeleteAsync(Guid id,CancellationToken cancellationToken)
+    public async Task<Result> DeleteAsync(Guid id, CancellationToken cancellationToken)
     {
         var account = await _unitOfWork.Accounts.FindByIdAsync(id, cancellationToken);
         if (account == null)
@@ -177,8 +181,108 @@ public class AccountService : IAccountService
         return Result.Success(total);
     }
 
-    public Task<Result> ImportAccountsAsync(IFormFile file, CancellationToken cancellationToken)
+    public async Task<Result> ImportAccountsAsync(IFormFile file, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        if (file.Length == 0)
+            return Result.Failure("File is empty");
+
+        if (!file.FileName.EndsWith(".csv"))
+            return Result.Failure("File must be a CSV");
+
+        if (file.Length > Constants.MaxFileSize)
+            return Result.Failure("File size exceeds the limit");
+
+        try
+        {
+            using var reader = new StreamReader(file.OpenReadStream());
+            using var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture));
+            var records = csv.GetRecords<CsvAccount>().ToList();
+            if (records.Count() > Constants.MaxImportAccounts)
+                return Result.Failure("Number of records exceeds the limit");
+
+            // Get all emails and usernames from the CSV
+            var csvEmails = records.Select(r => r.Email).ToList();
+            var csvUsernames = records.Select(r => r.Username).ToList();
+
+            // Check for duplicates within the CSV file itself
+            var duplicateEmails = csvEmails.GroupBy(e => e)
+                .Where(g => g.Count() > 1)
+                .Select(g => g.Key)
+                .ToList();
+
+            if (duplicateEmails.Any())
+                return Result.Failure($"Duplicate emails found in CSV: {string.Join(", ", duplicateEmails)}");
+
+            var duplicateUsernames = csvUsernames.GroupBy(u => u)
+                .Where(g => g.Count() > 1)
+                .Select(g => g.Key)
+                .ToList();
+
+            if (duplicateUsernames.Any())
+                return Result.Failure($"Duplicate usernames found in CSV: {string.Join(", ", duplicateUsernames)}");
+
+            // Check against existing database records
+            var isExistingAccounts = await _unitOfWork.Accounts
+                .FindAll()
+                .AnyAsync(a => csvEmails.Contains(a.Email) || csvUsernames.Contains(a.Username), cancellationToken);
+            // .Select(a => new { a.Email, a.Username })
+            // .ToListAsync(
+            //     cancellationToken); // With 75000 records in the database, this query takes 10-30 seconds to execute
+
+            if (isExistingAccounts)
+            {
+                return Result.Failure(
+                    "Accounts in csv already exist in the database. Please check again");
+            }
+
+            // Map CSV records to Account entities
+
+            // var accounts = records.Select(r =>
+            // {
+            //     var account = _mapper.Map<Account>(r);
+            //     account.PasswordHash = _passwordHasher.HashPassword(r.Password); // Moi lan hash ton 0.3s -> 1000 records -> 300s?
+            //     return account;
+            // }).ToList();
+
+            var accounts = await HashPasswordsInParallelAsync(records, cancellationToken);
+            _unitOfWork.Accounts.AddRange(accounts);
+            await _unitOfWork.SaveChangesAsync();
+            return Result.Success();
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure($"Failed to import accounts: {ex.Message}");
+        }
+    }
+
+    private async Task<List<Account>> HashPasswordsInParallelAsync(List<CsvAccount> records,
+        CancellationToken cancellationToken)
+    {
+        // If you have 4 CPU cores, this will allow 8 concurrent operations
+        var maxConcurrent = Environment.ProcessorCount * 2;
+        // var maxConcurrent = Environment.ProcessorCount / 2;
+        using var semaphore = new SemaphoreSlim(maxConcurrent);
+
+        // Moi record la 1 task -> 1000 records -> 1000 tasks neu co 4 core -> 8 task chay cung 1 luc
+        var hashingTasks = records.Select(async record =>
+        {
+            try
+            {
+                await semaphore.WaitAsync(cancellationToken);
+                return await Task.Run(() =>
+                {
+                    var account = _mapper.Map<Account>(record);
+                    account.PasswordHash = _passwordHasher.HashPassword(record.Password);
+                    return account;
+                }, cancellationToken);
+            }
+            finally
+            {
+                semaphore.Release();
+            }
+        });
+
+        var hashedAccounts = await Task.WhenAll(hashingTasks);
+        return hashedAccounts.ToList();
     }
 }

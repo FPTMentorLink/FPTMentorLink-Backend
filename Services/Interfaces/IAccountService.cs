@@ -1,4 +1,5 @@
-﻿using Repositories.Entities;
+﻿using Microsoft.AspNetCore.Http;
+using Repositories.Entities;
 using Services.Models.Request.Account;
 using Services.Models.Request.Authorization;
 using Services.Models.Response.Account;
@@ -19,4 +20,5 @@ public interface IAccountService
     Task<Result> IsEmailUniqueAsync(string email);
     Task<Result<PaginationResult<AccountResponse>>> GetPagedAsync(PaginationParams paginationParams);
     Task<Result<int>> GetTotalAsync(AccountRole[] roles);
+    Task<Result> ImportAccountsAsync(IFormFile formFile, CancellationToken cancellationToken);
 }
