@@ -48,6 +48,15 @@ public static class DomainError
     {
         public static readonly string CheckpointTaskNotFound =
             CommonError.NotFound(nameof(Repositories.Entities.CheckpointTask));
+
+        public static readonly string InvalidStatusTransition =
+            "Invalid status transition. Cannot change to the previous status.";
+
+        public static readonly string CheckpointTaskHasBeenCompleted =
+            "Checkpoint task has been completed. Cannot update.";
+
+        public static readonly string CheckpointTaskInProgress =
+            "Checkpoint task is in progress of review. Cannot delete.";
     }
 
     public static class Project

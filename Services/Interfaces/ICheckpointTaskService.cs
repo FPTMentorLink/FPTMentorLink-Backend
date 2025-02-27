@@ -10,5 +10,6 @@ public interface ICheckpointTaskService
     Task<Result<PaginationResult<CheckpointTaskResponse>>> GetPagedAsync(GetCheckpointTasksRequest request);
     Task<Result> CreateCheckpointTaskAsync(CreateCheckpointTaskRequest request);
     Task<Result> UpdateCheckpointTaskAsync(Guid id, UpdateCheckpointTaskRequest request);
+    Task<Result> UpdateCheckpointTaskStatusAsync(Guid id, UpdateCheckpointTaskStatusRequest request);
     Task<Result> DeleteCheckpointTaskAsync(Guid id);
 }

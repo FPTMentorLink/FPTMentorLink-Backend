@@ -3,7 +3,7 @@ using Services.Models.Request.Base;
 
 namespace Services.Models.Request.CheckpointTask;
 
-public class UpdateCheckpointTaskStatus : Command
+public class UpdateCheckpointTaskStatusRequest : Command
 {
     public CheckpointTaskStatus? Status { get; set; }
 }

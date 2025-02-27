@@ -86,12 +86,54 @@ public class CheckpointTaskService : ICheckpointTaskService
         }
     }
 
+    public async Task<Result> UpdateCheckpointTaskStatusAsync(Guid id, UpdateCheckpointTaskStatusRequest request)
+    {
+        var checkpointTask = await _unitOfWork.CheckpointTasks.FindByIdAsync(id);
+        if (checkpointTask == null)
+        {
+            return Result.Failure(DomainError.CheckpointTask.CheckpointTaskNotFound);
+        }
+
+        if (request.Status.HasValue && checkpointTask.Status != request.Status)
+        {
+            if (checkpointTask.Status > request.Status)
+            {
+                return Result.Failure(DomainError.CheckpointTask.InvalidStatusTransition);
+            }
+
+            if (checkpointTask.Status == CheckpointTaskStatus.Completed &&
+                request.Status != CheckpointTaskStatus.Failed)
+            {
+                return Result.Failure(DomainError.CheckpointTask.CheckpointTaskHasBeenCompleted);
+            }
+
+            checkpointTask.Status = request.Status ?? checkpointTask.Status;
+        }
+
+        _unitOfWork.CheckpointTasks.Update(checkpointTask);
+
+        try
+        {
+            await _unitOfWork.SaveChangesAsync();
+            return Result.Success();
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure($"Failed to update checkpoint task status: {ex.Message}");
+        }
+    }
+
     public async Task<Result> DeleteCheckpointTaskAsync(Guid id)
     {
         var checkpointTask = await _unitOfWork.CheckpointTasks.FindByIdAsync(id);
         if (checkpointTask == null)
         {
             return Result.Failure(DomainError.CheckpointTask.CheckpointTaskNotFound);
+        }
+
+        if (checkpointTask.Status != CheckpointTaskStatus.Pending)
+        {
+            return Result.Failure(DomainError.CheckpointTask.CheckpointTaskInProgress);
         }
 
         _unitOfWork.CheckpointTasks.Delete(checkpointTask);
