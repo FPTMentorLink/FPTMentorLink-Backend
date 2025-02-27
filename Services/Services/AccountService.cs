@@ -1,5 +1,5 @@
 ﻿using System.Security.Claims;
-using Mapster;
+using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Repositories.Entities;
@@ -19,11 +19,13 @@ public class AccountService : IAccountService
     private readonly JwtSettings _jwtSettings;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IMapper _mapper;
 
-    public AccountService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher, IOptions<JwtSettings> jwtSettings)
+    public AccountService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher, IOptions<JwtSettings> jwtSettings, IMapper mapper)
     {
         _unitOfWork = unitOfWork;
         _passwordHasher = passwordHasher;
+        _mapper = mapper;
         _jwtSettings = jwtSettings.Value;
     }
 
@@ -33,12 +35,12 @@ public class AccountService : IAccountService
         if (account == null)
             return Result.Failure<AccountResponse>("Account not found");
 
-        return Result.Success(account.Adapt<AccountResponse>());
+        return Result.Success(_mapper.Map<AccountResponse>(account));
     }
 
     public async Task<Result> CreateAsync(CreateAccountRequest request)
     {
-        var account = request.Adapt<Account>();
+        var account = _mapper.Map<Account>(request);
         _unitOfWork.Accounts.Add(account);
 
         try
@@ -58,7 +60,7 @@ public class AccountService : IAccountService
         if (account == null)
             return Result.Failure<AccountResponse>("Account not found");
 
-        request.Adapt(account);
+        _mapper.Map(request, account);
         _unitOfWork.Accounts.Update(account);
         await _unitOfWork.SaveChangesAsync();
 
@@ -92,7 +94,7 @@ public class AccountService : IAccountService
         var accessToken = TokenGenerator.GenerateAccessToken(_jwtSettings, claims);
         var refreshToken = TokenGenerator.GenerateRefreshToken();
 
-        var response = account.Adapt<LoginResponse>();
+        var response = _mapper.Map<LoginResponse>(account);
         response.AccessToken = accessToken;
         response.RefreshToken = refreshToken;
 

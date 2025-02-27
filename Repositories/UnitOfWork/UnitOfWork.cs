@@ -20,9 +20,9 @@ public class UnitOfWork : IUnitOfWork
     private IGenericRepository<Mentor>? _mentors;
     private IGenericRepository<MentorAvailability>? _mentorAvailabilities;
     private IGenericRepository<Project>? _projects;
+    private IGenericRepository<ProjectStudent>? _projectStudents;
     private IGenericRepository<Proposal>? _proposals;
     private IGenericRepository<Student>? _students;
-    private IGenericRepository<ProjectStudent>? _studentGroups;
     private IGenericRepository<Transaction>? _transactions;
     private IGenericRepository<WeeklyReport>? _weeklyReports;
     private IGenericRepository<Term>? _terms;
@@ -71,8 +71,8 @@ public class UnitOfWork : IUnitOfWork
         _students ??= new GenericRepository<Student>(_context);
 
 
-    public IGenericRepository<ProjectStudent> StudentGroups =>
-        _studentGroups ??= new GenericRepository<ProjectStudent>(_context);
+    public IGenericRepository<ProjectStudent> ProjectStudents =>
+        _projectStudents ??= new GenericRepository<ProjectStudent>(_context);
 
 
     public IGenericRepository<Transaction> Transactions =>

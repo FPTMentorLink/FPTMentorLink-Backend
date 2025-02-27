@@ -14,9 +14,10 @@ public interface IUnitOfWork : IDisposable
     IGenericRepository<Mentor> Mentors { get; }
     IGenericRepository<MentorAvailability> MentorAvailabilities { get; }
     IGenericRepository<Project> Projects { get; }
+    IGenericRepository<ProjectStudent> ProjectStudents { get; }
     IGenericRepository<Proposal> Proposals { get; }
     IGenericRepository<Student> Students { get; }
-    IGenericRepository<ProjectStudent> StudentGroups { get; }
+
     IGenericRepository<Transaction> Transactions { get; }
     IGenericRepository<WeeklyReport> WeeklyReports { get; }
 

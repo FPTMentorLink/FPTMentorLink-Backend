@@ -64,9 +64,11 @@ public static class Helper
         return new DateTimeOffset(dateTime).ToUnixTimeMilliseconds();
     }
 
+    private static readonly string[] MemberNames = ["Error"];
+
     public static ValidationResult CreateValidationResult(string error)
     {
-        return new ValidationResult(error, new[] { "Error" });
+        return new ValidationResult(error, MemberNames);
     }
 }
 

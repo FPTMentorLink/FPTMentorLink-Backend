@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Services.Interfaces;
 using Services.Models.Request.Checkpoint;
-using Services.Utils;
 
 namespace FPTMentorLink_Backend.Controllers;
 

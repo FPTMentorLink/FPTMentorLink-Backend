@@ -1,10 +1,11 @@
+using System.ComponentModel.DataAnnotations;
+using Services.Models.Request.Base;
+
 namespace Services.Models.Request.Project;
 
-public class UpdateProjectRequest
+public class UpdateProjectRequest : Command
 {
-    public string? Name { get; set; }
-    public string? Description { get; set; }
+    [MaxLength(255)] public string? Name { get; set; }
+    [MaxLength(2000)] public string? Description { get; set; }
     public Guid? FacultyId { get; set; }
-    public Guid? MentorId { get; set; }
-    public Guid? LecturerId { get; set; }
 }
