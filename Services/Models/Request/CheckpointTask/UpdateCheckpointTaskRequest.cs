@@ -6,7 +6,7 @@ using Services.Utils;
 
 namespace Services.Models.Request.CheckpointTask;
 
-public class UpdateCheckpointTaskRequest : Command
+public class UpdateCheckpointTaskRequest : ValidatorObject
 {
     [MaxLength(255)] public string? Name { get; set; }
 

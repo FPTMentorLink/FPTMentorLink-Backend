@@ -1,6 +1,6 @@
 namespace Services.Utils;
 
-public class JwtSettings
+public sealed class JwtSettings
 {
     public string AccessTokenSecret { get; set; } = null!;
     public string RefreshTokenSecret { get; set; } = null!;

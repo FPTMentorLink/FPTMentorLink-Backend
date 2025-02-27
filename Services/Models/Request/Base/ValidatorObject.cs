@@ -2,12 +2,8 @@
 
 namespace Services.Models.Request.Base;
 
-public interface ICommand : IValidatableObject
-{
-    
-}
 
-public abstract class Command : ICommand
+public abstract class ValidatorObject : IValidatableObject
 {
     public virtual IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {

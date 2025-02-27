@@ -19,6 +19,6 @@ public class AppointmentController : ControllerBase
     public async Task<IActionResult> GetAppointments([FromQuery] PaginationParams request)
     {
         var result = await _appointmentService.GetPagedAsync(request);
-        return result.IsSuccess ? Ok(result.Value) : BadRequest(result.Error);
+        return result.IsSuccess ? Ok(result.Value) : BadRequest(result);
     }
 }

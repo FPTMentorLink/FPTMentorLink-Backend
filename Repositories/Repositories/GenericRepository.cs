@@ -71,7 +71,7 @@ public class GenericRepository<TEntity, TKey> : IGenericRepository<TEntity, TKey
     public IQueryable<TEntity> FindAll(Expression<Func<TEntity, bool>>? predicate = null,
         params Expression<Func<TEntity, object>>[] includes)
     {
-        var query = Context.Set<TEntity>().AsNoTracking();
+        var query = GetQueryable().AsNoTracking();
         if (includes.Length != 0)
         {
             foreach (var include in includes)

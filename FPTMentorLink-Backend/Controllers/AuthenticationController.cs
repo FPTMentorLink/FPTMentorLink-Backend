@@ -28,6 +28,6 @@ public class AuthenticationController : ControllerBase
         }
 
         var result = await _authenticationService.LoginAsync(authenticateResult.Principal);
-        return result.IsSuccess ? Ok(result.Value) : BadRequest(result.Error);
+        return result.IsSuccess ? Ok(result.Value) : BadRequest(result);
     }
 }

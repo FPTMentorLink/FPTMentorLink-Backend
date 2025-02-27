@@ -3,7 +3,7 @@ using Services.Models.Request.Base;
 
 namespace Services.Models.Request.ProjectStudent;
 
-public class AcceptProjectInvitationRequest : Command
+public class AcceptProjectInvitationRequest : ValidatorObject
 {
     [Required] public string Token { get; set; } = null!;
 }
