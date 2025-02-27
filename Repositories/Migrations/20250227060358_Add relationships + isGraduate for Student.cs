@@ -10,9 +10,29 @@ namespace Repositories.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            // Must drop foreign key before drop index
+            migrationBuilder.DropForeignKey(
+                name: "FK_ProjectStudent_Student_StudentId",
+                table: "ProjectStudent");
+            
             migrationBuilder.DropIndex(
                 name: "IX_ProjectStudent_StudentId",
                 table: "ProjectStudent");
+            
+            // Create new foreign key and new index
+            migrationBuilder.AddForeignKey(
+                name: "FK_ProjectStudent_Student_StudentId",
+                table: "ProjectStudent",
+                column: "StudentId",
+                principalTable: "Student",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Cascade);
+            
+            migrationBuilder.CreateIndex(
+                name: "IX_ProjectStudent_StudentId",
+                table: "ProjectStudent",
+                column: "StudentId",
+                unique: true);
 
             migrationBuilder.AddColumn<bool>(
                 name: "IsGraduated",
@@ -21,11 +41,7 @@ namespace Repositories.Migrations
                 nullable: false,
                 defaultValue: false);
 
-            migrationBuilder.CreateIndex(
-                name: "IX_ProjectStudent_StudentId",
-                table: "ProjectStudent",
-                column: "StudentId",
-                unique: true);
+            
 
             migrationBuilder.CreateIndex(
                 name: "IX_Project_FacultyId",
