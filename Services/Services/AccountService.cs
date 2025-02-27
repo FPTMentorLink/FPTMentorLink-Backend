@@ -21,7 +21,8 @@ public class AccountService : IAccountService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
 
-    public AccountService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher, IOptions<JwtSettings> jwtSettings, IMapper mapper)
+    public AccountService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher, IOptions<JwtSettings> jwtSettings,
+        IMapper mapper)
     {
         _unitOfWork = unitOfWork;
         _passwordHasher = passwordHasher;
@@ -103,7 +104,8 @@ public class AccountService : IAccountService
 
     public async Task<Result<RefreshTokenResponse>> RefreshTokenAsync(RefreshTokenRequest request)
     {
-        var principal = TokenGenerator.GetPrincipalFromExpiredToken(_jwtSettings, request.AccessToken);
+        // Check if access token is valid when it is expired
+        var principal = TokenGenerator.GetPrincipalFromToken(_jwtSettings, request.AccessToken, false);
         if (principal == null)
             return Result.Failure<RefreshTokenResponse>("Invalid token");
 

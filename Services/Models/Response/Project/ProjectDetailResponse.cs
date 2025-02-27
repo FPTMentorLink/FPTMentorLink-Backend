@@ -1,9 +1,10 @@
-using Repositories.Entities;
+﻿using Repositories.Entities;
 using Services.Models.Response.Base;
+using Services.Models.Response.ProjectStudent;
 
 namespace Services.Models.Response.Project;
 
-public class ProjectResponse : AuditableResponse
+public class ProjectDetailResponse : AuditableResponse
 {
     public Guid Id { get; set; }
     public string Code { get; set; } = null!;
@@ -15,5 +16,9 @@ public class ProjectResponse : AuditableResponse
     public Guid FacultyId { get; set; }
     public string FacultyCode { get; set; } = null!;
     public Guid? MentorId { get; set; }
+    public string? MentorName { get; set; }
     public Guid? LecturerId { get; set; }
+    public string? LecturerName { get; set; }
+    public IEnumerable<ProjectStudentResponse> ProjectStudents { get; set; } = [];
+    
 }

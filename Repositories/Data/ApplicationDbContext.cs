@@ -213,7 +213,10 @@ public class ApplicationDbContext : DbContext
                 .UseCollation("utf8mb4_0900_ai_ci");
         });
 
-        modelBuilder.Entity<ProjectStudent>(entity => { entity.ToTable(nameof(ProjectStudent)); });
+        modelBuilder.Entity<ProjectStudent>(entity =>
+        {
+            entity.ToTable(nameof(ProjectStudent));
+        });
 
         modelBuilder.Entity<Proposal>(entity =>
         {
@@ -227,7 +230,13 @@ public class ApplicationDbContext : DbContext
                 .UseCollation("utf8mb4_0900_ai_ci");
         });
 
-        modelBuilder.Entity<Student>(entity => { entity.ToTable(nameof(Student)); });
+        modelBuilder.Entity<Student>(entity =>
+        {
+            entity.ToTable(nameof(Student));
+            entity.HasOne(a => a.ProjectStudent)
+                .WithOne(ps => ps.Student)
+                .HasForeignKey<ProjectStudent>(ps => ps.StudentId);
+        });
 
         modelBuilder.Entity<Term>(entity =>
         {

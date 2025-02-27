@@ -80,29 +80,80 @@ public static class TokenGenerator
         return Convert.ToBase64String(randomNumber);
     }
 
-    public static ClaimsPrincipal? GetPrincipalFromExpiredToken(JwtSettings jwtSettings, string token)
+    /// <summary>
+    /// Get principal from token with optional lifetime validation
+    /// </summary>
+    /// <param name="jwtSettings"></param>
+    /// <param name="token"></param>
+    /// <param name="validateLifetime"></param>
+    /// <returns></returns>
+    public static ClaimsPrincipal? GetPrincipalFromToken(JwtSettings jwtSettings, string token, bool validateLifetime = true)
     {
+        if (string.IsNullOrEmpty(token))
+            return null;
+
         var tokenValidationParameters = new TokenValidationParameters
         {
             ValidateAudience = true,
             ValidateIssuer = true,
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtSettings.AccessTokenSecret)),
-            ValidateLifetime = false,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.AccessTokenSecret)),
+            ValidateLifetime = validateLifetime,
             ValidIssuer = jwtSettings.Issuer,
-            ValidAudience = jwtSettings.Audience
+            ValidAudience = jwtSettings.Audience,
+            ClockSkew = TimeSpan.Zero // Reduces the default 5 min clock skew
         };
 
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out var securityToken);
+        try
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            
+            // Validate token format
+            if (!tokenHandler.CanReadToken(token))
+                return null;
 
-        if (securityToken is not JwtSecurityToken jwtSecurityToken ||
-            !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256,
-                StringComparison.InvariantCultureIgnoreCase))
+            var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out var securityToken);
+
+            if (securityToken is not JwtSecurityToken jwtSecurityToken ||
+                !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256,
+                    StringComparison.InvariantCultureIgnoreCase))
+            {
+                return null;
+            }
+
+            return principal;
+        }
+        catch (SecurityTokenException)
         {
             return null;
         }
+    }
 
-        return principal;
+    public static string GenerateInvitationToken(JwtSettings jwtSettings, Guid studentId, Guid projectId)
+    {
+        var key = Encoding.ASCII.GetBytes(jwtSettings.AccessTokenSecret);
+        var tokenDescriptor = new SecurityTokenDescriptor
+        {
+            Subject = new ClaimsIdentity([
+                new Claim("StudentId", studentId.ToString()), 
+                new Claim("ProjectId", projectId.ToString())
+                ]),
+            Expires = DateTime.UtcNow.AddMinutes(24 * 60), // Expire in 24 hours
+            SigningCredentials = new SigningCredentials(
+                new SymmetricSecurityKey(key),
+                SecurityAlgorithms.HmacSha256Signature
+            ),
+            Issuer = jwtSettings.Issuer,
+            Audience = jwtSettings.Audience
+        };
+
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var token = tokenHandler.CreateToken(tokenDescriptor);
+        return tokenHandler.WriteToken(token);
+    }
+
+    public static bool IsTokenValid(JwtSettings jwtSettings, string token)
+    {
+        return GetPrincipalFromToken(jwtSettings, token) != null;
     }
 }

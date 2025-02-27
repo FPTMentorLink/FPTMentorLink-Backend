@@ -6,9 +6,9 @@ namespace Services.Interfaces;
 
 public interface IProjectService
 {
-    Task<Result<ProjectResponse>> GetByIdAsync(Guid id);
-    Task<Result<PaginationResult<ProjectResponse>>> GetPagedAsync(PaginationParams paginationParams);
-    Task<Result> CreateAsync(CreateProjectRequest dto);
-    Task<Result> UpdateAsync(Guid id, UpdateProjectRequest dto);
+    Task<Result<ProjectDetailResponse>> GetByIdAsync(Guid id);
+    Task<Result<PaginationResult<ProjectResponse>>> GetPagedAsync(GetProjectsRequest request);
+    Task<Result> CreateAsync(CreateProjectRequest request);
+    Task<Result> UpdateAsync(Guid id, UpdateProjectRequest request);
     Task<Result> DeleteAsync(Guid id);
 }

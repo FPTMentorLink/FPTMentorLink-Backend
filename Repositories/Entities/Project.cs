@@ -17,11 +17,12 @@ public class Project : AuditableEntity
     public virtual Mentor? Mentor { get; set; }
     public virtual Lecturer? Lecturer { get; set; }
     public virtual Term Term { get; set; } = null!;
+    public virtual Faculty Faculty { get; set; } = null!;
 
     public virtual ICollection<CheckpointTask> Tasks { get; set; } = [];
     public virtual ICollection<WeeklyReport> Reports { get; set; } = [];
     public virtual ICollection<Appointment> Appointments { get; set; } = [];
-    public virtual ICollection<ProjectStudent> Students { get; set; } = [];
+    public virtual ICollection<ProjectStudent> ProjectStudents { get; set; } = [];
 }
 
 public enum ProjectStatus

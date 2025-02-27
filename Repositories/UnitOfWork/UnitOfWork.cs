@@ -13,9 +13,10 @@ public class UnitOfWork : IUnitOfWork
     private readonly ApplicationDbContext _context;
     private IGenericRepository<Account>? _accounts;
     private IGenericRepository<Appointment>? _appointments;
+    private IGenericRepository<AppointmentFeedback>? _appointmentFeedbacks;
     private IGenericRepository<Checkpoint>? _checkpoints;
     private IGenericRepository<CheckpointTask>? _checkpointTasks;
-    private IGenericRepository<AppointmentFeedback>? _appointmentFeedbacks;
+    private IGenericRepository<Faculty>? _faculties;
     private IGenericRepository<Lecturer>? _lecturers;
     private IGenericRepository<Mentor>? _mentors;
     private IGenericRepository<MentorAvailability>? _mentorAvailabilities;
@@ -23,9 +24,9 @@ public class UnitOfWork : IUnitOfWork
     private IGenericRepository<ProjectStudent>? _projectStudents;
     private IGenericRepository<Proposal>? _proposals;
     private IGenericRepository<Student>? _students;
+    private IGenericRepository<Term>? _terms;
     private IGenericRepository<Transaction>? _transactions;
     private IGenericRepository<WeeklyReport>? _weeklyReports;
-    private IGenericRepository<Term>? _terms;
 
 
     public UnitOfWork(ApplicationDbContext context)
@@ -44,6 +45,9 @@ public class UnitOfWork : IUnitOfWork
 
     public IGenericRepository<CheckpointTask> CheckpointTasks =>
         _checkpointTasks ??= new GenericRepository<CheckpointTask>(_context);
+
+    public IGenericRepository<Faculty> Faculties =>
+        _faculties ??= new GenericRepository<Faculty>(_context);
 
     public IGenericRepository<AppointmentFeedback> AppointmentFeedbacks =>
         _appointmentFeedbacks ??= new GenericRepository<AppointmentFeedback>(_context);

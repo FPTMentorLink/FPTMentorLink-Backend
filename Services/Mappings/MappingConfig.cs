@@ -88,7 +88,12 @@ public static class MappingConfig
             .IgnoreNullValues(true);
 
         // Project
-        TypeAdapterConfig<Project, ProjectResponse>.NewConfig();
+        TypeAdapterConfig<Project, ProjectDetailResponse>.NewConfig()
+            .Map(dest => dest.TermCode, src => src.Term.Code)
+            .Map(dest => dest.FacultyCode, src => src.Faculty.Code);
+        TypeAdapterConfig<Project, ProjectResponse>.NewConfig()
+            .Map(dest => dest.TermCode, src => src.Term.Code)
+            .Map(dest => dest.FacultyCode, src => src.Faculty.Code);
         TypeAdapterConfig<CreateProjectRequest, Project>.NewConfig();
         TypeAdapterConfig<UpdateProjectRequest, Project>.NewConfig()
             .IgnoreNullValues(true);
@@ -109,10 +114,11 @@ public static class MappingConfig
 
 
         // ProjectStudent
-        TypeAdapterConfig<ProjectStudent, ProjectStudentResponse>.NewConfig();
+        TypeAdapterConfig<ProjectStudent, ProjectStudentResponse>.NewConfig()
+            .Map(dest => dest.Code, src => src.Student.Code)
+            .Map(dest => dest.FirstName, src => src.Student.Account.FirstName)
+            .Map(dest => dest.LastName, src => src.Student.Account.LastName);
         TypeAdapterConfig<CreateProjectStudentRequest, ProjectStudent>.NewConfig();
-        TypeAdapterConfig<UpdateProjectStudentRequest, ProjectStudent>.NewConfig()
-            .IgnoreNullValues(true);
 
         // WeeklyReport
         TypeAdapterConfig<WeeklyReport, WeeklyReportResponse>.NewConfig();

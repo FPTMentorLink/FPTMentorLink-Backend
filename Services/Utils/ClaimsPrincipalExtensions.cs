@@ -4,19 +4,25 @@ namespace Services.Utils;
 
 public static class ClaimsPrincipalExtensions
 {
-    public static bool IsAdmin(this ClaimsPrincipal? user)
+    public static bool IsAdmin(this ClaimsPrincipal? principal)
     {
-        return user != null && user.IsInRole("Admin");
+        return principal != null && principal.IsInRole("Admin");
     }
 
-    public static Guid? GetUserId(this ClaimsPrincipal? user)
+    public static Guid? GetUserId(this ClaimsPrincipal? principal)
     {
-        var userIdClaim = user?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var userIdClaim = principal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         return userIdClaim != null ? Guid.Parse(userIdClaim) : null;
     }
-
-    public static string? GetUserEmail(this ClaimsPrincipal? user)
+    
+    public static Guid? GetGuid(this ClaimsPrincipal? principal, string claimType)
     {
-        return user?.FindFirst(ClaimTypes.Email)?.Value;
+        var claim = principal?.FindFirst(claimType)?.Value;
+        return claim != null ? Guid.Parse(claim) : null;
+    }
+
+    public static string? GetUserEmail(this ClaimsPrincipal? principal)
+    {
+        return principal?.FindFirst(ClaimTypes.Email)?.Value;
     }
 } 

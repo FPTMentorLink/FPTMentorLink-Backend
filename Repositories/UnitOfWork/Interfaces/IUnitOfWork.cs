@@ -7,9 +7,10 @@ public interface IUnitOfWork : IDisposable
 {
     IGenericRepository<Account> Accounts { get; }
     IGenericRepository<Appointment> Appointments { get; }
+    IGenericRepository<AppointmentFeedback> AppointmentFeedbacks { get; }
     IGenericRepository<Checkpoint> Checkpoints { get; }
     IGenericRepository<CheckpointTask> CheckpointTasks { get; }
-    IGenericRepository<AppointmentFeedback> AppointmentFeedbacks { get; }
+    IGenericRepository<Faculty> Faculties { get; }
     IGenericRepository<Lecturer> Lecturers { get; }
     IGenericRepository<Mentor> Mentors { get; }
     IGenericRepository<MentorAvailability> MentorAvailabilities { get; }
@@ -17,11 +18,10 @@ public interface IUnitOfWork : IDisposable
     IGenericRepository<ProjectStudent> ProjectStudents { get; }
     IGenericRepository<Proposal> Proposals { get; }
     IGenericRepository<Student> Students { get; }
-
+    IGenericRepository<Term> Terms { get; }
     IGenericRepository<Transaction> Transactions { get; }
     IGenericRepository<WeeklyReport> WeeklyReports { get; }
 
-    IGenericRepository<Term> Terms { get; }
 
     Task<int> SaveChangesAsync(bool trackAudit = true, bool trackSoftDelete = true);
 }
