@@ -22,6 +22,8 @@ public static class DomainError
 
     public static class Account
     {
+        public static readonly string EmailExists = CommonError.Exists(nameof(Repositories.Entities.Account.Email));
+        public static readonly string UsernameExists = CommonError.Exists(nameof(Repositories.Entities.Account.Username));
         public static readonly string AccountNotFound = CommonError.NotFound(nameof(Repositories.Entities.Account));
         public static readonly string InvalidFptEmail = "Email must be an FPT email.";
     }

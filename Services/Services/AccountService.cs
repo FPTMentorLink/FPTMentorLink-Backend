@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using MapsterMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Repositories.Entities;
@@ -30,17 +31,38 @@ public class AccountService : IAccountService
         _jwtSettings = jwtSettings.Value;
     }
 
-    public async Task<Result<AccountResponse>> GetByIdAsync(Guid id)
+    public async Task<Result<AccountResponse>> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
-        var account = await _unitOfWork.Accounts.FindByIdAsync(id);
+        var account = await _unitOfWork.Accounts.FindByIdAsync(id,cancellationToken);
         if (account == null)
             return Result.Failure<AccountResponse>("Account not found");
 
         return Result.Success(_mapper.Map<AccountResponse>(account));
     }
 
-    public async Task<Result> CreateAsync(CreateAccountRequest request)
+    public async Task<Result> CreateAsync(CreateAccountRequest request, CancellationToken cancellationToken)
     {
+        var validateAccount = await
+            _unitOfWork.Accounts.FindAll().Select(x => new
+            {
+                IsEmailTaken = x.Email == request.Email,
+                IsUsernameTaken = x.Username == request.Username
+            }).FirstOrDefaultAsync(x => x.IsEmailTaken || x.IsUsernameTaken, cancellationToken);
+
+        if (validateAccount != null)
+        {
+            if (validateAccount.IsEmailTaken)
+            {
+                return Result.Failure(DomainError.Account.EmailExists);
+            }
+
+            if (validateAccount.IsUsernameTaken)
+            {
+                return Result.Failure(DomainError.Account.UsernameExists);
+            }
+        }
+
+        request.Password = _passwordHasher.HashPassword(request.Password);
         var account = _mapper.Map<Account>(request);
         _unitOfWork.Accounts.Add(account);
 
@@ -55,24 +77,29 @@ public class AccountService : IAccountService
         }
     }
 
-    public async Task<Result> UpdateAsync(Guid id, UpdateAccountRequest request)
+    public async Task<Result> UpdateAsync(Guid id, UpdateAccountRequest request, CancellationToken cancellationToken)
     {
-        var account = await _unitOfWork.Accounts.FindByIdAsync(id);
-        if (account == null)
-            return Result.Failure<AccountResponse>("Account not found");
+        var account = await _unitOfWork.Accounts.FindByIdAsync(id,cancellationToken);
 
-        _mapper.Map(request, account);
+        if (account == null)
+            return Result.Failure<AccountResponse>(DomainError.Account.AccountNotFound);
+
+        account.FirstName = request.FirstName ?? account.FirstName;
+        account.LastName = request.LastName ?? account.LastName;
+        account.ImageUrl = request.ImageUrl ?? account.ImageUrl;
+        account.IsSuspended = request.IsSuspended ?? account.IsSuspended;
+
         _unitOfWork.Accounts.Update(account);
         await _unitOfWork.SaveChangesAsync();
 
         return Result.Success();
     }
 
-    public async Task<Result> DeleteAsync(Guid id)
+    public async Task<Result> DeleteAsync(Guid id,CancellationToken cancellationToken)
     {
-        var account = await _unitOfWork.Accounts.FindByIdAsync(id);
+        var account = await _unitOfWork.Accounts.FindByIdAsync(id, cancellationToken);
         if (account == null)
-            return Result.Failure("Account not found");
+            return Result.Failure(DomainError.Account.AccountNotFound);
 
         _unitOfWork.Accounts.Delete(account);
         await _unitOfWork.SaveChangesAsync();
@@ -148,5 +175,10 @@ public class AccountService : IAccountService
 
         var total = await query.CountAsync();
         return Result.Success(total);
+    }
+
+    public Task<Result> ImportAccountsAsync(IFormFile file, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
     }
 }

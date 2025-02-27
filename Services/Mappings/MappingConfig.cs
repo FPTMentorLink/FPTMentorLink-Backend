@@ -46,7 +46,8 @@ public static class MappingConfig
 
         // Account
         TypeAdapterConfig<Account, AccountResponse>.NewConfig();
-        TypeAdapterConfig<CreateAccountRequest, Account>.NewConfig();
+        TypeAdapterConfig<CreateAccountRequest, Account>.NewConfig()
+            .Map(x => x.PasswordHash, src => src.Password);
         TypeAdapterConfig<Account, LoginResponse>.NewConfig();
         TypeAdapterConfig<UpdateAccountRequest, Account>.NewConfig()
             .IgnoreNullValues(true);
