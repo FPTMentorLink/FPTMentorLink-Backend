@@ -120,11 +120,9 @@ public class UnitOfWork : IUnitOfWork
                         case AuditableEntity<Guid> guidEntity:
                             guidEntity.Id = Guid.NewGuid();
                             guidEntity.CreatedAt = DateTime.UtcNow;
-                            guidEntity.UpdatedAt = DateTime.UtcNow;
                             break;
                         case AuditableEntity<int> intEntity:
                             intEntity.CreatedAt = DateTime.UtcNow;
-                            intEntity.UpdatedAt = DateTime.UtcNow;
                             break;
                     }
 

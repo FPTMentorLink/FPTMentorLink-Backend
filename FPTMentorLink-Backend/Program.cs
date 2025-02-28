@@ -5,6 +5,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.ConfigureDatabase();
 builder.ConfigureJwt();
 builder.ConfigureServices();
+builder.ConfigureGoogleAuth();
 builder.ConfigureEmailService();
 builder.ConfigureCors();
 builder.ApplyMigration();
