@@ -6,7 +6,7 @@
 /// <typeparam name="TKey">Type of the primary key</typeparam>
 public abstract class BaseEntity<TKey> : IEntity<TKey>
 {
-    public required TKey Id { get; set; }
+    public virtual TKey Id { get; set; } 
 }
 
 /// <summary>

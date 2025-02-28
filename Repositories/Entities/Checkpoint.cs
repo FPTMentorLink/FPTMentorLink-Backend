@@ -6,9 +6,11 @@ namespace Repositories.Entities;
 
 public class Checkpoint : AuditableEntity
 {
-    [ForeignKey(nameof(Project))] public Guid ProjectId { get; set; }
     [MaxLength(255)] public required string Name { get; set; }
-    [MaxLength(2000)] public string? Description { get; set; }
+    [ForeignKey(nameof(Term))] public Guid TermId { get; set; }
+    public DateTime StartTime { get; set; }
+    public DateTime EndTime { get; set; }
+    public virtual Term Term { get; set; } = null!;
 
-    public virtual Project Project { get; set; } = null!;
+    public virtual ICollection<CheckpointTask> Tasks { get; set; } = [];
 }

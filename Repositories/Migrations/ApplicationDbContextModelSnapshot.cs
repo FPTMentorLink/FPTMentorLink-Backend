@@ -37,12 +37,18 @@ namespace Repositories.Migrations
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("varchar(255)");
+                        .HasColumnType("varchar(255)")
+                        .UseCollation("utf8mb4_0900_ai_ci");
+
+                    MySqlPropertyBuilderExtensions.HasCharSet(b.Property<string>("Email"), "utf8mb4");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("varchar(255)");
+                        .HasColumnType("varchar(255)")
+                        .UseCollation("utf8mb4_0900_ai_ci");
+
+                    MySqlPropertyBuilderExtensions.HasCharSet(b.Property<string>("FirstName"), "utf8mb4");
 
                     b.Property<string>("ImageUrl")
                         .HasMaxLength(255)
@@ -51,26 +57,40 @@ namespace Repositories.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("tinyint(1)");
 
+                    b.Property<bool>("IsSuspended")
+                        .HasColumnType("tinyint(1)");
+
                     b.Property<string>("LastName")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("varchar(255)");
+                        .HasColumnType("varchar(255)")
+                        .UseCollation("utf8mb4_0900_ai_ci");
+
+                    MySqlPropertyBuilderExtensions.HasCharSet(b.Property<string>("LastName"), "utf8mb4");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("varchar(255)");
 
-                    b.Property<string>("Roles")
+                    b.Property<string>("Role")
                         .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)")
+                        .UseCollation("utf8mb4_0900_ai_ci");
+
+                    MySqlPropertyBuilderExtensions.HasCharSet(b.Property<string>("Username"), "utf8mb4");
+
                     b.HasKey("Id");
 
-                    b.ToTable("Accounts");
+                    b.ToTable("Account", (string)null);
                 });
 
             modelBuilder.Entity("Repositories.Entities.Appointment", b =>
@@ -90,9 +110,6 @@ namespace Repositories.Migrations
 
                     b.Property<DateTime>("EndTime")
                         .HasColumnType("datetime(6)");
-
-                    b.Property<Guid>("GroupId")
-                        .HasColumnType("char(36)");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("tinyint(1)");
@@ -121,93 +138,14 @@ namespace Repositories.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProjectId");
-
-                    b.ToTable("Appointments");
-                });
-
-            modelBuilder.Entity("Repositories.Entities.Checkpoint", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(2000)
-                        .HasColumnType("varchar(2000)");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<Guid>("ProjectId")
-                        .HasColumnType("char(36)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.HasKey("Id");
+                    b.HasIndex("MentorId");
 
                     b.HasIndex("ProjectId");
 
-                    b.ToTable("Checkpoints");
+                    b.ToTable("Appointment", (string)null);
                 });
 
-            modelBuilder.Entity("Repositories.Entities.CheckpointTask", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
-
-                    b.Property<Guid>("CheckpointId")
-                        .HasColumnType("char(36)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<DateTime>("Deadline")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(2000)
-                        .HasColumnType("varchar(2000)");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CheckpointId");
-
-                    b.ToTable("CheckpointTasks");
-                });
-
-            modelBuilder.Entity("Repositories.Entities.Feedback", b =>
+            modelBuilder.Entity("Repositories.Entities.AppointmentFeedback", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -219,7 +157,10 @@ namespace Repositories.Migrations
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasMaxLength(2000)
-                        .HasColumnType("varchar(2000)");
+                        .HasColumnType("varchar(2000)")
+                        .UseCollation("utf8mb4_0900_ai_ci");
+
+                    MySqlPropertyBuilderExtensions.HasCharSet(b.Property<string>("Content"), "utf8mb4");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
@@ -245,10 +186,100 @@ namespace Repositories.Migrations
 
                     b.HasIndex("StudentId");
 
-                    b.ToTable("Feedbacks");
+                    b.ToTable("AppointmentFeedback", (string)null);
                 });
 
-            modelBuilder.Entity("Repositories.Entities.Group", b =>
+            modelBuilder.Entity("Repositories.Entities.ArchiveAppointment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<int>("BaseSalaryPerHour")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime>("EndTime")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<Guid>("MentorId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime>("StartTime")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("TotalPayment")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalTime")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ArchiveAppointment", (string)null);
+                });
+
+            modelBuilder.Entity("Repositories.Entities.ArchiveCheckpointTask", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("CheckpointId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("varchar(2000)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ArchiveCheckpointTask", (string)null);
+                });
+
+            modelBuilder.Entity("Repositories.Entities.ArchiveProjectStudent", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -263,20 +294,121 @@ namespace Repositories.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("tinyint(1)");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("varchar(255)");
+                    b.Property<bool>("IsLeader")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("char(36)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Groups");
+                    b.ToTable("ArchiveProjectStudent", (string)null);
                 });
 
-            modelBuilder.Entity("Repositories.Entities.Lecturer", b =>
+            modelBuilder.Entity("Repositories.Entities.Checkpoint", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime>("EndTime")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)")
+                        .UseCollation("utf8mb4_0900_ai_ci");
+
+                    MySqlPropertyBuilderExtensions.HasCharSet(b.Property<string>("Name"), "utf8mb4");
+
+                    b.Property<DateTime>("StartTime")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid>("TermId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TermId");
+
+                    b.ToTable("Checkpoint", (string)null);
+                });
+
+            modelBuilder.Entity("Repositories.Entities.CheckpointTask", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("CheckpointId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("varchar(2000)")
+                        .UseCollation("utf8mb4_0900_ai_ci");
+
+                    MySqlPropertyBuilderExtensions.HasCharSet(b.Property<string>("Description"), "utf8mb4");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)")
+                        .UseCollation("utf8mb4_0900_ai_ci");
+
+                    MySqlPropertyBuilderExtensions.HasCharSet(b.Property<string>("Name"), "utf8mb4");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<double?>("Score")
+                        .HasColumnType("double");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CheckpointId");
+
+                    b.HasIndex("ProjectId");
+
+                    b.ToTable("CheckpointTask", (string)null);
+                });
+
+            modelBuilder.Entity("Repositories.Entities.Faculty", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -293,13 +425,50 @@ namespace Repositories.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<string>("Description")
-                        .HasMaxLength(2000)
-                        .HasColumnType("varchar(2000)");
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)");
 
-                    b.Property<string>("Faculty")
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)")
+                        .UseCollation("utf8mb4_0900_ai_ci");
+
+                    MySqlPropertyBuilderExtensions.HasCharSet(b.Property<string>("Name"), "utf8mb4");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Faculty", (string)null);
+                });
+
+            modelBuilder.Entity("Repositories.Entities.Lecturer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("varchar(255)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("varchar(2000)")
+                        .UseCollation("utf8mb4_0900_ai_ci");
+
+                    MySqlPropertyBuilderExtensions.HasCharSet(b.Property<string>("Description"), "utf8mb4");
+
+                    b.Property<Guid>("FacultyId")
+                        .HasColumnType("char(36)");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("tinyint(1)");
@@ -309,13 +478,14 @@ namespace Repositories.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Lecturers");
+                    b.HasIndex("FacultyId");
+
+                    b.ToTable("Lecturer", (string)null);
                 });
 
             modelBuilder.Entity("Repositories.Entities.Mentor", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
                     b.Property<int>("Balance")
@@ -323,11 +493,17 @@ namespace Repositories.Migrations
 
                     b.Property<string>("BankCode")
                         .HasMaxLength(255)
-                        .HasColumnType("varchar(255)");
+                        .HasColumnType("varchar(255)")
+                        .UseCollation("utf8mb4_0900_ai_ci");
+
+                    MySqlPropertyBuilderExtensions.HasCharSet(b.Property<string>("BankCode"), "utf8mb4");
 
                     b.Property<string>("BankName")
                         .HasMaxLength(255)
-                        .HasColumnType("varchar(255)");
+                        .HasColumnType("varchar(255)")
+                        .UseCollation("utf8mb4_0900_ai_ci");
+
+                    MySqlPropertyBuilderExtensions.HasCharSet(b.Property<string>("BankName"), "utf8mb4");
 
                     b.Property<int>("BaseSalaryPerHour")
                         .HasColumnType("int");
@@ -351,7 +527,7 @@ namespace Repositories.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Mentors");
+                    b.ToTable("Mentor", (string)null);
                 });
 
             modelBuilder.Entity("Repositories.Entities.MentorAvailability", b =>
@@ -363,10 +539,10 @@ namespace Repositories.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<DateTime?>("DeletedAt")
+                    b.Property<DateTime>("Date")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<DateTime>("EndDate")
+                    b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime(6)");
 
                     b.Property<bool>("IsDeleted")
@@ -375,8 +551,9 @@ namespace Repositories.Migrations
                     b.Property<Guid>("MentorId")
                         .HasColumnType("char(36)");
 
-                    b.Property<DateTime>("StartDate")
-                        .HasColumnType("datetime(6)");
+                    b.Property<byte[]>("TimeMap")
+                        .IsRequired()
+                        .HasColumnType("binary(12)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime(6)");
@@ -385,7 +562,139 @@ namespace Repositories.Migrations
 
                     b.HasIndex("MentorId");
 
-                    b.ToTable("MentorAvailabilities");
+                    b.ToTable("MentorAvailability", (string)null);
+                });
+
+            modelBuilder.Entity("Repositories.Entities.MentorFeedback", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("varchar(2000)")
+                        .UseCollation("utf8mb4_0900_ai_ci");
+
+                    MySqlPropertyBuilderExtensions.HasCharSet(b.Property<string>("Content"), "utf8mb4");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<Guid>("MentorId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<int>("Rate")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MentorId");
+
+                    b.HasIndex("StudentId");
+
+                    b.ToTable("MentorFeedback", (string)null);
+                });
+
+            modelBuilder.Entity("Repositories.Entities.MentoringProposal", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<bool>("IsAccepted")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<Guid>("MentorId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("MentorNote")
+                        .HasMaxLength(2000)
+                        .HasColumnType("varchar(2000)")
+                        .UseCollation("utf8mb4_0900_ai_ci");
+
+                    MySqlPropertyBuilderExtensions.HasCharSet(b.Property<string>("MentorNote"), "utf8mb4");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("StudentNote")
+                        .HasMaxLength(2000)
+                        .HasColumnType("varchar(2000)")
+                        .UseCollation("utf8mb4_0900_ai_ci");
+
+                    MySqlPropertyBuilderExtensions.HasCharSet(b.Property<string>("StudentNote"), "utf8mb4");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MentorId");
+
+                    b.HasIndex("ProjectId");
+
+                    b.ToTable("MentoringProposal", (string)null);
+                });
+
+            modelBuilder.Entity("Repositories.Entities.Notification", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("longtext")
+                        .UseCollation("utf8mb4_0900_ai_ci");
+
+                    MySqlPropertyBuilderExtensions.HasCharSet(b.Property<string>("Content"), "utf8mb4");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("Roles")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Notification", (string)null);
                 });
 
             modelBuilder.Entity("Repositories.Entities.Project", b =>
@@ -407,46 +716,89 @@ namespace Repositories.Migrations
 
                     b.Property<string>("Description")
                         .HasMaxLength(2000)
-                        .HasColumnType("varchar(2000)");
+                        .HasColumnType("varchar(2000)")
+                        .UseCollation("utf8mb4_0900_ai_ci");
 
-                    b.Property<Guid>("GroupId")
+                    MySqlPropertyBuilderExtensions.HasCharSet(b.Property<string>("Description"), "utf8mb4");
+
+                    b.Property<Guid>("FacultyId")
                         .HasColumnType("char(36)");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("tinyint(1)");
 
-                    b.Property<Guid>("LecturerId")
+                    b.Property<Guid?>("LecturerId")
                         .HasColumnType("char(36)");
 
-                    b.Property<Guid>("MentorId")
+                    b.Property<Guid?>("MentorId")
                         .HasColumnType("char(36)");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("varchar(255)");
+                        .HasColumnType("varchar(255)")
+                        .UseCollation("utf8mb4_0900_ai_ci");
+
+                    MySqlPropertyBuilderExtensions.HasCharSet(b.Property<string>("Name"), "utf8mb4");
 
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<string>("Term")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("varchar(255)");
+                    b.Property<Guid>("TermId")
+                        .HasColumnType("char(36)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("GroupId");
+                    b.HasIndex("FacultyId");
 
                     b.HasIndex("LecturerId");
 
                     b.HasIndex("MentorId");
 
-                    b.ToTable("Projects");
+                    b.HasIndex("TermId");
+
+                    b.ToTable("Project", (string)null);
+                });
+
+            modelBuilder.Entity("Repositories.Entities.ProjectStudent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("IsLeader")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectId");
+
+                    b.HasIndex("StudentId")
+                        .IsUnique();
+
+                    b.ToTable("ProjectStudent", (string)null);
                 });
 
             modelBuilder.Entity("Repositories.Entities.Proposal", b =>
@@ -470,13 +822,19 @@ namespace Repositories.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("varchar(2000)");
 
+                    b.Property<Guid>("FacultyId")
+                        .HasColumnType("char(36)");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("tinyint(1)");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("varchar(255)");
+                        .HasColumnType("varchar(255)")
+                        .UseCollation("utf8mb4_0900_ai_ci");
+
+                    MySqlPropertyBuilderExtensions.HasCharSet(b.Property<string>("Name"), "utf8mb4");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -487,13 +845,14 @@ namespace Repositories.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Proposals");
+                    b.HasIndex("FacultyId");
+
+                    b.ToTable("Proposal", (string)null);
                 });
 
             modelBuilder.Entity("Repositories.Entities.Student", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
                     b.Property<int>("Balance")
@@ -510,7 +869,13 @@ namespace Repositories.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<Guid>("FacultyId")
+                        .HasColumnType("char(36)");
+
                     b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("IsGraduated")
                         .HasColumnType("tinyint(1)");
 
                     b.Property<DateTime?>("UpdatedAt")
@@ -518,14 +883,21 @@ namespace Repositories.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Students");
+                    b.HasIndex("FacultyId");
+
+                    b.ToTable("Student", (string)null);
                 });
 
-            modelBuilder.Entity("Repositories.Entities.StudentGroup", b =>
+            modelBuilder.Entity("Repositories.Entities.Term", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
@@ -533,67 +905,28 @@ namespace Repositories.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<Guid>("GroupId")
-                        .HasColumnType("char(36)");
+                    b.Property<DateTime>("EndTime")
+                        .HasColumnType("datetime(6)");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("tinyint(1)");
 
-                    b.Property<bool>("IsLeader")
-                        .HasColumnType("tinyint(1)");
+                    b.Property<DateTime>("StartTime")
+                        .HasColumnType("datetime(6)");
 
-                    b.Property<Guid>("StudentId")
-                        .HasColumnType("char(36)");
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("GroupId");
-
-                    b.HasIndex("StudentId");
-
-                    b.ToTable("StudentGroups");
+                    b.ToTable("Term", (string)null);
                 });
 
-            modelBuilder.Entity("Repositories.Entities.TaskLog", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<Guid>("SetBy")
-                        .HasColumnType("char(36)");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<Guid>("TaskId")
-                        .HasColumnType("char(36)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SetBy");
-
-                    b.HasIndex("TaskId");
-
-                    b.ToTable("TaskLogs");
-                });
-
-            modelBuilder.Entity("Repositories.Entities.Transactions", b =>
+            modelBuilder.Entity("Repositories.Entities.Transaction", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -625,7 +958,11 @@ namespace Repositories.Migrations
 
                     b.Property<string>("TransactionMethod")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)")
+                        .UseCollation("utf8mb4_0900_ai_ci");
+
+                    MySqlPropertyBuilderExtensions.HasCharSet(b.Property<string>("TransactionMethod"), "utf8mb4");
 
                     b.Property<string>("Type")
                         .IsRequired()
@@ -638,10 +975,10 @@ namespace Repositories.Migrations
 
                     b.HasIndex("AccountId");
 
-                    b.ToTable("Transactions");
+                    b.ToTable("Transaction", (string)null);
                 });
 
-            modelBuilder.Entity("Repositories.Entities.WeeklyReports", b =>
+            modelBuilder.Entity("Repositories.Entities.WeeklyReport", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -650,7 +987,10 @@ namespace Repositories.Migrations
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasMaxLength(2000)
-                        .HasColumnType("varchar(2000)");
+                        .HasColumnType("varchar(2000)")
+                        .UseCollation("utf8mb4_0900_ai_ci");
+
+                    MySqlPropertyBuilderExtensions.HasCharSet(b.Property<string>("Content"), "utf8mb4");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
@@ -667,7 +1007,10 @@ namespace Repositories.Migrations
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("varchar(255)");
+                        .HasColumnType("varchar(255)")
+                        .UseCollation("utf8mb4_0900_ai_ci");
+
+                    MySqlPropertyBuilderExtensions.HasCharSet(b.Property<string>("Title"), "utf8mb4");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime(6)");
@@ -676,43 +1019,70 @@ namespace Repositories.Migrations
 
                     b.HasIndex("ProjectId");
 
-                    b.ToTable("WeeklyReports");
+                    b.ToTable("WeeklyReport", (string)null);
+                });
+
+            modelBuilder.Entity("Repositories.Entities.WeeklyReportFeedback", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("varchar(2000)")
+                        .UseCollation("utf8mb4_0900_ai_ci");
+
+                    MySqlPropertyBuilderExtensions.HasCharSet(b.Property<string>("Content"), "utf8mb4");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid>("WeeklyReportId")
+                        .HasColumnType("char(36)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StudentId");
+
+                    b.HasIndex("WeeklyReportId");
+
+                    b.ToTable("WeeklyReportFeedback", (string)null);
                 });
 
             modelBuilder.Entity("Repositories.Entities.Appointment", b =>
                 {
+                    b.HasOne("Repositories.Entities.Mentor", "Mentor")
+                        .WithMany("Appointments")
+                        .HasForeignKey("MentorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Repositories.Entities.Project", "Project")
-                        .WithMany()
+                        .WithMany("Appointments")
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Project");
-                });
-
-            modelBuilder.Entity("Repositories.Entities.Checkpoint", b =>
-                {
-                    b.HasOne("Repositories.Entities.Project", "Project")
-                        .WithMany()
-                        .HasForeignKey("ProjectId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Navigation("Mentor");
 
                     b.Navigation("Project");
                 });
 
-            modelBuilder.Entity("Repositories.Entities.CheckpointTask", b =>
-                {
-                    b.HasOne("Repositories.Entities.Checkpoint", "Checkpoint")
-                        .WithMany()
-                        .HasForeignKey("CheckpointId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Checkpoint");
-                });
-
-            modelBuilder.Entity("Repositories.Entities.Feedback", b =>
+            modelBuilder.Entity("Repositories.Entities.AppointmentFeedback", b =>
                 {
                     b.HasOne("Repositories.Entities.Appointment", "Appointment")
                         .WithMany()
@@ -731,10 +1101,70 @@ namespace Repositories.Migrations
                     b.Navigation("Student");
                 });
 
+            modelBuilder.Entity("Repositories.Entities.Checkpoint", b =>
+                {
+                    b.HasOne("Repositories.Entities.Term", "Term")
+                        .WithMany("Checkpoints")
+                        .HasForeignKey("TermId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Term");
+                });
+
+            modelBuilder.Entity("Repositories.Entities.CheckpointTask", b =>
+                {
+                    b.HasOne("Repositories.Entities.Checkpoint", "Checkpoint")
+                        .WithMany("Tasks")
+                        .HasForeignKey("CheckpointId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Repositories.Entities.Project", "Project")
+                        .WithMany("Tasks")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Checkpoint");
+
+                    b.Navigation("Project");
+                });
+
+            modelBuilder.Entity("Repositories.Entities.Lecturer", b =>
+                {
+                    b.HasOne("Repositories.Entities.Faculty", "Faculty")
+                        .WithMany()
+                        .HasForeignKey("FacultyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Repositories.Entities.Account", "Account")
+                        .WithOne("Lecturer")
+                        .HasForeignKey("Repositories.Entities.Lecturer", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Account");
+
+                    b.Navigation("Faculty");
+                });
+
+            modelBuilder.Entity("Repositories.Entities.Mentor", b =>
+                {
+                    b.HasOne("Repositories.Entities.Account", "Account")
+                        .WithOne("Mentor")
+                        .HasForeignKey("Repositories.Entities.Mentor", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Account");
+                });
+
             modelBuilder.Entity("Repositories.Entities.MentorAvailability", b =>
                 {
                     b.HasOne("Repositories.Entities.Mentor", "Mentor")
-                        .WithMany()
+                        .WithMany("Availabilities")
                         .HasForeignKey("MentorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -742,38 +1172,11 @@ namespace Repositories.Migrations
                     b.Navigation("Mentor");
                 });
 
-            modelBuilder.Entity("Repositories.Entities.Project", b =>
+            modelBuilder.Entity("Repositories.Entities.MentorFeedback", b =>
                 {
-                    b.HasOne("Repositories.Entities.Group", "Group")
-                        .WithMany()
-                        .HasForeignKey("GroupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Repositories.Entities.Lecturer", "Lecturer")
-                        .WithMany()
-                        .HasForeignKey("LecturerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Repositories.Entities.Mentor", "Mentor")
                         .WithMany()
                         .HasForeignKey("MentorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Group");
-
-                    b.Navigation("Lecturer");
-
-                    b.Navigation("Mentor");
-                });
-
-            modelBuilder.Entity("Repositories.Entities.StudentGroup", b =>
-                {
-                    b.HasOne("Repositories.Entities.Group", "Group")
-                        .WithMany()
-                        .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -783,31 +1186,111 @@ namespace Repositories.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Group");
+                    b.Navigation("Mentor");
 
                     b.Navigation("Student");
                 });
 
-            modelBuilder.Entity("Repositories.Entities.TaskLog", b =>
+            modelBuilder.Entity("Repositories.Entities.MentoringProposal", b =>
                 {
-                    b.HasOne("Repositories.Entities.Account", "Account")
+                    b.HasOne("Repositories.Entities.Mentor", "Mentor")
                         .WithMany()
-                        .HasForeignKey("SetBy")
+                        .HasForeignKey("MentorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Repositories.Entities.CheckpointTask", "CheckpointTask")
+                    b.HasOne("Repositories.Entities.Project", "Project")
                         .WithMany()
-                        .HasForeignKey("TaskId")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Mentor");
+
+                    b.Navigation("Project");
+                });
+
+            modelBuilder.Entity("Repositories.Entities.Project", b =>
+                {
+                    b.HasOne("Repositories.Entities.Faculty", "Faculty")
+                        .WithMany()
+                        .HasForeignKey("FacultyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Repositories.Entities.Lecturer", "Lecturer")
+                        .WithMany()
+                        .HasForeignKey("LecturerId");
+
+                    b.HasOne("Repositories.Entities.Mentor", "Mentor")
+                        .WithMany()
+                        .HasForeignKey("MentorId");
+
+                    b.HasOne("Repositories.Entities.Term", "Term")
+                        .WithMany("Projects")
+                        .HasForeignKey("TermId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Faculty");
+
+                    b.Navigation("Lecturer");
+
+                    b.Navigation("Mentor");
+
+                    b.Navigation("Term");
+                });
+
+            modelBuilder.Entity("Repositories.Entities.ProjectStudent", b =>
+                {
+                    b.HasOne("Repositories.Entities.Project", "Project")
+                        .WithMany("ProjectStudents")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Repositories.Entities.Student", "Student")
+                        .WithOne("ProjectStudent")
+                        .HasForeignKey("Repositories.Entities.ProjectStudent", "StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Project");
+
+                    b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("Repositories.Entities.Proposal", b =>
+                {
+                    b.HasOne("Repositories.Entities.Faculty", "Faculty")
+                        .WithMany()
+                        .HasForeignKey("FacultyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Faculty");
+                });
+
+            modelBuilder.Entity("Repositories.Entities.Student", b =>
+                {
+                    b.HasOne("Repositories.Entities.Faculty", "Faculty")
+                        .WithMany()
+                        .HasForeignKey("FacultyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Repositories.Entities.Account", "Account")
+                        .WithOne("Student")
+                        .HasForeignKey("Repositories.Entities.Student", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Account");
 
-                    b.Navigation("CheckpointTask");
+                    b.Navigation("Faculty");
                 });
 
-            modelBuilder.Entity("Repositories.Entities.Transactions", b =>
+            modelBuilder.Entity("Repositories.Entities.Transaction", b =>
                 {
                     b.HasOne("Repositories.Entities.Account", "Account")
                         .WithMany()
@@ -818,15 +1301,78 @@ namespace Repositories.Migrations
                     b.Navigation("Account");
                 });
 
-            modelBuilder.Entity("Repositories.Entities.WeeklyReports", b =>
+            modelBuilder.Entity("Repositories.Entities.WeeklyReport", b =>
                 {
                     b.HasOne("Repositories.Entities.Project", "Project")
-                        .WithMany()
+                        .WithMany("Reports")
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Project");
+                });
+
+            modelBuilder.Entity("Repositories.Entities.WeeklyReportFeedback", b =>
+                {
+                    b.HasOne("Repositories.Entities.Student", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Repositories.Entities.WeeklyReport", "WeeklyReport")
+                        .WithMany()
+                        .HasForeignKey("WeeklyReportId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Student");
+
+                    b.Navigation("WeeklyReport");
+                });
+
+            modelBuilder.Entity("Repositories.Entities.Account", b =>
+                {
+                    b.Navigation("Lecturer");
+
+                    b.Navigation("Mentor");
+
+                    b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("Repositories.Entities.Checkpoint", b =>
+                {
+                    b.Navigation("Tasks");
+                });
+
+            modelBuilder.Entity("Repositories.Entities.Mentor", b =>
+                {
+                    b.Navigation("Appointments");
+
+                    b.Navigation("Availabilities");
+                });
+
+            modelBuilder.Entity("Repositories.Entities.Project", b =>
+                {
+                    b.Navigation("Appointments");
+
+                    b.Navigation("ProjectStudents");
+
+                    b.Navigation("Reports");
+
+                    b.Navigation("Tasks");
+                });
+
+            modelBuilder.Entity("Repositories.Entities.Student", b =>
+                {
+                    b.Navigation("ProjectStudent");
+                });
+
+            modelBuilder.Entity("Repositories.Entities.Term", b =>
+                {
+                    b.Navigation("Checkpoints");
+
+                    b.Navigation("Projects");
                 });
 #pragma warning restore 612, 618
         }
