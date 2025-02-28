@@ -22,6 +22,10 @@ public static class DomainError
 
     public static class Account
     {
+        public static readonly string DuplicateEmailCsv = "Duplicate emails found in CSV: ";
+        public static readonly string DuplicateUsernameCsv = "Duplicate usernames found in CSV: ";
+        public static readonly string MaxImportAccountsExceeded = "Maximum number of accounts to import is 300.";
+        public static readonly string CsvAccountExist =  "Accounts in csv already exist in the database. Please check again";
         public static readonly string EmailExists = CommonError.Exists(nameof(Repositories.Entities.Account.Email));
         public static readonly string UsernameExists = CommonError.Exists(nameof(Repositories.Entities.Account.Username));
         public static readonly string AccountNotFound = CommonError.NotFound(nameof(Repositories.Entities.Account));

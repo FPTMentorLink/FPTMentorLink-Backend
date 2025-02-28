@@ -198,7 +198,7 @@ public class AccountService : IAccountService
             using var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture));
             var records = csv.GetRecords<CsvAccount>().ToList();
             if (records.Count() > Constants.MaxImportAccounts)
-                return Result.Failure("Number of records exceeds the limit");
+                return Result.Failure(DomainError.Account.MaxImportAccountsExceeded);
 
             // Get all emails and usernames from the CSV
             var csvEmails = records.Select(r => r.Email).ToList();
@@ -211,7 +211,7 @@ public class AccountService : IAccountService
                 .ToList();
 
             if (duplicateEmails.Any())
-                return Result.Failure($"Duplicate emails found in CSV: {string.Join(", ", duplicateEmails)}");
+                return Result.Failure($"{DomainError.Account.DuplicateEmailCsv} {string.Join(", ", duplicateEmails)}");
 
             var duplicateUsernames = csvUsernames.GroupBy(u => u)
                 .Where(g => g.Count() > 1)
@@ -219,7 +219,7 @@ public class AccountService : IAccountService
                 .ToList();
 
             if (duplicateUsernames.Any())
-                return Result.Failure($"Duplicate usernames found in CSV: {string.Join(", ", duplicateUsernames)}");
+                return Result.Failure($"{DomainError.Account.DuplicateUsernameCsv} {string.Join(", ", duplicateUsernames)}");
 
             // Check against existing database records
             var isExistingAccounts = await _unitOfWork.Accounts
@@ -231,8 +231,7 @@ public class AccountService : IAccountService
 
             if (isExistingAccounts)
             {
-                return Result.Failure(
-                    "Accounts in csv already exist in the database. Please check again");
+                return Result.Failure(DomainError.Account.CsvAccountExist);
             }
 
             // Map CSV records to Account entities
