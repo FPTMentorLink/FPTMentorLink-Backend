@@ -6,7 +6,7 @@ using Services.Utils;
 namespace FPTMentorLink_Backend.Controllers;
 
 [ApiController]
-[Route("api/account")]
+[Route("api/accounts")]
 public class AccountController : ControllerBase
 {
     private readonly IAccountService _accountService;
