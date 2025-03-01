@@ -215,10 +215,9 @@ public static class Startup
         if (app.Environment.IsDevelopment())
         {
             app.UseCors("AllowAll");
-            app.UseSwagger();
-            app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "FPTMentorLink API V1"); });
         }
-
+        app.UseSwagger();
+        app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "FPTMentorLink API V1"); });
         app.UseRouting();
         app.UseHttpsRedirection();
         app.UseAuthentication();
