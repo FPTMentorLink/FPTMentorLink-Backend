@@ -10,11 +10,14 @@ using Microsoft.OpenApi.Models;
 using Repositories.Data;
 using Repositories.UnitOfWork;
 using Repositories.UnitOfWork.Interfaces;
+using Services.InfrastructureService.Redis;
 using Services.Interfaces;
 using Services.Mappings;
 using Services.Services;
 using Services.Utils;
 using Services.Utils.Email;
+using Services.Utils.Hmac;
+using StackExchange.Redis;
 
 namespace FPTMentorLink_Backend;
 
@@ -36,13 +39,35 @@ public static class Startup
             options.ClientSecret = googleAuthSettings.ClientSecret;
         });
     }
-    
+
+    public static void ConfigureRedis(this WebApplicationBuilder builder)
+    {
+        builder.Services.AddSingleton<IConnectionMultiplexer>(config =>
+        {
+            var connectionString = builder.Configuration.GetConnectionString("Redis")
+                                   ?? throw new InvalidOperationException(
+                                       "RedisConnection is not configured properly.");
+            Console.WriteLine($"Redis Connection String: {connectionString}");
+            var redisConfig = ConfigurationOptions.Parse(connectionString, true);
+            return ConnectionMultiplexer.Connect(redisConfig);
+        });
+        builder.Services.AddSingleton<IRedisService, RedisService>();
+    }
+
+    public static void ConfigureRedirectUrl(this WebApplicationBuilder builder)
+    {
+        _ = builder.Configuration.GetSection("RedirectUrlSettings").Get<RedirectUrlSettings>()
+            ?? throw new InvalidOperationException(
+                "RedirectUrlSettings is not configured properly.");
+        builder.Services.Configure<RedirectUrlSettings>(builder.Configuration.GetSection("RedirectUrlSettings"));
+    }
+
     public static void ConfigureEmailService(this WebApplicationBuilder builder)
     {
-        var emailSettings = builder.Configuration.GetSection("EmailSettings").Get<EmailSettings>()
-                            ?? throw new InvalidOperationException("EmailSettings is not configured properly.");
-        
-        builder.Services.AddSingleton(emailSettings);
+        _ = builder.Configuration.GetSection("EmailSettings").Get<EmailSettings>()
+            ?? throw new InvalidOperationException("EmailSettings is not configured properly.");
+
+        builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
         builder.Services.AddSingleton<IEmailService, EmailService>();
     }
 

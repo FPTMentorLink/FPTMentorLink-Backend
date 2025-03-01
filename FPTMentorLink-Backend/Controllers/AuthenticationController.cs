@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Services.Models.Request.Authentication;
 using IAuthenticationService = Services.Interfaces.IAuthenticationService;
 
 namespace FPTMentorLink_Backend.Controllers;
@@ -27,7 +28,14 @@ public class AuthenticationController : ControllerBase
             return Unauthorized();
         }
 
-        var result = await _authenticationService.LoginAsync(authenticateResult.Principal);
+        var result = await _authenticationService.LoginByGoogleAsync(authenticateResult.Principal);
+        return result.IsSuccess ? Ok(result.Value) : BadRequest(result);
+    }
+
+    [HttpPost("login")]
+    public async Task<IActionResult> Login([FromBody] LoginRequest request)
+    {
+        var result = await _authenticationService.LoginAsync(request);
         return result.IsSuccess ? Ok(result.Value) : BadRequest(result);
     }
 }

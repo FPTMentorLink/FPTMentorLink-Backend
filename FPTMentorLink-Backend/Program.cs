@@ -5,6 +5,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.ConfigureDatabase();
 builder.ConfigureJwt();
 builder.ConfigureServices();
+builder.ConfigureRedirectUrl();
+builder.ConfigureRedis();
 builder.ConfigureGoogleAuth();
 builder.ConfigureEmailService();
 builder.ConfigureCors();
