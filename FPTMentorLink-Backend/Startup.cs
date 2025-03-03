@@ -192,6 +192,7 @@ public static class Startup
         builder.Services.AddScoped<IWeeklyReportService, WeeklyReportService>();
         builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
         builder.Services.AddScoped<ITermService, TermService>();
+        builder.Services.AddScoped<IFacultyService, FacultyService>();
 
         // Register Utils
         builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
@@ -282,7 +283,6 @@ public static class Startup
         
         // TODO: Implement rate limiting strategy
         // app.UseRateLimiter();
-        // Add cookie policy configuration
 
         if (app.Environment.IsDevelopment())
         {

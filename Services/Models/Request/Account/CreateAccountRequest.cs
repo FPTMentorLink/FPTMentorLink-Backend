@@ -4,7 +4,7 @@ using Services.Models.Request.Base;
 
 namespace Services.Models.Request.Account;
 
-public class CreateAccountRequest : ValidatorObject
+public class CreateAccountRequest : ValidatableObject
 {
     [Required]
     [EmailAddress]

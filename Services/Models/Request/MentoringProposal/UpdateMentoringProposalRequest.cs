@@ -3,7 +3,7 @@ using Services.Models.Request.Base;
 
 namespace Services.Models.Request.MentoringProposal;
 
-public class UpdateMentoringProposalRequest : ValidatorObject
+public class UpdateMentoringProposalRequest : ValidatableObject
 {
     [MaxLength(2000)] public string? StudentNote { get; set; }
 }

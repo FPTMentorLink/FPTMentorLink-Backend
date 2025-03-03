@@ -6,7 +6,7 @@ using Services.Utils;
 
 namespace Services.Models.Request.CheckpointTask;
 
-public class CreateCheckpointTaskRequest : ValidatorObject
+public class CreateCheckpointTaskRequest : ValidatableObject
 {
     [Required] public Guid CheckpointId { get; set; }
 
