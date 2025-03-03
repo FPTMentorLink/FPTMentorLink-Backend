@@ -8,8 +8,8 @@ using Repositories.UnitOfWork.Interfaces;
 using Services.Interfaces;
 using Services.Models.Request.ProjectStudent;
 using Services.Models.Response.ProjectStudent;
+using Services.Settings;
 using Services.Utils;
-using Services.Utils.Email;
 
 namespace Services.Services;
 

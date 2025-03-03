@@ -12,6 +12,7 @@ using Services.Models.Request.Account;
 using Services.Models.Request.Authorization;
 using Services.Models.Response.Account;
 using Services.Models.Response.Authorization;
+using Services.Settings;
 using Services.Utils;
 
 namespace Services.Services;

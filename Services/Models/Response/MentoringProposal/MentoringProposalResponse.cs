@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using Services.Models.Response.Base;
 
 namespace Services.Models.Response.MentoringProposal;

@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Services.Utils.Hmac;
+namespace Services.Utils;
 
 public static class HmacHelper
 {

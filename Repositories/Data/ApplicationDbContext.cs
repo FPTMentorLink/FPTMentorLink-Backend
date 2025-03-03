@@ -205,6 +205,10 @@ public class ApplicationDbContext : DbContext
             entity.Property(p => p.MentorNote)
                 .HasCharSet("utf8mb4")
                 .UseCollation("utf8mb4_0900_ai_ci");
+            entity.Property(p => p.Status)
+                .HasConversion(
+                    v => v.ToString(),
+                    v => (MentoringProposalStatus)Enum.Parse(typeof(MentoringProposalStatus), v));
         });
 
         modelBuilder.Entity<Notification>(entity =>
@@ -230,10 +234,7 @@ public class ApplicationDbContext : DbContext
                 .UseCollation("utf8mb4_0900_ai_ci");
         });
 
-        modelBuilder.Entity<ProjectStudent>(entity =>
-        {
-            entity.ToTable(nameof(ProjectStudent));
-        });
+        modelBuilder.Entity<ProjectStudent>(entity => { entity.ToTable(nameof(ProjectStudent)); });
 
         modelBuilder.Entity<Proposal>(entity =>
         {

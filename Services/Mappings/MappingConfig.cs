@@ -5,6 +5,7 @@ using Services.Models.Request.Appointment;
 using Services.Models.Request.AppointmentFeedback;
 using Services.Models.Request.Checkpoint;
 using Services.Models.Request.CheckpointTask;
+using Services.Models.Request.Faculty;
 using Services.Models.Request.Lecturer;
 using Services.Models.Request.Mentor;
 using Services.Models.Request.MentorAvailability;
@@ -20,6 +21,7 @@ using Services.Models.Response.AppointmentFeedback;
 using Services.Models.Response.Authentication;
 using Services.Models.Response.Checkpoint;
 using Services.Models.Response.CheckpointTask;
+using Services.Models.Response.Faculty;
 using Services.Models.Response.Lecturer;
 using Services.Models.Response.Mentor;
 using Services.Models.Response.MentorAvailability;
@@ -66,8 +68,14 @@ public static class MappingConfig
         TypeAdapterConfig<CreateCheckpointTaskRequest, CheckpointTask>.NewConfig();
         TypeAdapterConfig<UpdateCheckpointTaskRequest, CheckpointTask>.NewConfig()
             .IgnoreNullValues(true);
+        
+        // Faculty
+        TypeAdapterConfig<Faculty, FacultyResponse>.NewConfig();
+        TypeAdapterConfig<CreateFacultyRequest, Faculty>.NewConfig();
+        TypeAdapterConfig<UpdateFacultyRequest, Faculty>.NewConfig()
+            .IgnoreNullValues(true);
 
-        // Feedback
+        // Appointment Feedback
         TypeAdapterConfig<AppointmentFeedback, AppointmentFeedbackResponse>.NewConfig();
         TypeAdapterConfig<CreateAppointmentFeedbackRequest, AppointmentFeedback>.NewConfig();
         TypeAdapterConfig<UpdateAppointmentFeedbackRequest, AppointmentFeedback>.NewConfig()

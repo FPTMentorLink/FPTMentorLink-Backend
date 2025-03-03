@@ -8,7 +8,7 @@ public interface IProposalService
 {
     Task<Result<ProposalResponse>> GetByIdAsync(Guid id);
     Task<Result<PaginationResult<ProposalResponse>>> GetPagedAsync(PaginationParams paginationParams);
-    Task<Result<ProposalResponse>> CreateAsync(CreateProposalRequest dto);
-    Task<Result<ProposalResponse>> UpdateAsync(Guid id, UpdateProposalRequest dto);
+    Task<Result<ProposalResponse>> CreateAsync(CreateProposalRequest request);
+    Task<Result<ProposalResponse>> UpdateAsync(Guid id, UpdateProposalRequest request);
     Task<Result> DeleteAsync(Guid id);
 } 

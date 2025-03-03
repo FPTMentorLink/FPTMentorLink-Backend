@@ -3,7 +3,8 @@ using MailKit.Security;
 using Microsoft.Extensions.Options;
 using MimeKit;
 using Services.Interfaces;
-using Services.Utils.Email;
+using Services.Models.Email;
+using Services.Settings;
 
 namespace Services.Services;
 

@@ -14,9 +14,8 @@ using Services.InfrastructureService.Redis;
 using Services.Interfaces;
 using Services.Mappings;
 using Services.Services;
+using Services.Settings;
 using Services.Utils;
-using Services.Utils.Email;
-using Services.Utils.Hmac;
 using StackExchange.Redis;
 
 namespace FPTMentorLink_Backend;
@@ -186,6 +185,7 @@ public static class Startup
         builder.Services.AddScoped<ICheckpointTaskService, CheckpointTaskService>();
         builder.Services.AddScoped<IFeedbackService, FeedbackService>();
         builder.Services.AddScoped<IMentorAvailabilityService, MentorAvailabilityService>();
+        builder.Services.AddScoped<IMentoringProposalService, MentoringProposalService>();
         builder.Services.AddScoped<IProjectService, ProjectService>();
         builder.Services.AddScoped<IProjectStudentService, ProjectStudentService>();
         builder.Services.AddScoped<IProposalService, ProposalService>();
@@ -245,7 +245,7 @@ public static class Startup
                     .AllowAnyMethod()
                     .AllowAnyHeader();
             });
-            
+
             // TODO: Add production policy for specific domain
             // options.AddPolicy("Production", x =>
             // {
@@ -280,7 +280,7 @@ public static class Startup
     {
         app.UseErrorHandling();
         app.UseRequestLogging();
-        
+
         // TODO: Implement rate limiting strategy
         // app.UseRateLimiter();
 

@@ -1,4 +1,4 @@
-namespace Services.Utils;
+namespace Services.Settings;
 
 public class GoogleSettings
 {
