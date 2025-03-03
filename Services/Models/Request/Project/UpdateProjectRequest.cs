@@ -3,7 +3,7 @@ using Services.Models.Request.Base;
 
 namespace Services.Models.Request.Project;
 
-public class UpdateProjectRequest : ValidatorObject
+public class UpdateProjectRequest : ValidatableObject
 {
     [MaxLength(255)] public string? Name { get; set; }
     [MaxLength(2000)] public string? Description { get; set; }

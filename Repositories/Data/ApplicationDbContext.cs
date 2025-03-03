@@ -38,7 +38,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<ArchiveCheckpointTask> ArchiveCheckpointTasks { get; set; }
     public DbSet<ArchiveProjectStudent> ArchiveProjectStudents { get; set; }
 
-    private void SoftDeleteFilter(ModelBuilder modelBuilder)
+    private static void SoftDeleteFilter(ModelBuilder modelBuilder)
     {
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {

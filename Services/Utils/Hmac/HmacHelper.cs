@@ -18,19 +18,16 @@ public static class HmacHelper
     public static string ComputeContentHash(string content)
     {
         using var sha256 = SHA256.Create();
-        byte[] hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(content));
+        var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(content));
         return Convert.ToBase64String(hashedBytes);
     }
     
     // Optional: Validate if the timestamp is recent (e.g., within the last 5 minutes)
     public static bool IsTimestampValid(string timestamp, string lifeTime)
     {
-        if (DateTime.TryParse(timestamp, out var parsedTimestamp))
-        {
-            var currentTime = DateTime.UtcNow;
-            var timeDifference = currentTime - parsedTimestamp;
-            return timeDifference.TotalMinutes < int.Parse(lifeTime);
-        }
-        return false;
+        if (!DateTime.TryParse(timestamp, out var parsedTimestamp)) return false;
+        var currentTime = DateTime.UtcNow;
+        var timeDifference = currentTime - parsedTimestamp;
+        return timeDifference.TotalMinutes < int.Parse(lifeTime);
     }
 }

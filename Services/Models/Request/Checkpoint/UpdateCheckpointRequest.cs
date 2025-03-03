@@ -5,7 +5,7 @@ using Services.Utils;
 
 namespace Services.Models.Request.Checkpoint;
 
-public class UpdateCheckpointRequest : ValidatorObject
+public class UpdateCheckpointRequest : ValidatableObject
 {
     public string? Name { get; set; }
     public Guid? TermId { get; set; }

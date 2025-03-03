@@ -1,5 +1,4 @@
 ﻿using System.Globalization;
-using System.Security.Claims;
 using CsvHelper;
 using CsvHelper.Configuration;
 using MapsterMapper;
@@ -12,7 +11,6 @@ using Services.Interfaces;
 using Services.Models.Request.Account;
 using Services.Models.Request.Authorization;
 using Services.Models.Response.Account;
-using Services.Models.Response.Authentication;
 using Services.Models.Response.Authorization;
 using Services.Utils;
 

@@ -2,8 +2,8 @@
 using FPTMentorLink_Backend.Middlewares;
 using MapsterMapper;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -23,33 +23,112 @@ namespace FPTMentorLink_Backend;
 
 public static class Startup
 {
-    public static void ConfigureGoogleAuth(this WebApplicationBuilder builder)
+    /// <summary>
+    /// Configures the authentication system for the application
+    /// - Sets up JWT authentication
+    /// - Adds cookie authentication (temporarily store user's identity after sign in)
+    /// - Adds Google authentication
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <exception cref="InvalidOperationException"></exception>
+    public static void ConfigureAuthentication(this WebApplicationBuilder builder)
     {
+        // Get settings
+        var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>()
+                          ?? throw new InvalidOperationException("JwtSettings is not configured properly.");
         var googleAuthSettings = builder.Configuration.GetSection("GoogleAuthSettings").Get<GoogleSettings>()
                                  ?? throw new InvalidOperationException(
                                      "GoogleAuthSettings is not configured properly.");
+        var redirectUrlSettings = builder.Configuration.GetSection("RedirectUrlSettings").Get<RedirectUrlSettings>()
+                                  ?? throw new InvalidOperationException(
+                                      "RedirectUrlSettings is not configured properly.");
+
+        // Configure JWT settings for DI
+        builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
+
+        // Configure authentication with a single call
         builder.Services.AddAuthentication(options =>
-        {
-            options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-            options.DefaultScheme = GoogleDefaults.AuthenticationScheme;
-            options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
-        }).AddCookie().AddGoogle(options =>
-        {
-            options.ClientId = googleAuthSettings.ClientId;
-            options.ClientSecret = googleAuthSettings.ClientSecret;
-        });
+            {
+                // Use JWT as the default for API authentication
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+
+                // Use cookies for external authentication sign-in
+                options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            })
+            // Add cookie authentication
+            .AddCookie(options =>
+            {
+                // Prevents client-side scripts from accessing the cookie, 
+                // enhancing security against XSS attacks.
+                options.Cookie.HttpOnly = true;
+                // Allows cookies to be sent with requests to the same site, 
+                // but not with requests to other sites.
+                options.Cookie.SameSite = SameSiteMode.Lax;
+                // Ensures cookies are only sent over HTTPS connections, 
+                // preventing interception over insecure channels.
+                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+                // Sets the expiration time for the cookie to 5 minutes.
+                options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
+            })
+            // Add JWT bearer authentication
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = jwtSettings.Issuer,
+                    ValidAudience = jwtSettings.Audience,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtSettings.AccessTokenSecret)
+                    )
+                };
+            })
+            // Add Google authentication
+            .AddGoogle(options =>
+            {
+                options.ClientId = googleAuthSettings.ClientId;
+                options.ClientSecret = googleAuthSettings.ClientSecret;
+
+                options.Events = new OAuthEvents
+                {
+                    OnRedirectToAuthorizationEndpoint = context =>
+                    {
+                        context.Response.Redirect(context.RedirectUri);
+                        // redirectUri param will be https://domain.com/signin-google (default google handler path)
+                        return Task.CompletedTask;
+                    },
+                    OnRemoteFailure = context =>
+                    {
+                        var error = context.Failure?.Message ?? "Unknown error";
+                        Console.WriteLine($"Remote authentication error: {error}");
+
+                        // Redirect back to google sign in api 
+                        context.Response.Redirect(redirectUrlSettings.LoginFailedUrl);
+                        context.HandleResponse(); // Prevent further processing
+
+                        return Task.CompletedTask;
+                    }
+                };
+            });
     }
 
     public static void ConfigureRedis(this WebApplicationBuilder builder)
     {
-        builder.Services.AddSingleton<IConnectionMultiplexer>(config =>
+        builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
         {
-            var connectionString = builder.Configuration.GetConnectionString("Redis")
-                                   ?? throw new InvalidOperationException(
-                                       "RedisConnection is not configured properly.");
-            Console.WriteLine($"Redis Connection String: {connectionString}");
-            var redisConfig = ConfigurationOptions.Parse(connectionString, true);
-            return ConnectionMultiplexer.Connect(redisConfig);
+            var redisSettings = builder.Configuration.GetSection("ConnectionStrings:Redis").Get<RedisSettings>()
+                                ?? throw new InvalidOperationException("RedisConnection is not configured properly.");
+            return ConnectionMultiplexer.Connect(
+                new ConfigurationOptions
+                {
+                    EndPoints = { { redisSettings.EndPoints, redisSettings.Port } },
+                    User = redisSettings.User,
+                    Password = redisSettings.Password
+                }
+            );
         });
         builder.Services.AddSingleton<IRedisService, RedisService>();
     }
@@ -69,40 +148,6 @@ public static class Startup
 
         builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
         builder.Services.AddSingleton<IEmailService, EmailService>();
-    }
-
-    /// <summary>
-    /// Configures JWT authentication with bearer token support
-    /// - Sets up token validation parameters
-    /// - Configures issuer, audience, and signing key validation
-    /// </summary>
-    public static void ConfigureJwt(this WebApplicationBuilder builder)
-    {
-        // Configure JWT
-        var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>()
-                          ?? throw new InvalidOperationException("JwtSettings is not configured properly.");
-        builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
-
-        builder.Services.AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-            .AddJwtBearer(options =>
-            {
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    ValidIssuer = jwtSettings.Issuer,
-                    ValidAudience = jwtSettings.Audience,
-                    IssuerSigningKey = new SymmetricSecurityKey(
-                        Encoding.ASCII.GetBytes(jwtSettings.AccessTokenSecret)
-                    )
-                };
-            });
     }
 
     /// <summary>
@@ -147,6 +192,7 @@ public static class Startup
         builder.Services.AddScoped<IWeeklyReportService, WeeklyReportService>();
         builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
         builder.Services.AddScoped<ITermService, TermService>();
+        builder.Services.AddScoped<IFacultyService, FacultyService>();
 
         // Register Utils
         builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
@@ -191,7 +237,6 @@ public static class Startup
     /// </summary>
     public static void ConfigureCors(this WebApplicationBuilder builder)
     {
-        // Configure CORS
         builder.Services.AddCors(options =>
         {
             options.AddPolicy("AllowAll", x =>
@@ -200,6 +245,7 @@ public static class Startup
                     .AllowAnyMethod()
                     .AllowAnyHeader();
             });
+            
             // TODO: Add production policy for specific domain
             // options.AddPolicy("Production", x =>
             // {
@@ -234,6 +280,7 @@ public static class Startup
     {
         app.UseErrorHandling();
         app.UseRequestLogging();
+        
         // TODO: Implement rate limiting strategy
         // app.UseRateLimiter();
 
@@ -246,8 +293,11 @@ public static class Startup
 
         app.UseRouting();
         app.UseHttpsRedirection();
+
+        // Authentication must come before Authorization
         app.UseAuthentication();
         app.UseAuthorization();
+
         app.MapControllers();
         app.MapHealthChecks("/health");
     }

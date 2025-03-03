@@ -1,8 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Services.Models.Request.Base;
 
 namespace Services.Models.Request.AppointmentFeedback;
 
-public class CreateAppointmentFeedbackRequest
+public class CreateAppointmentFeedbackRequest : ValidatableObject
 {
     public Guid AppointmentId { get; set; }
 
