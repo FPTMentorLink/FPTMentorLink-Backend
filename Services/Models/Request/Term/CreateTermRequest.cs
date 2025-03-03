@@ -4,7 +4,7 @@ using Services.Models.Request.Base;
 
 namespace Services.Models.Request.Term;
 
-public class CreateTermRequest : ValidatorObject
+public class CreateTermRequest : ValidatableObject
 {
     [Required] [MaxLength(255)] public string Code { get; set; } = null!;
 

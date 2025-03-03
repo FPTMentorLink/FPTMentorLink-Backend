@@ -1,6 +1,4 @@
-﻿using System.Collections.Concurrent;
-using System.Globalization;
-using System.Security.Claims;
+﻿using System.Globalization;
 using CsvHelper;
 using CsvHelper.Configuration;
 using MapsterMapper;
@@ -13,7 +11,6 @@ using Services.Interfaces;
 using Services.Models.Request.Account;
 using Services.Models.Request.Authorization;
 using Services.Models.Response.Account;
-using Services.Models.Response.Authentication;
 using Services.Models.Response.Authorization;
 using Services.Utils;
 
@@ -111,28 +108,6 @@ public class AccountService : IAccountService
         return Result.Success();
     }
 
-    public async Task<Result<LoginResponse>> LoginAsync(string email, string password)
-    {
-        var account = await _unitOfWork.Accounts.FindSingleAsync(a => a.Email == email);
-        if (account == null || !_passwordHasher.VerifyPassword(password, account.PasswordHash))
-            return Result.Failure<LoginResponse>("Invalid email or password");
-
-        var claims = new List<Claim>
-        {
-            new(ClaimTypes.NameIdentifier, account.Id.ToString()),
-            new(ClaimTypes.Email, account.Email),
-            new(ClaimTypes.Role, account.Role.ToString())
-        };
-        var accessToken = TokenGenerator.GenerateAccessToken(_jwtSettings, claims);
-        var refreshToken = TokenGenerator.GenerateRefreshToken();
-
-        var response = _mapper.Map<LoginResponse>(account);
-        response.AccessToken = accessToken;
-        response.RefreshToken = refreshToken;
-
-        return Result.Success(response);
-    }
-
     public async Task<Result<RefreshTokenResponse>> RefreshTokenAsync(RefreshTokenRequest request)
     {
         // Check if access token is valid when it is expired
@@ -219,7 +194,8 @@ public class AccountService : IAccountService
                 .ToList();
 
             if (duplicateUsernames.Any())
-                return Result.Failure($"{DomainError.Account.DuplicateUsernameCsv} {string.Join(", ", duplicateUsernames)}");
+                return Result.Failure(
+                    $"{DomainError.Account.DuplicateUsernameCsv} {string.Join(", ", duplicateUsernames)}");
 
             // Check against existing database records
             var isExistingAccounts = await _unitOfWork.Accounts

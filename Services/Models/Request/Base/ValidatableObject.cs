@@ -2,8 +2,7 @@
 
 namespace Services.Models.Request.Base;
 
-
-public abstract class ValidatorObject : IValidatableObject
+public abstract class ValidatableObject : IValidatableObject
 {
     public virtual IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {

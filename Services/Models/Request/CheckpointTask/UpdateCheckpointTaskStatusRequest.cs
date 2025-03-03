@@ -1,9 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Repositories.Entities;
+﻿using Repositories.Entities;
+using Services.Models.Request.Base;
 
 namespace Services.Models.Request.CheckpointTask;
 
-public class UpdateCheckpointTaskStatusRequest : DbLoggerCategory.Database.Command
+public class UpdateCheckpointTaskStatusRequest : ValidatableObject
 {
     public CheckpointTaskStatus? Status { get; set; }
 }

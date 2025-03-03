@@ -11,11 +11,10 @@ namespace Services.Interfaces;
 
 public interface IAccountService
 {
-    Task<Result<AccountResponse>> GetByIdAsync(Guid id,CancellationToken cancellationToken);
-    Task<Result> CreateAsync(CreateAccountRequest request,CancellationToken cancellationToken);
-    Task<Result> UpdateAsync(Guid id, UpdateAccountRequest request,CancellationToken cancellationToken);
-    Task<Result> DeleteAsync(Guid id,CancellationToken cancellationToken);
-    Task<Result<LoginResponse>> LoginAsync(string email, string password);
+    Task<Result<AccountResponse>> GetByIdAsync(Guid id, CancellationToken cancellationToken);
+    Task<Result> CreateAsync(CreateAccountRequest request, CancellationToken cancellationToken);
+    Task<Result> UpdateAsync(Guid id, UpdateAccountRequest request, CancellationToken cancellationToken);
+    Task<Result> DeleteAsync(Guid id, CancellationToken cancellationToken);
     Task<Result<RefreshTokenResponse>> RefreshTokenAsync(RefreshTokenRequest request);
     Task<Result> IsEmailUniqueAsync(string email);
     Task<Result<PaginationResult<AccountResponse>>> GetPagedAsync(PaginationParams paginationParams);

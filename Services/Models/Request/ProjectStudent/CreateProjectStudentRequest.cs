@@ -3,7 +3,7 @@ using Services.Models.Request.Base;
 
 namespace Services.Models.Request.ProjectStudent;
 
-public class CreateProjectStudentRequest : ValidatorObject
+public class CreateProjectStudentRequest : ValidatableObject
 {
     [Required] public Guid StudentId { get; set; }
     [Required] public Guid ProjectId { get; set; }
