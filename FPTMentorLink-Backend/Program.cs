@@ -3,11 +3,10 @@ using FPTMentorLink_Backend;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.ConfigureDatabase();
-builder.ConfigureJwt();
+builder.ConfigureAuthentication();
 builder.ConfigureServices();
 builder.ConfigureRedirectUrl();
 builder.ConfigureRedis();
-builder.ConfigureGoogleAuth();
 builder.ConfigureEmailService();
 builder.ConfigureCors();
 builder.ApplyMigration();

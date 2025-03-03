@@ -8,7 +8,6 @@ using Services.Models.Request.Authentication;
 using Services.Models.Response.Authentication;
 using Services.Utils;
 using Services.Utils.Hmac;
-using StackExchange.Redis;
 
 namespace Services.Services;
 
@@ -33,29 +32,20 @@ public class AuthenticationService : IAuthenticationService
 
     public async Task<Result<LoginResponse>> LoginAsync(LoginRequest request)
     {
-        var tokenInRedis = await _redis.GetCacheAsync(request.UserId.ToString());
-        if (tokenInRedis == null)
+        var data = await _redis.GetCacheAsync(request.ContentHash);
+        if (data == null)
         {
             return Result.Failure<LoginResponse>("Token not found or expire");
         }
 
-        if (tokenInRedis != request.Token)
+        var loginResponse = JsonSerializer.Deserialize<LoginResponse>(data);
+        if (loginResponse == null)
         {
-            return Result.Failure<LoginResponse>("Invalid token");
+            return Result.Failure<LoginResponse>("Token not found or expire");
         }
 
-        var user = await _unitOfWork.Accounts.FindByIdAsync(request.UserId);
-        if (user == null)
-        {
-            return Result.Failure<LoginResponse>("User not found");
-        }
+        await _redis.DeleteCacheAsync(request.ContentHash);
 
-        var userClaims = TokenGenerator.GetClaims(user);
-        var accessToken = TokenGenerator.GenerateAccessToken(_jwtSettings, userClaims);
-        var refreshToken = TokenGenerator.GenerateRefreshToken();
-        var loginResponse = user.Adapt<LoginResponse>();
-        loginResponse.AccessToken = accessToken;
-        loginResponse.RefreshToken = refreshToken;
         return Result.Success(loginResponse);
     }
 
@@ -79,29 +69,24 @@ public class AuthenticationService : IAuthenticationService
             return Result.Failure<string>(DomainError.Account.AccountNotFound);
         }
 
-        // Generate tokens
+        // Generate login response
         var userClaims = TokenGenerator.GetClaims(user);
         var accessToken = TokenGenerator.GenerateAccessToken(_jwtSettings, userClaims);
         var refreshToken = TokenGenerator.GenerateRefreshToken();
+        var loginResponse = user.Adapt<LoginResponse>();
+        loginResponse.AccessToken = accessToken;
+        loginResponse.RefreshToken = refreshToken;
 
-        // Create payload to hash
-        var payload = new HashModel
-        {
-            UserFullName = $"{user.FirstName} {user.LastName}",
-            UserEmail = user.Email,
-            AccessToken = accessToken,
-            RefreshToken = refreshToken,
-        };
         var jsonOption = new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         };
-        var data = JsonSerializer.Serialize(payload, jsonOption);
-        var hashPayload = HmacHelper.GenerateSignature(_redirectUrlSettings.Key, data);
+        var data = JsonSerializer.Serialize(loginResponse, jsonOption);
+        var contentHash = HmacHelper.GenerateSignature(_redirectUrlSettings.Key, data);
         // Store payload in Redis with an expiration of 5 minutes
-        await _redis.SetCacheAsync(user.Id.ToString(), hashPayload, TimeSpan.FromMinutes(5), false);
+        await _redis.SetCacheAsync(contentHash, data, TimeSpan.FromMinutes(_redirectUrlSettings.TimeOut), false);
         // Redirect to FE with key in Redis
-        var redirectUrl = _redirectUrlSettings.FrontEndUrl + user.Id;
+        var redirectUrl = _redirectUrlSettings.PostGoogleLoginUrl + contentHash;
         return Result.Success(redirectUrl);
     }
 }

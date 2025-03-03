@@ -24,7 +24,7 @@ public class RedisService(IConnectionMultiplexer redis) : IRedisService
 
         var jsonOption = new JsonSerializerOptions
         {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
         var data = JsonSerializer.Serialize(value, jsonOption);
         await _redis.StringSetAsync(key, data, timeToLive);
