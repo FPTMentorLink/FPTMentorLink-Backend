@@ -44,12 +44,18 @@ public static class Startup
     {
         builder.Services.AddSingleton<IConnectionMultiplexer>(config =>
         {
-            var connectionString = builder.Configuration.GetConnectionString("Redis")
-                                   ?? throw new InvalidOperationException(
-                                       "RedisConnection is not configured properly.");
-            Console.WriteLine($"Redis Connection String: {connectionString}");
-            var redisConfig = ConfigurationOptions.Parse(connectionString, true);
-            return ConnectionMultiplexer.Connect(redisConfig);
+            var redisSettings = builder.Configuration.GetSection("ConnectionStrings:Redis").Get<RedisSettings>()
+                                ?? throw new InvalidOperationException(
+                                    "RedisConnection is not configured properly.");
+            Console.WriteLine($"Redis Connection String: {redisSettings}");
+            return ConnectionMultiplexer.Connect(
+                new ConfigurationOptions
+                {
+                    EndPoints = { { redisSettings.EndPoints, redisSettings.Port } },
+                    User = redisSettings.User,
+                    Password = redisSettings.Password
+                }
+            );
         });
         builder.Services.AddSingleton<IRedisService, RedisService>();
     }

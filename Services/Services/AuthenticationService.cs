@@ -101,7 +101,7 @@ public class AuthenticationService : IAuthenticationService
         // Store payload in Redis with an expiration of 5 minutes
         await _redis.SetCacheAsync(user.Id.ToString(), hashPayload, TimeSpan.FromMinutes(5), false);
         // Redirect to FE with key in Redis
-        var redirectUrl = _redirectUrlSettings.FrontEndUrl + $"{nameof(HashModel)}";
+        var redirectUrl = _redirectUrlSettings.FrontEndUrl + user.Id;
         return Result.Success(redirectUrl);
     }
 }
