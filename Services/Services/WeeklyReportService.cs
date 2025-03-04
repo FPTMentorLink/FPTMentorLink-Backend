@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using MapsterMapper;
 using Repositories.Entities;
 using Repositories.UnitOfWork.Interfaces;
@@ -10,8 +11,8 @@ namespace Services.Services;
 
 public class WeeklyReportService : IWeeklyReportService
 {
-    private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
+    private readonly IUnitOfWork _unitOfWork;
 
     public WeeklyReportService(IUnitOfWork unitOfWork, IMapper mapper)
     {
@@ -23,20 +24,14 @@ public class WeeklyReportService : IWeeklyReportService
     {
         var weeklyReport = await _unitOfWork.WeeklyReports.FindByIdAsync(id);
         if (weeklyReport == null)
-            return Result.Failure<WeeklyReportResponse>("Weekly report not found");
+        {
+            return Result.Failure<WeeklyReportResponse>(DomainError.WeeklyReport.WeeklyReportNotFound);
+        }
 
         return Result.Success(_mapper.Map<WeeklyReportResponse>(weeklyReport));
     }
 
-    public async Task<Result<PaginationResult<WeeklyReportResponse>>> GetPagedAsync(PaginationParams paginationParams)
-    {
-        var query = _unitOfWork.WeeklyReports.GetQueryable();
-        var result = await query.ProjectToPaginatedListAsync<WeeklyReport, WeeklyReportResponse>(paginationParams);
-
-        return Result.Success(result);
-    }
-
-    public async Task<Result<WeeklyReportResponse>> CreateAsync(CreateWeeklyReportRequest request)
+    public async Task<Result> CreateWeeklyReportAsync(CreateWeeklyReportRequest request)
     {
         var weeklyReport = _mapper.Map<WeeklyReport>(request);
         _unitOfWork.WeeklyReports.Add(weeklyReport);
@@ -44,39 +39,44 @@ public class WeeklyReportService : IWeeklyReportService
         try
         {
             await _unitOfWork.SaveChangesAsync();
-            return Result.Success(_mapper.Map<WeeklyReportResponse>(weeklyReport));
+            return Result.Success();
         }
         catch (Exception ex)
         {
-            return Result.Failure<WeeklyReportResponse>($"Failed to create weekly report: {ex.Message}");
+            return Result.Failure($"Failed to create weekly report: {ex.Message}");
         }
     }
 
-    public async Task<Result<WeeklyReportResponse>> UpdateAsync(Guid id, UpdateWeeklyReportRequest request)
+    public async Task<Result> UpdateWeeklyReportAsync(Guid id, UpdateWeeklyReportRequest request)
     {
         var weeklyReport = await _unitOfWork.WeeklyReports.FindByIdAsync(id);
         if (weeklyReport == null)
-            return Result.Failure<WeeklyReportResponse>("Weekly report not found");
+        {
+            return Result.Failure(DomainError.WeeklyReport.WeeklyReportNotFound);
+        }
 
-        _mapper.Map(request, weeklyReport);
+        weeklyReport.Title = request.Title ?? weeklyReport.Title;
+        weeklyReport.Content = request.Content ?? weeklyReport.Content;
         _unitOfWork.WeeklyReports.Update(weeklyReport);
 
         try
         {
             await _unitOfWork.SaveChangesAsync();
-            return Result.Success(_mapper.Map<WeeklyReportResponse>(weeklyReport));
+            return Result.Success();
         }
         catch (Exception ex)
         {
-            return Result.Failure<WeeklyReportResponse>($"Failed to update weekly report: {ex.Message}");
+            return Result.Failure($"Failed to update weekly report: {ex.Message}");
         }
     }
 
-    public async Task<Result> DeleteAsync(Guid id)
+    public async Task<Result> DeleteWeeklyReportAsync(Guid id)
     {
         var weeklyReport = await _unitOfWork.WeeklyReports.FindByIdAsync(id);
         if (weeklyReport == null)
-            return Result.Failure("Weekly report not found");
+        {
+            return Result.Failure(DomainError.WeeklyReport.WeeklyReportNotFound);
+        }
 
         _unitOfWork.WeeklyReports.Delete(weeklyReport);
 
@@ -90,4 +90,40 @@ public class WeeklyReportService : IWeeklyReportService
             return Result.Failure($"Failed to delete weekly report: {ex.Message}");
         }
     }
+
+    public async Task<Result<PaginationResult<WeeklyReportResponse>>> GetPagedAsync(GetWeeklyReportsRequest request)
+    {
+        Expression<Func<WeeklyReport, bool>> filter = report => true;
+
+        if (!string.IsNullOrEmpty(request.SearchTerm))
+        {
+            Expression<Func<WeeklyReport, bool>> searchFilter = report =>
+                report.Title.Contains(request.SearchTerm) || report.Content.Contains(request.SearchTerm);
+            filter = Helper.CombineAndAlsoExpressions(filter, searchFilter);
+        }
+
+        if (request.ProjectId.HasValue)
+        {
+            Expression<Func<WeeklyReport, bool>> projectFilter = report =>
+                report.ProjectId == request.ProjectId.Value;
+            filter = Helper.CombineAndAlsoExpressions(filter, projectFilter);
+        }
+
+        var query = _unitOfWork.WeeklyReports.FindAll(filter);
+        if (!string.IsNullOrEmpty(request.OrderBy))
+        {
+            var sortProperty = GetSortProperty(request.OrderBy);
+            query = query.ApplySorting(request.IsDescending, sortProperty);
+        }
+
+        var result = await query.ProjectToPaginatedListAsync<WeeklyReport, WeeklyReportResponse>(request);
+        return Result.Success(result);
+    }
+
+    private Expression<Func<WeeklyReport, object>> GetSortProperty(string sortBy) =>
+        sortBy.ToLower().Replace(" ", "") switch
+        {
+            "createdat" => report => report.CreatedAt,
+            _ => report => report.Id
+        };
 }
