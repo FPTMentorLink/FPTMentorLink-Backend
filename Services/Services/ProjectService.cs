@@ -177,6 +177,143 @@ public class ProjectService : IProjectService
         }
     }
 
+    public async Task<Result> UpdateStatusAsync(Guid id, UpdateProjectStatusRequest request)
+    {
+        var project = await _unitOfWork.Projects.FindByIdAsync(id);
+        if (project == null)
+            return Result.Failure("Project not found");
+
+        var result = project.Status switch
+        {
+            ProjectStatus.Pending => request.Status switch
+            {
+                ProjectStatus.InProgress => await UpdateToInProgress(project),
+                ProjectStatus.Closed => await UpdateToClosed(project),
+                _ => Result.Failure("Invalid status")
+            },
+            ProjectStatus.InProgress => request.Status switch
+            {
+                ProjectStatus.RevisionRequired => await UpdateToRevisionRequired(project),
+                ProjectStatus.Completed => await UpdateToCompleted(project),
+                ProjectStatus.Failed => await UpdateToFailed(project),
+                ProjectStatus.PendingReview => await UpdateToPendingReview(project),
+                ProjectStatus.Closed => await UpdateToClosed(project),
+                _ => Result.Failure("Invalid status")
+            },
+            ProjectStatus.PendingReview => request.Status switch
+            {
+                ProjectStatus.RevisionRequired => await UpdateToRevisionRequired(project),
+                ProjectStatus.Completed => await UpdateToCompleted(project),
+                ProjectStatus.Failed => await UpdateToFailed(project),
+                ProjectStatus.Closed => await UpdateToClosed(project),
+                _ => Result.Failure("Invalid status")
+            },
+            ProjectStatus.Completed or ProjectStatus.Failed => request.Status switch
+            {
+                ProjectStatus.Closed => await UpdateToClosed(project),
+                _ => Result.Failure("Invalid status")
+            },
+            ProjectStatus.RevisionRequired => request.Status switch
+            {
+                ProjectStatus.Completed => await UpdateToCompleted(project),
+                ProjectStatus.Failed => await UpdateToFailed(project),
+                ProjectStatus.Closed => await UpdateToClosed(project),
+                _ => Result.Failure("Invalid status")
+            },
+            ProjectStatus.Closed => Result.Failure("Project status cannot be updated"),
+            _ => Result.Failure("Invalid status")
+        };
+
+        if (result.IsFailure) return result;
+        // Save changes
+        await _unitOfWork.SaveChangesAsync();
+        return Result.Success();
+    }
+
+    /// <summary>
+    /// Update project status to revision required
+    /// Not save changes yet
+    /// </summary>
+    /// <param name="project"></param>
+    /// <returns></returns>
+    private Task<Result> UpdateToRevisionRequired(Project project)
+    {
+        project.Status = ProjectStatus.RevisionRequired;
+        _unitOfWork.Projects.Update(project);
+        return Task.FromResult(Result.Success());
+    }
+
+    /// <summary>
+    /// Update project status to failed
+    /// Not save changes yet
+    /// </summary>
+    /// <param name="project"></param>
+    /// <returns></returns>
+    private Task<Result> UpdateToFailed(Project project)
+    {
+        project.Status = ProjectStatus.Failed;
+        _unitOfWork.Projects.Update(project);
+        return Task.FromResult(Result.Success());
+    }
+
+    /// <summary>
+    /// Update project status to completed
+    /// Not save changes yet
+    /// </summary>
+    /// <param name="project"></param>
+    /// <returns></returns>
+    private Task<Result> UpdateToCompleted(Project project)
+    {
+        project.Status = ProjectStatus.Completed;
+        _unitOfWork.Projects.Update(project);
+        return Task.FromResult(Result.Success());
+    }
+
+    /// <summary>
+    /// Update project status to pending review
+    /// Not save changes yet
+    /// </summary>
+    /// <param name="project"></param>
+    /// <returns></returns>
+    private Task<Result> UpdateToPendingReview(Project project)
+    {
+        project.Status = ProjectStatus.PendingReview;
+        _unitOfWork.Projects.Update(project);
+        return Task.FromResult(Result.Success());
+    }
+
+    /// <summary>
+    /// Update project status to closed
+    /// Not save changes yet
+    /// </summary>
+    /// <param name="project"></param>
+    /// <returns></returns>
+    private Task<Result> UpdateToClosed(Project project)
+    {
+        project.Status = ProjectStatus.Closed;
+        _unitOfWork.Projects.Update(project);
+        return Task.FromResult(Result.Success());
+    }
+
+    /// <summary>
+    /// Update project status to in progress if there are enough students and lecturer
+    /// Not save changes yet
+    /// </summary>
+    /// <param name="project"></param>
+    /// <returns></returns>
+    private async Task<Result> UpdateToInProgress(Project project)
+    {
+        var studentCount = await _unitOfWork.ProjectStudents.FindAll()
+            .Where(x => x.ProjectId == project.Id).CountAsync();
+        if (studentCount < Constants.MinProjectStudents)
+            return Result.Failure($"Project must have at least {Constants.MinProjectStudents} students");
+        if (project.LecturerId == null)
+            return Result.Failure("Project must have a lecturer");
+        project.Status = ProjectStatus.InProgress;
+        _unitOfWork.Projects.Update(project);
+        return Result.Success();
+    }
+
     public async Task<Result> DeleteAsync(Guid id)
     {
         var project = await _unitOfWork.Projects.FindByIdAsync(id);

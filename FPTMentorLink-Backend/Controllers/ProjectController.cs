@@ -52,6 +52,19 @@ public class ProjectController : ControllerBase
         return result.IsSuccess ? Ok() : BadRequest(result);
     }
 
+    [HttpPatch("{id:guid}/status")]
+    public async Task<IActionResult> UpdateStatusAsync([FromRoute] Guid id,
+        [FromBody] UpdateProjectStatusRequest request)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var result = await _projectService.UpdateStatusAsync(id, request);
+        return result.IsSuccess ? Ok() : BadRequest(result);
+    }
+
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeleteAsync([FromRoute] Guid id)
     {

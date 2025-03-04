@@ -18,6 +18,7 @@ public class UnitOfWork : IUnitOfWork
     private IGenericRepository<CheckpointTask>? _checkpointTasks;
     private IGenericRepository<Faculty>? _faculties;
     private IGenericRepository<Lecturer>? _lecturers;
+    private IGenericRepository<LecturingProposal>? _lecturingProposals;
     private IGenericRepository<Mentor>? _mentors;
     private IGenericRepository<MentorAvailability>? _mentorAvailabilities;
     private IGenericRepository<MentorFeedback>? _mentorFeedbacks;
@@ -57,6 +58,9 @@ public class UnitOfWork : IUnitOfWork
 
     public IGenericRepository<Lecturer> Lecturers =>
         _lecturers ??= new GenericRepository<Lecturer>(_context);
+
+    public IGenericRepository<LecturingProposal> LecturingProposals =>
+        _lecturingProposals ??= new GenericRepository<LecturingProposal>(_context);
 
     public IGenericRepository<Mentor> Mentors =>
         _mentors ??= new GenericRepository<Mentor>(_context);

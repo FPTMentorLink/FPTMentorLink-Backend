@@ -100,16 +100,25 @@ public class MentoringProposalService : IMentoringProposalService
         if (mentoringProposal.Status != MentoringProposalStatus.Pending)
             return Result.Failure("Mentoring proposal status already set");
 
-        var project = await _unitOfWork.Projects.FindByIdAsNoTrackingAsync(mentoringProposal.ProjectId);
+        var project = await _unitOfWork.Projects.FindByIdAsync(mentoringProposal.ProjectId);
         if (project == null)
             return Result.Failure("Project not found");
         if (!project.MentorId.IsNullOrGuidEmpty())
             return Result.Failure("Project already has a mentor");
 
         if (request.IsAccepted.HasValue)
-            mentoringProposal.Status = request.IsAccepted == true
-                ? MentoringProposalStatus.Accepted
-                : MentoringProposalStatus.Rejected;
+        {
+            if (request.IsAccepted.Value)
+            {
+                mentoringProposal.Status = MentoringProposalStatus.Accepted;
+                project.MentorId = mentoringProposal.MentorId;
+                _unitOfWork.Projects.Update(project);
+            }
+            else
+            {
+                mentoringProposal.Status = MentoringProposalStatus.Rejected;
+            }
+        }
 
         _mapper.Map(request, mentoringProposal);
         _unitOfWork.MentoringProposals.Update(mentoringProposal);

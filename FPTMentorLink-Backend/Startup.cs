@@ -183,6 +183,8 @@ public static class Startup
         builder.Services.AddScoped<IAppointmentService, AppointmentService>();
         builder.Services.AddScoped<ICheckpointService, CheckpointService>();
         builder.Services.AddScoped<ICheckpointTaskService, CheckpointTaskService>();
+        builder.Services.AddScoped<IFacultyService, FacultyService>();
+        builder.Services.AddScoped<ILecturingProposalService, LecturingProposalService>();
         builder.Services.AddScoped<IFeedbackService, FeedbackService>();
         builder.Services.AddScoped<IMentorAvailabilityService, MentorAvailabilityService>();
         builder.Services.AddScoped<IMentoringProposalService, MentoringProposalService>();
@@ -192,7 +194,6 @@ public static class Startup
         builder.Services.AddScoped<IWeeklyReportService, WeeklyReportService>();
         builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
         builder.Services.AddScoped<ITermService, TermService>();
-        builder.Services.AddScoped<IFacultyService, FacultyService>();
 
         // Register Utils
         builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();

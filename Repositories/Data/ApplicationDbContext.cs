@@ -18,6 +18,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<CheckpointTask> CheckpointTasks { get; set; }
     public DbSet<Faculty> Faculties { get; set; }
     public DbSet<Lecturer> Lecturers { get; set; }
+    public DbSet<LecturingProposal> LecturingProposals { get; set; }
     public DbSet<Mentor> Mentors { get; set; }
     public DbSet<MentorAvailability> MentorAvailabilities { get; set; }
     public DbSet<MentorFeedback> MentorFeedbacks { get; set; }
@@ -168,6 +169,21 @@ public class ApplicationDbContext : DbContext
             entity.Property(p => p.Description)
                 .HasCharSet("utf8mb4")
                 .UseCollation("utf8mb4_0900_ai_ci");
+        });
+
+        modelBuilder.Entity<LecturingProposal>(entity =>
+        {
+            entity.ToTable(nameof(LecturingProposal));
+            entity.Property(p => p.StudentNote)
+                .HasCharSet("utf8mb4")
+                .UseCollation("utf8mb4_0900_ai_ci");
+            entity.Property(p => p.LecturerNote)
+                .HasCharSet("utf8mb4")
+                .UseCollation("utf8mb4_0900_ai_ci");
+            entity.Property(p => p.Status)
+                .HasConversion(
+                    v => v.ToString(),
+                    v => (LecturingProposalStatus)Enum.Parse(typeof(LecturingProposalStatus), v));
         });
 
         modelBuilder.Entity<Mentor>(entity =>

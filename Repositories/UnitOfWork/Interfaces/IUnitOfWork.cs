@@ -12,6 +12,7 @@ public interface IUnitOfWork : IDisposable
     IGenericRepository<CheckpointTask> CheckpointTasks { get; }
     IGenericRepository<Faculty> Faculties { get; }
     IGenericRepository<Lecturer> Lecturers { get; }
+    IGenericRepository<LecturingProposal> LecturingProposals { get; }
     IGenericRepository<Mentor> Mentors { get; }
     IGenericRepository<MentorAvailability> MentorAvailabilities { get; }
     IGenericRepository<MentorFeedback> MentorFeedbacks { get; }

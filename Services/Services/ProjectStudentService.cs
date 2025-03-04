@@ -177,7 +177,7 @@ public class ProjectStudentService : IProjectStudentService
 
         if (project == null)
             return Result.Failure("Project not found");
-        if ((int)project.Status > (int)ProjectStatus.Rejected)
+        if (project.Status > ProjectStatus.Pending)
             return Result.Failure("Project is not available");
         if (project.StudentCount >= Constants.MaxProjectStudents)
             return Result.Failure("Project is full");
