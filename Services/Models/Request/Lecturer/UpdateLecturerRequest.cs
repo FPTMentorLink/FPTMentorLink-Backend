@@ -1,8 +1,11 @@
-﻿namespace Services.Models.Request.Lecturer;
+﻿using System.ComponentModel.DataAnnotations;
+using Services.Models.Request.Account;
 
-public class UpdateLecturerRequest
+namespace Services.Models.Request.Lecturer;
+
+public class UpdateLecturerRequest : BaseUpdateAccountRequest
 {
-    public string? Code { get; set; }
-    public string? Description { get; set; }
-    public string? Faculty { get; set; }
+    [MaxLength(255)] public string? Code { get; set; }
+    [MaxLength(255)] public string? Description { get; set; }
+    public Guid? FacultyId { get; set; }
 }

@@ -1,10 +1,11 @@
-﻿using Services.Models.Request.Account;
+﻿using System.ComponentModel.DataAnnotations;
+using Services.Models.Request.Account;
 
 namespace Services.Models.Request.Lecturer;
 
-public class CreateLecturerRequest : CreateAccountRequest
+public class CreateLecturerRequest : BaseCreateAccountRequest
 {
-    public string Code { get; set; } = null!;
-    public string? Description { get; set; }
-    public string? Faculty { get; set; }
+    [Required] [MaxLength(50)] public string Code { get; set; } = null!;
+    [MaxLength(2000)] public string? Description { get; set; }
+    [Required] public Guid FacultyId { get; set; }
 }

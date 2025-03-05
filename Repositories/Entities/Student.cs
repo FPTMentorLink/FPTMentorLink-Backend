@@ -11,7 +11,7 @@ public class Student : AuditableEntity
     [MaxLength(255)] public required string Code { get; set; }
     [ForeignKey(nameof(Faculty))] public Guid FacultyId { get; set; }
     public int Balance { get; set; }
-    public bool IsGraduated { get; set; }
+    public bool IsGraduated { get; set; } = false; //default value
 
     public virtual Account Account { get; set; } = null!;
     public virtual Faculty Faculty { get; set; } = null!;

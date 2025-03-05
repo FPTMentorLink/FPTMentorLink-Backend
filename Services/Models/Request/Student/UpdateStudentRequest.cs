@@ -1,6 +1,10 @@
+using System.ComponentModel.DataAnnotations;
+using Services.Models.Request.Account;
+
 namespace Services.Models.Request.Student;
 
-public class UpdateStudentRequest
+public class UpdateStudentRequest : BaseUpdateAccountRequest
 {
-    public int? Balance { get; set; }
+    [MaxLength(255)] public string? Code { get; set; }
+    public Guid? FacultyId { get; set; }
 }

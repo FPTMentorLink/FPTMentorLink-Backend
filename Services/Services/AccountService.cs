@@ -1,5 +1,4 @@
-﻿using System.Collections.Concurrent;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Security.Claims;
 using CsvHelper;
 using CsvHelper.Configuration;
@@ -12,9 +11,15 @@ using Repositories.UnitOfWork.Interfaces;
 using Services.Interfaces;
 using Services.Models.Request.Account;
 using Services.Models.Request.Authorization;
+using Services.Models.Request.Lecturer;
+using Services.Models.Request.Mentor;
+using Services.Models.Request.Student;
 using Services.Models.Response.Account;
 using Services.Models.Response.Authentication;
 using Services.Models.Response.Authorization;
+using Services.Models.Response.Lecturer;
+using Services.Models.Response.Mentor;
+using Services.Models.Response.Student;
 using Services.Utils;
 
 namespace Services.Services;
@@ -35,16 +40,46 @@ public class AccountService : IAccountService
         _jwtSettings = jwtSettings.Value;
     }
 
-    public async Task<Result<AccountResponse>> GetByIdAsync(Guid id, CancellationToken cancellationToken)
-    {
-        var account = await _unitOfWork.Accounts.FindByIdAsync(id, cancellationToken);
-        if (account == null)
-            return Result.Failure<AccountResponse>("Account not found");
+    public async Task<Result<object>> GetByIdAsync(Guid id, AccountRole accountRole,
+        CancellationToken cancellationToken) =>
+        accountRole switch
+        {
+            AccountRole.Admin => await _unitOfWork.Accounts
+                    .FindSingleAsync(a => a.Id == id && a.Role == AccountRole.Admin, cancellationToken)
+                is { } account
+                ? Result.Success<object>(_mapper.Map<AdminResponse>(account))
+                : Result.Failure<object>(DomainError.Account.AccountNotFound),
 
-        return Result.Success(_mapper.Map<AccountResponse>(account));
-    }
+            AccountRole.Lecturer => await _unitOfWork.Lecturers
+                    .FindSingleAsync(l => l.Id == id, cancellationToken, x => x.Account, x => x.Faculty)
+                is { } lecturer
+                ? Result.Success<object>(_mapper.Map<LecturerResponse>(lecturer))
+                : Result.Failure<object>(DomainError.Lecturer.LecturerNotFound),
 
-    public async Task<Result> CreateAsync(CreateAccountRequest request, CancellationToken cancellationToken)
+            AccountRole.Mentor => await _unitOfWork.Mentors
+                    .FindSingleAsync(m => m.Id == id, cancellationToken, x => x.Account)
+                is { } mentor
+                ? Result.Success<object>(_mapper.Map<MentorResponse>(mentor))
+                : Result.Failure<object>(DomainError.Mentor.MentorNotFound),
+
+            AccountRole.Student => await _unitOfWork.Students
+                    .FindSingleAsync(s => s.Id == id, cancellationToken, x => x.Account, x => x.Faculty)
+                is { } student
+                ? Result.Success<object>(_mapper.Map<StudentResponse>(student))
+                : Result.Failure<object>(DomainError.Student.StudentNotFound),
+
+            _ => Result.Failure<object>(DomainError.Account.AccountNotFound)
+        };
+
+    /// <summary>
+    /// Base validation for creating an account (default role is Admin)
+    /// </summary>
+    /// <param name="request"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="role"></param>
+    /// <returns></returns>
+    private async Task<Result> BaseValidateAccountAsync(BaseCreateAccountRequest request,
+        CancellationToken cancellationToken)
     {
         var validateAccount = await
             _unitOfWork.Accounts.FindAll().Select(x => new
@@ -66,10 +101,18 @@ public class AccountService : IAccountService
             }
         }
 
+        return Result.Success();
+    }
+
+    public async Task<Result> CreateAdminAsync(CreateAdminRequest request, CancellationToken cancellationToken)
+    {
+        var validateAccount = await BaseValidateAccountAsync(request, cancellationToken);
+        if (!validateAccount.IsSuccess)
+            return validateAccount;
         request.Password = _passwordHasher.HashPassword(request.Password);
         var account = _mapper.Map<Account>(request);
+        account.Role = AccountRole.Admin;
         _unitOfWork.Accounts.Add(account);
-
         try
         {
             await _unitOfWork.SaveChangesAsync();
@@ -81,7 +124,75 @@ public class AccountService : IAccountService
         }
     }
 
-    public async Task<Result> UpdateAsync(Guid id, UpdateAccountRequest request, CancellationToken cancellationToken)
+    public async Task<Result> CreateLecturerAsync(CreateLecturerRequest request, CancellationToken cancellationToken)
+    {
+        var baseValidation = await BaseValidateAccountAsync(request, cancellationToken);
+        if (!baseValidation.IsSuccess)
+            return baseValidation;
+        var validateCode = await _unitOfWork.Lecturers.AnyAsync(x => x.Code == request.Code, cancellationToken);
+        if (validateCode)
+            return Result.Failure(DomainError.Lecturer.LecturerCodeExists);
+        var faculty =
+            await _unitOfWork.Faculties.AnyAsync(x => x.Id == request.FacultyId, cancellationToken);
+        if (!faculty)
+            return Result.Failure(DomainError.Faculty.FacultyNotFound);
+
+        request.Password = _passwordHasher.HashPassword(request.Password);
+        var account = _mapper.Map<Account>(request);
+        account.Role = AccountRole.Lecturer;
+        var lecturer = _mapper.Map<Lecturer>(request);
+        lecturer.Id = account.Id;
+        lecturer.Account = account; // Navigation property
+        _unitOfWork.Accounts.Add(account);
+        _unitOfWork.Lecturers.Add(lecturer);
+        await _unitOfWork.SaveChangesAsync();
+        return Result.Success();
+    }
+
+    public async Task<Result> CreateMentorAsync(CreateMentorRequest request, CancellationToken cancellationToken)
+    {
+        var baseValidation = await BaseValidateAccountAsync(request, cancellationToken);
+        if (!baseValidation.IsSuccess)
+            return baseValidation;
+        var validateCode = await _unitOfWork.Mentors.AnyAsync(x => x.Code == request.Code, cancellationToken);
+        if (validateCode)
+            return Result.Failure(DomainError.Lecturer.LecturerCodeExists);
+
+        request.Password = _passwordHasher.HashPassword(request.Password);
+        var account = _mapper.Map<Account>(request);
+        account.Role = AccountRole.Mentor;
+        var mentor = _mapper.Map<Mentor>(request);
+        mentor.Id = account.Id;
+        mentor.Account = account; // Navigation property
+        _unitOfWork.Accounts.Add(account);
+        _unitOfWork.Mentors.Add(mentor);
+        await _unitOfWork.SaveChangesAsync();
+        return Result.Success();
+    }
+
+    public async Task<Result> CreateStudentAsync(CreateStudentRequest request, CancellationToken cancellationToken)
+    {
+        var baseValidation = await BaseValidateAccountAsync(request, cancellationToken);
+        if (!baseValidation.IsSuccess)
+            return baseValidation;
+        var validateCode = await _unitOfWork.Students.AnyAsync(x => x.Code == request.Code, cancellationToken);
+        if (validateCode)
+            return Result.Failure(DomainError.Lecturer.LecturerCodeExists);
+
+        request.Password = _passwordHasher.HashPassword(request.Password);
+        var account = _mapper.Map<Account>(request);
+        account.Role = AccountRole.Student;
+        var student = _mapper.Map<Student>(request);
+        student.Id = account.Id;
+        student.Account = account; // Navigation property
+        _unitOfWork.Accounts.Add(account);
+        _unitOfWork.Students.Add(student);
+        await _unitOfWork.SaveChangesAsync();
+        return Result.Success();
+    }
+
+    public async Task<Result> UpdateAdminAsync(Guid id, UpdateAdminRequest request,
+        CancellationToken cancellationToken)
     {
         var account = await _unitOfWork.Accounts.FindByIdAsync(id, cancellationToken);
 
@@ -164,10 +275,10 @@ public class AccountService : IAccountService
         return exists ? Result.Failure("Email already exists") : Result.Success();
     }
 
-    public async Task<Result<PaginationResult<AccountResponse>>> GetPagedAsync(PaginationParams paginationParams)
+    public async Task<Result<PaginationResult<AccountsResponse>>> GetPagedAsync(PaginationParams paginationParams)
     {
         var query = _unitOfWork.Accounts.GetQueryable();
-        var result = await query.ProjectToPaginatedListAsync<Account, AccountResponse>(paginationParams);
+        var result = await query.ProjectToPaginatedListAsync<Account, AccountsResponse>(paginationParams);
 
         return Result.Success(result);
     }
@@ -181,7 +292,7 @@ public class AccountService : IAccountService
         return Result.Success(total);
     }
 
-    public async Task<Result> ImportAccountsAsync(IFormFile file, CancellationToken cancellationToken)
+    public async Task<Result> ImportAccountsAsync(IFormFile file, AccountRole role, CancellationToken cancellationToken)
     {
         if (file.Length == 0)
             return Result.Failure("File is empty");
@@ -196,55 +307,76 @@ public class AccountService : IAccountService
         {
             using var reader = new StreamReader(file.OpenReadStream());
             using var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture));
-            var records = csv.GetRecords<CsvAccount>().ToList();
-            if (records.Count() > Constants.MaxImportAccounts)
-                return Result.Failure(DomainError.Account.MaxImportAccountsExceeded);
-
-            // Get all emails and usernames from the CSV
-            var csvEmails = records.Select(r => r.Email).ToList();
-            var csvUsernames = records.Select(r => r.Username).ToList();
-
-            // Check for duplicates within the CSV file itself
-            var duplicateEmails = csvEmails.GroupBy(e => e)
-                .Where(g => g.Count() > 1)
-                .Select(g => g.Key)
-                .ToList();
-
-            if (duplicateEmails.Any())
-                return Result.Failure($"{DomainError.Account.DuplicateEmailCsv} {string.Join(", ", duplicateEmails)}");
-
-            var duplicateUsernames = csvUsernames.GroupBy(u => u)
-                .Where(g => g.Count() > 1)
-                .Select(g => g.Key)
-                .ToList();
-
-            if (duplicateUsernames.Any())
-                return Result.Failure($"{DomainError.Account.DuplicateUsernameCsv} {string.Join(", ", duplicateUsernames)}");
-
-            // Check against existing database records
-            var isExistingAccounts = await _unitOfWork.Accounts
-                .FindAll()
-                .AnyAsync(a => csvEmails.Contains(a.Email) || csvUsernames.Contains(a.Username), cancellationToken);
-            // .Select(a => new { a.Email, a.Username })
-            // .ToListAsync(
-            //     cancellationToken); // With 75000 records in the database, this query takes 10-30 seconds to execute
-
-            if (isExistingAccounts)
+            switch (role)
             {
-                return Result.Failure(DomainError.Account.CsvAccountExist);
+                case AccountRole.Admin:
+                    var importAdminResult = await ImportAdminsAsync(csv, cancellationToken);
+                    if (importAdminResult.IsFailure) return importAdminResult;
+                    break;
+                case AccountRole.Student:
+                    var importStudentResult = await ImportStudentAsync(csv, cancellationToken);
+                    if (importStudentResult.IsFailure) return importStudentResult;
+                    break;
+                case AccountRole.Mentor:
+                    var importMentorResult = await ImportMentorAsync(csv, cancellationToken);
+                    if (importMentorResult.IsFailure) return importMentorResult;
+                    break;
+                case AccountRole.Lecturer:
+                    var importLecturerResult = await ImportLecturerAsync(csv, cancellationToken);
+                    if (importLecturerResult.IsFailure) return importLecturerResult;
+                    break;
             }
 
-            // Map CSV records to Account entities
-
-            // var accounts = records.Select(r =>
+            // var records = csv.GetRecords<CsvAccount>().ToList();
+            // if (records.Count() > Constants.MaxImportAccounts)
+            //     return Result.Failure(DomainError.Account.MaxImportAccountsExceeded);
+            //
+            // // Get all emails and usernames from the CSV
+            // var csvEmails = records.Select(r => r.Email).ToList();
+            // var csvUsernames = records.Select(r => r.Username).ToList();
+            //
+            // // Check for duplicates within the CSV file itself
+            // var duplicateEmails = csvEmails.GroupBy(e => e)
+            //     .Where(g => g.Count() > 1)
+            //     .Select(g => g.Key)
+            //     .ToList();
+            //
+            // if (duplicateEmails.Any())
+            //     return Result.Failure($"{DomainError.Account.DuplicateEmailCsv} {string.Join(", ", duplicateEmails)}");
+            //
+            // var duplicateUsernames = csvUsernames.GroupBy(u => u)
+            //     .Where(g => g.Count() > 1)
+            //     .Select(g => g.Key)
+            //     .ToList();
+            //
+            // if (duplicateUsernames.Any())
+            //     return Result.Failure(
+            //         $"{DomainError.Account.DuplicateUsernameCsv} {string.Join(", ", duplicateUsernames)}");
+            //
+            // // Check against existing database records
+            // var isExistingAccounts = await _unitOfWork.Accounts
+            //     .FindAll()
+            //     .AnyAsync(a => csvEmails.Contains(a.Email) || csvUsernames.Contains(a.Username), cancellationToken);
+            // // .Select(a => new { a.Email, a.Username })
+            // // .ToListAsync(
+            // //     cancellationToken); // With 75000 records in the database, this query takes 10-30 seconds to execute
+            //
+            // if (isExistingAccounts)
             // {
-            //     var account = _mapper.Map<Account>(r);
-            //     account.PasswordHash = _passwordHasher.HashPassword(r.Password); // Moi lan hash ton 0.3s -> 1000 records -> 300s?
-            //     return account;
-            // }).ToList();
-
-            var accounts = await HashPasswordsInParallelAsync(records, cancellationToken);
-            _unitOfWork.Accounts.AddRange(accounts);
+            //     return Result.Failure(DomainError.Account.CsvAccountExist);
+            // }
+            //
+            // // Map CSV records to Account entities
+            //
+            // // var accounts = records.Select(r =>
+            // // {
+            // //     var account = _mapper.Map<Account>(r);
+            // //     account.PasswordHash = _passwordHasher.HashPassword(r.Password); // Moi lan hash ton 0.3s -> 1000 records -> 300s?
+            // //     return account;
+            // // }).ToList();
+            //
+            // var accounts = await HashPasswordsInParallelAsync(records, cancellationToken);
+            // _unitOfWork.Accounts.AddRange(accounts);
             await _unitOfWork.SaveChangesAsync();
             return Result.Success();
         }
@@ -254,12 +386,211 @@ public class AccountService : IAccountService
         }
     }
 
-    private async Task<List<Account>> HashPasswordsInParallelAsync(List<CsvAccount> records,
-        CancellationToken cancellationToken)
+    private async Task<Result> ImportAdminsAsync(CsvReader csv, CancellationToken cancellationToken)
+    {
+        var adminRecords = csv.GetRecords<CsvAccount>().ToList();
+        var adminResult = await BaseValidateImportRecords(adminRecords, cancellationToken);
+        if (adminResult.IsFailure)
+        {
+            return adminResult;
+        }
+
+        var adminAccounts =
+            await HashPasswordsInParallelAsync(adminRecords, AccountRole.Admin, cancellationToken);
+        _unitOfWork.Accounts.AddRange(adminAccounts);
+        return Result.Success();
+    }
+
+    private async Task<Result> ImportStudentAsync(CsvReader csv, CancellationToken cancellationToken)
+    {
+        var studentRecords = csv.GetRecords<CsvStudent>().ToList();
+        var studentResult = await BaseValidateImportRecords(studentRecords, cancellationToken);
+        if (studentResult.IsFailure)
+        {
+            return studentResult;
+        }
+
+        var code = studentRecords.Select(x => x.Code).ToList();
+        var duplicateCode = code.GroupBy(e => e)
+            .Where(g => g.Count() > 1)
+            .Select(g => g.Key)
+            .ToList();
+        if (duplicateCode.Any())
+            return Result.Failure(
+                $"{DomainError.Student.DuplicateStudentCodeCsv} {string.Join(", ", duplicateCode)}");
+
+        var existCode = await _unitOfWork.Students.AnyAsync(x => code.Contains(x.Code), cancellationToken);
+        if (existCode)
+            return Result.Failure(DomainError.Student.StudentCodeExists);
+        
+        // Get all unique faculty codes from the records
+        var studentFacultyCodes = studentRecords.Select(r => r.FacultyCode).Distinct().ToList();
+
+        // Fetch all required faculties in a single query
+        var facultyDictionary = await _unitOfWork.Faculties
+            .FindAll(f => studentFacultyCodes.Contains(f.Code))
+            .ToDictionaryAsync(f => f.Code, f => f.Id, cancellationToken);
+
+        // Validate all faculty codes exist
+        var missingFacultyCodes = studentFacultyCodes
+            .Except(facultyDictionary.Keys)
+            .ToList();
+        if (missingFacultyCodes.Any())
+        {
+            return Result.Failure(
+                $"Faculties with codes not found: {string.Join(", ", missingFacultyCodes)}");
+        }
+
+        var studentAccounts =
+            await HashPasswordsInParallelAsync(studentRecords, AccountRole.Student, cancellationToken);
+        // Create corresponding student entities
+        var students = studentRecords.Select((r, index) =>
+        {
+            var student = _mapper.Map<Student>(r);
+            // Use the same ID as the account
+            student.Id = studentAccounts[index].Id;
+            student.Account = studentAccounts[index];
+            student.FacultyId = facultyDictionary[r.FacultyCode];
+            return student;
+        }).ToList();
+        // Add both accounts and students to the database
+        _unitOfWork.Accounts.AddRange(studentAccounts);
+        _unitOfWork.Students.AddRange(students);
+        return Result.Success();
+    }
+
+    private async Task<Result> ImportLecturerAsync(CsvReader csv, CancellationToken cancellationToken)
+    {
+        var lecturerRecords = csv.GetRecords<CsvLecturer>().ToList();
+        var lecturerResult = await BaseValidateImportRecords(lecturerRecords, cancellationToken);
+        if (lecturerResult.IsFailure)
+        {
+            return lecturerResult;
+        }
+
+        var code = lecturerRecords.Select(x => x.Code).ToList();
+        var duplicateCode = code.GroupBy(e => e)
+            .Where(g => g.Count() > 1)
+            .Select(g => g.Key)
+            .ToList();
+        if (duplicateCode.Any())
+            return Result.Failure(
+                $"{DomainError.Mentor.DuplicateLecturerCodeCsv} {string.Join(", ", duplicateCode)}");
+
+        var existCode = await _unitOfWork.Lecturers.AnyAsync(x => code.Contains(x.Code), cancellationToken);
+        if (existCode)
+            return Result.Failure(DomainError.Lecturer.LecturerCodeExists);
+
+        // Get all unique faculty codes from the records
+        var facultyCodes = lecturerRecords.Select(r => r.FacultyCode).Distinct().ToList();
+
+        // Fetch all required faculties in a single query
+        var dictionary = await _unitOfWork.Faculties
+            .FindAll(f => facultyCodes.Contains(f.Code))
+            .ToDictionaryAsync(f => f.Code, f => f.Id, cancellationToken);
+
+        // Validate all faculty codes exist
+        var missingFaculty = facultyCodes
+            .Except(dictionary.Keys)
+            .ToList();
+        if (missingFaculty.Any())
+        {
+            return Result.Failure(
+                $"Faculties with codes not found: {string.Join(", ", missingFaculty)}");
+        }
+
+        var lecturerAccounts =
+            await HashPasswordsInParallelAsync(lecturerRecords, AccountRole.Lecturer, cancellationToken);
+        var lecturers = lecturerRecords.Select((r, index) =>
+        {
+            var lecturer = _mapper.Map<Lecturer>(r);
+            lecturer.Id = lecturerAccounts[index].Id;
+            lecturer.Account = lecturerAccounts[index];
+            lecturer.FacultyId = dictionary[r.FacultyCode];
+            return lecturer;
+        }).ToList();
+        _unitOfWork.Accounts.AddRange(lecturerAccounts);
+        _unitOfWork.Lecturers.AddRange(lecturers);
+        return Result.Success();
+    }
+
+    private async Task<Result> ImportMentorAsync(CsvReader csv, CancellationToken cancellationToken)
+    {
+        var mentorRecords = csv.GetRecords<CsvMentor>().ToList();
+        var mentorResult = await BaseValidateImportRecords(mentorRecords, cancellationToken);
+        if (mentorResult.IsFailure)
+        {
+            return mentorResult;
+        }
+
+        var code = mentorRecords.Select(x => x.Code).ToList();
+        var duplicateCode = code.GroupBy(e => e)
+            .Where(g => g.Count() > 1)
+            .Select(g => g.Key)
+            .ToList();
+        if (duplicateCode.Any())
+            return Result.Failure(
+                $"{DomainError.Lecturer.DuplicateLecturerCodeCsv} {string.Join(", ", duplicateCode)}");
+
+        var existCode = await _unitOfWork.Mentors.AnyAsync(x => code.Contains(x.Code), cancellationToken);
+        if (existCode)
+            return Result.Failure(DomainError.Mentor.MentorCodeExists);
+
+        var mentorAccounts =
+            await HashPasswordsInParallelAsync(mentorRecords, AccountRole.Mentor, cancellationToken);
+        var mentors = mentorRecords.Select((r, index) =>
+        {
+            var mentor = _mapper.Map<Mentor>(r);
+            mentor.Id = mentorAccounts[index].Id;
+            mentor.Account = mentorAccounts[index];
+            return mentor;
+        }).ToList();
+        _unitOfWork.Accounts.AddRange(mentorAccounts);
+        _unitOfWork.Mentors.AddRange(mentors);
+        return Result.Success();
+    }
+
+
+    private async Task<Result> BaseValidateImportRecords<T>(IEnumerable<T> records, CancellationToken cancellationToken)
+        where T : CsvAccount
+    {
+        if (records.Count() > Constants.MaxImportAccounts)
+            return Result.Failure(DomainError.Account.MaxImportAccountsExceeded);
+        // Get all emails and usernames from the CSV
+        var csvEmails = records.Select(r => r.Email).ToList();
+        var csvUsernames = records.Select(r => r.Username).ToList();
+
+        // Check for duplicates within the CSV file itself
+        var duplicateEmails = csvEmails.GroupBy(e => e)
+            .Where(g => g.Count() > 1)
+            .Select(g => g.Key)
+            .ToList();
+
+        if (duplicateEmails.Any())
+            return Result.Failure($"{DomainError.Account.DuplicateEmailCsv} {string.Join(", ", duplicateEmails)}");
+
+        var duplicateUsernames = csvUsernames.GroupBy(u => u)
+            .Where(g => g.Count() > 1)
+            .Select(g => g.Key)
+            .ToList();
+
+        if (duplicateUsernames.Any())
+            return Result.Failure(
+                $"{DomainError.Account.DuplicateUsernameCsv} {string.Join(", ", duplicateUsernames)}");
+
+        // Check against existing database records
+        var isExistingAccounts = await _unitOfWork.Accounts
+            .FindAll()
+            .AnyAsync(a => csvEmails.Contains(a.Email) || csvUsernames.Contains(a.Username), cancellationToken);
+        return isExistingAccounts ? Result.Failure(DomainError.Account.CsvAccountExist) : Result.Success();
+    }
+
+    private async Task<List<Account>> HashPasswordsInParallelAsync<T>(List<T> records,
+        AccountRole role, CancellationToken cancellationToken) where T : CsvAccount
     {
         // If you have 4 CPU cores, this will allow 8 concurrent operations
-        var maxConcurrent = Environment.ProcessorCount * 2;
-        // var maxConcurrent = Environment.ProcessorCount / 2;
+        // var maxConcurrent = Environment.ProcessorCount * 2;
+        var maxConcurrent = Environment.ProcessorCount / 2;
         using var semaphore = new SemaphoreSlim(maxConcurrent);
 
         // Moi record la 1 task -> 1000 records -> 1000 tasks neu co 4 core -> 8 task chay cung 1 luc
@@ -272,6 +603,7 @@ public class AccountService : IAccountService
                 {
                     var account = _mapper.Map<Account>(record);
                     account.PasswordHash = _passwordHasher.HashPassword(record.Password);
+                    account.Role = role;
                     return account;
                 }, cancellationToken);
             }
@@ -283,5 +615,111 @@ public class AccountService : IAccountService
 
         var hashedAccounts = await Task.WhenAll(hashingTasks);
         return hashedAccounts.ToList();
+    }
+
+
+    public async Task<Result> UpdateLecturerAsync(Guid id, UpdateLecturerRequest request,
+        CancellationToken cancellationToken)
+    {
+        var lecturer = await _unitOfWork.Lecturers.FindSingleAsync(
+            l => l.Id == id,
+            cancellationToken, x => x.Account);
+        if (lecturer == null)
+            return Result.Failure(DomainError.Lecturer.LecturerNotFound);
+        var existingCode =
+            await _unitOfWork.Lecturers.AnyAsync(x => x.Code == request.Code && x.Id != id, cancellationToken);
+        if (existingCode)
+            return Result.Failure(DomainError.Lecturer.LecturerCodeExists);
+
+        if (request.FacultyId.HasValue)
+        {
+            var faculty = await _unitOfWork.Faculties.AnyAsync(x => x.Id == request.FacultyId.Value, cancellationToken);
+            if (!faculty)
+                return Result.Failure(DomainError.Faculty.FacultyNotFound);
+        }
+
+        // Update base account properties only
+        lecturer.Account.FirstName = request.FirstName ?? lecturer.Account.FirstName;
+        lecturer.Account.LastName = request.LastName ?? lecturer.Account.LastName;
+        lecturer.Account.ImageUrl = request.ImageUrl ?? lecturer.Account.ImageUrl;
+        lecturer.Account.IsSuspended = request.IsSuspended ?? lecturer.Account.IsSuspended;
+
+        // Update lecturer specific properties
+        lecturer.FacultyId = request.FacultyId ?? lecturer.FacultyId;
+        lecturer.Code = request.Code ?? lecturer.Code;
+        lecturer.Description = request.Description ?? lecturer.Description;
+
+        _unitOfWork.Lecturers.Update(lecturer);
+        await _unitOfWork.SaveChangesAsync();
+
+        return Result.Success();
+    }
+
+    public async Task<Result> UpdateMentorAsync(Guid id, UpdateMentorRequest request,
+        CancellationToken cancellationToken)
+    {
+        var mentor = await _unitOfWork.Mentors.FindSingleAsync(
+            m => m.Id == id,
+            cancellationToken, x => x.Account);
+        if (mentor == null)
+            return Result.Failure(DomainError.Mentor.MentorNotFound);
+        var existingCode =
+            await _unitOfWork.Mentors.AnyAsync(x => x.Code == request.Code && x.Id != id, cancellationToken);
+        if (existingCode)
+            return Result.Failure(DomainError.Mentor.MentorCodeExists);
+
+
+        // Update base account properties only
+        mentor.Account.FirstName = request.FirstName ?? mentor.Account.FirstName;
+        mentor.Account.LastName = request.LastName ?? mentor.Account.LastName;
+        mentor.Account.ImageUrl = request.ImageUrl ?? mentor.Account.ImageUrl;
+        mentor.Account.IsSuspended = request.IsSuspended ?? mentor.Account.IsSuspended;
+
+        // Update mentor specific properties
+        mentor.Code = request.Code ?? mentor.Code;
+        mentor.BankName = request.BankName ?? mentor.BankName;
+        mentor.BankCode = request.BankCode ?? mentor.BankCode;
+        mentor.BaseSalaryPerHour = request.BaseSalaryPerHour ?? mentor.BaseSalaryPerHour;
+
+        _unitOfWork.Mentors.Update(mentor);
+        await _unitOfWork.SaveChangesAsync();
+
+        return Result.Success();
+    }
+
+    public async Task<Result> UpdateStudentAsync(Guid id, UpdateStudentRequest request,
+        CancellationToken cancellationToken)
+    {
+        var student = await _unitOfWork.Students.FindSingleAsync(
+            s => s.Id == id,
+            cancellationToken, x => x.Account);
+        if (student == null)
+            return Result.Failure(DomainError.Student.StudentNotFound);
+        var existingCode =
+            await _unitOfWork.Students.AnyAsync(x => x.Code == request.Code && x.Id != id, cancellationToken);
+        if (existingCode)
+            return Result.Failure(DomainError.Student.StudentCodeExists);
+        if (request.FacultyId.HasValue)
+        {
+            var faculty = await _unitOfWork.Faculties.FindByIdAsync(request.FacultyId.Value, cancellationToken);
+            if (faculty == null)
+                return Result.Failure(DomainError.Faculty.FacultyNotFound);
+        }
+
+        // Update base account properties only
+        student.Account.FirstName = request.FirstName ?? student.Account.FirstName;
+        student.Account.LastName = request.LastName ?? student.Account.LastName;
+        student.Account.ImageUrl = request.ImageUrl ?? student.Account.ImageUrl;
+        student.Account.IsSuspended = request.IsSuspended ?? student.Account.IsSuspended;
+
+        // Update student specific properties
+        student.Code = request.Code ?? student.Code;
+
+        student.FacultyId = request.FacultyId ?? student.FacultyId;
+
+        _unitOfWork.Students.Update(student);
+        await _unitOfWork.SaveChangesAsync();
+
+        return Result.Success();
     }
 }

@@ -45,14 +45,15 @@ public static class MappingConfig
             .IgnoreNullValues(true);
 
         // Account
-        TypeAdapterConfig<Account, AccountResponse>.NewConfig();
-        TypeAdapterConfig<CreateAccountRequest, Account>.NewConfig()
+        // TypeAdapterConfig<Account, AccountResponse>.NewConfig();
+        TypeAdapterConfig<BaseCreateAccountRequest, Account>.NewConfig()
             .Map(x => x.PasswordHash, src => src.Password);
         TypeAdapterConfig<Account, LoginResponse>.NewConfig();
-        TypeAdapterConfig<UpdateAccountRequest, Account>.NewConfig()
+        TypeAdapterConfig<BaseUpdateAccountRequest, Account>.NewConfig()
             .IgnoreNullValues(true);
         TypeAdapterConfig<CsvAccount, Account>.NewConfig()
             .Map(x => x.PasswordHash, src => src.Password);
+        TypeAdapterConfig<Account, AdminResponse>.NewConfig();
 
 
         // Checkpoint
@@ -74,13 +75,32 @@ public static class MappingConfig
             .IgnoreNullValues(true);
 
         // Lecturer
-        TypeAdapterConfig<Lecturer, LecturerResponse>.NewConfig();
+        TypeAdapterConfig<Lecturer, LecturerResponse>.NewConfig()
+            .Map(dest => dest.Id, src => src.Id)
+            .Map(dest => dest.Email, src => src.Account.Email)
+            .Map(dest => dest.Username, src => src.Account.Username)
+            .Map(dest => dest.FirstName, src => src.Account.FirstName)
+            .Map(dest => dest.LastName, src => src.Account.LastName)
+            .Map(dest => dest.ImageUrl, src => src.Account.ImageUrl)
+            .Map(dest => dest.IsSuspended, src => src.Account.IsSuspended)
+            .Map(dest => dest.Role, src => src.Account.Role)
+            .Map(dest => dest.Faculty, src => src.Faculty.Name);
         TypeAdapterConfig<CreateLecturerRequest, Lecturer>.NewConfig();
         TypeAdapterConfig<UpdateLecturerRequest, Lecturer>.NewConfig()
             .IgnoreNullValues(true);
 
         // Mentor
-        TypeAdapterConfig<Mentor, MentorResponse>.NewConfig();
+        TypeAdapterConfig<Account, MentorResponse>.NewConfig();
+        TypeAdapterConfig<Mentor, MentorResponse>.NewConfig()
+            .Map(dest => dest.Id, src => src.Id)
+            .Map(dest => dest.Code, src => src.Code)
+            .Map(dest => dest.Email, src => src.Account.Email)
+            .Map(dest => dest.Username, src => src.Account.Username)
+            .Map(dest => dest.FirstName, src => src.Account.FirstName)
+            .Map(dest => dest.LastName, src => src.Account.LastName)
+            .Map(dest => dest.ImageUrl, src => src.Account.ImageUrl)
+            .Map(dest => dest.IsSuspended, src => src.Account.IsSuspended)
+            .Map(dest => dest.Role, src => src.Account.Role);
         TypeAdapterConfig<CreateMentorRequest, Mentor>.NewConfig();
         TypeAdapterConfig<UpdateMentorRequest, Mentor>.NewConfig()
             .IgnoreNullValues(true);
@@ -109,7 +129,17 @@ public static class MappingConfig
             .IgnoreNullValues(true);
 
         // Student
-        TypeAdapterConfig<Student, StudentResponse>.NewConfig();
+        TypeAdapterConfig<Student, StudentResponse>.NewConfig()
+            // Map other Student-specific properties
+            // Map Account properties
+            .Map(dest => dest.Email, src => src.Account.Email)
+            .Map(dest => dest.Username, src => src.Account.Username)
+            .Map(dest => dest.FirstName, src => src.Account.FirstName)
+            .Map(dest => dest.LastName, src => src.Account.LastName)
+            .Map(dest => dest.ImageUrl, src => src.Account.ImageUrl)
+            .Map(dest => dest.IsSuspended, src => src.Account.IsSuspended)
+            .Map(dest => dest.Role, src => src.Account.Role)
+            .Map(dest=>dest.Faculty, src=>src.Faculty.Name);
         TypeAdapterConfig<CreateStudentRequest, Student>.NewConfig();
         TypeAdapterConfig<UpdateStudentRequest, Student>.NewConfig()
             .IgnoreNullValues(true);

@@ -22,7 +22,7 @@ public class Account : AuditableEntity
     public virtual Lecturer? Lecturer { get; set; }
 }
 
-public sealed class CsvAccount
+public abstract class CsvAccount
 {
     [Name("Email")]
     public string Email { get; set; } = null!;
@@ -31,7 +31,24 @@ public sealed class CsvAccount
     [Name("Password")] public string Password { get; set; } = null!;
     [Name("FirstName")] public string FirstName { get; set; } = null!;
     [Name("LastName")] public string LastName { get; set; } = null!;
-    [Name("Role")] [Range(1, 4)] public AccountRole Role { get; set; }
+}
+
+public class CsvStudent : CsvAccount
+{
+    [Name("StudentCode")] public string Code { get; set; } = null!;
+    [Name("FacultyCode")] public string FacultyCode { get; set; } = null!;
+}
+
+public class CsvMentor : CsvAccount
+{
+    [Name("Code")] public string Code { get; set; } = null!;
+}
+
+public class CsvLecturer : CsvAccount
+{
+    [Name("LecturerCode")] public string Code { get; set; } = null!;
+    [Name("FacultyCode")] public string FacultyCode { get; set; } = null!;
+
 }
 
 public enum AccountRole
