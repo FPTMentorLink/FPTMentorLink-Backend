@@ -6,8 +6,8 @@ using Repositories.UnitOfWork.Interfaces;
 using Services.Interfaces;
 using Services.Models.Request.Authentication;
 using Services.Models.Response.Authentication;
+using Services.Settings;
 using Services.Utils;
-using Services.Utils.Hmac;
 
 namespace Services.Services;
 

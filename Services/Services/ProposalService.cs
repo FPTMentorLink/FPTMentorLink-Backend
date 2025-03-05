@@ -37,9 +37,9 @@ public class ProposalService : IProposalService
         return Result.Success(result);
     }
 
-    public async Task<Result<ProposalResponse>> CreateAsync(CreateProposalRequest dto)
+    public async Task<Result<ProposalResponse>> CreateAsync(CreateProposalRequest request)
     {
-        var proposal = _mapper.Map<Proposal>(dto);
+        var proposal = _mapper.Map<Proposal>(request);
         _unitOfWork.Proposals.Add(proposal);
 
         try
@@ -53,13 +53,13 @@ public class ProposalService : IProposalService
         }
     }
 
-    public async Task<Result<ProposalResponse>> UpdateAsync(Guid id, UpdateProposalRequest dto)
+    public async Task<Result<ProposalResponse>> UpdateAsync(Guid id, UpdateProposalRequest request)
     {
         var proposal = await _unitOfWork.Proposals.FindByIdAsync(id);
         if (proposal == null)
             return Result.Failure<ProposalResponse>("Proposal not found");
 
-        _mapper.Map(dto, proposal);
+        _mapper.Map(request, proposal);
         _unitOfWork.Proposals.Update(proposal);
 
         try

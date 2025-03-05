@@ -36,9 +36,9 @@ public class WeeklyReportService : IWeeklyReportService
         return Result.Success(result);
     }
 
-    public async Task<Result<WeeklyReportResponse>> CreateAsync(CreateWeeklyReportRequest dto)
+    public async Task<Result<WeeklyReportResponse>> CreateAsync(CreateWeeklyReportRequest request)
     {
-        var weeklyReport = _mapper.Map<WeeklyReport>(dto);
+        var weeklyReport = _mapper.Map<WeeklyReport>(request);
         _unitOfWork.WeeklyReports.Add(weeklyReport);
 
         try
@@ -52,13 +52,13 @@ public class WeeklyReportService : IWeeklyReportService
         }
     }
 
-    public async Task<Result<WeeklyReportResponse>> UpdateAsync(Guid id, UpdateWeeklyReportRequest dto)
+    public async Task<Result<WeeklyReportResponse>> UpdateAsync(Guid id, UpdateWeeklyReportRequest request)
     {
         var weeklyReport = await _unitOfWork.WeeklyReports.FindByIdAsync(id);
         if (weeklyReport == null)
             return Result.Failure<WeeklyReportResponse>("Weekly report not found");
 
-        _mapper.Map(dto, weeklyReport);
+        _mapper.Map(request, weeklyReport);
         _unitOfWork.WeeklyReports.Update(weeklyReport);
 
         try

@@ -1,9 +1,12 @@
-﻿namespace Services.Models.Request.Mentor;
+﻿using System.ComponentModel.DataAnnotations;
+using Services.Models.Request.Account;
 
-public class UpdateMentorRequest
+namespace Services.Models.Request.Mentor;
+
+public class UpdateMentorRequest : BaseUpdateAccountRequest
 {
-    public string? Code { get; set; }
-    public string? BankName { get; set; }
-    public string? BankCode { get; set; }
+    [MaxLength(255)] public string? Code { get; set; }
+    [MaxLength(255)] public string? BankName { get; set; }
+    [MaxLength(255)] public string? BankCode { get; set; }
     public int? BaseSalaryPerHour { get; set; }
 }

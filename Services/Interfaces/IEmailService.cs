@@ -1,4 +1,4 @@
-using Services.Utils.Email;
+using Services.Models.Email;
 
 namespace Services.Interfaces;
 

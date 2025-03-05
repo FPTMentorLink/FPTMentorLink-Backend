@@ -12,5 +12,4 @@ public class CreateProjectRequest : ValidatableObject
 
     //TODO: Should take LeaderId from JWT claim for security
     [Required] public Guid LeaderId { get; set; }
-    public Guid? LecturerId { get; set; }
 }

@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+using Repositories.Entities;
 using Services.Models.Response.Base;
 
 namespace Services.Models.Response.MentoringProposal;
@@ -10,5 +10,5 @@ public class MentoringProposalResponse : AuditableResponse
     public Guid ProjectId { get; set; }
     public string? StudentNote { get; set; }
     public string? MentorNote { get; set; }
-    public bool IsAccepted { get; set; }
+    public MentoringProposalStatus Status { get; set; }
 }

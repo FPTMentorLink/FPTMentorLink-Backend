@@ -1,8 +1,9 @@
-﻿using Services.Models.Response.Base;
+﻿using Services.Models.Response.Account;
+using Services.Models.Response.Base;
 
 namespace Services.Models.Response.Mentor;
 
-public class MentorResponse : AuditableResponse
+public class MentorResponse : BaseAccountResponse
 {
     public Guid Id { get; set; }
     public string Code { get; set; } = null!;

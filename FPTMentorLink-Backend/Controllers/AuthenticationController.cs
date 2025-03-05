@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Services.Models.Request.Authentication;
-using Services.Utils.Hmac;
+using Services.Settings;
 using IAuthenticationService = Services.Interfaces.IAuthenticationService;
 
 namespace FPTMentorLink_Backend.Controllers;

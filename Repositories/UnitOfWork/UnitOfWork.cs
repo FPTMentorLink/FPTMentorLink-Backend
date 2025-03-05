@@ -18,8 +18,12 @@ public class UnitOfWork : IUnitOfWork
     private IGenericRepository<CheckpointTask>? _checkpointTasks;
     private IGenericRepository<Faculty>? _faculties;
     private IGenericRepository<Lecturer>? _lecturers;
+    private IGenericRepository<LecturingProposal>? _lecturingProposals;
     private IGenericRepository<Mentor>? _mentors;
     private IGenericRepository<MentorAvailability>? _mentorAvailabilities;
+    private IGenericRepository<MentorFeedback>? _mentorFeedbacks;
+    private IGenericRepository<MentoringProposal>? _mentoringProposals;
+    private IGenericRepository<Notification>? _notifications;
     private IGenericRepository<Project>? _projects;
     private IGenericRepository<ProjectStudent>? _projectStudents;
     private IGenericRepository<Proposal>? _proposals;
@@ -55,12 +59,24 @@ public class UnitOfWork : IUnitOfWork
     public IGenericRepository<Lecturer> Lecturers =>
         _lecturers ??= new GenericRepository<Lecturer>(_context);
 
+    public IGenericRepository<LecturingProposal> LecturingProposals =>
+        _lecturingProposals ??= new GenericRepository<LecturingProposal>(_context);
+
     public IGenericRepository<Mentor> Mentors =>
         _mentors ??= new GenericRepository<Mentor>(_context);
 
 
     public IGenericRepository<MentorAvailability> MentorAvailabilities =>
         _mentorAvailabilities ??= new GenericRepository<MentorAvailability>(_context);
+
+    public IGenericRepository<MentorFeedback> MentorFeedbacks =>
+        _mentorFeedbacks ??= new GenericRepository<MentorFeedback>(_context);
+
+    public IGenericRepository<MentoringProposal> MentoringProposals =>
+        _mentoringProposals ??= new GenericRepository<MentoringProposal>(_context);
+
+    public IGenericRepository<Notification> Notifications =>
+        _notifications ??= new GenericRepository<Notification>(_context);
 
 
     public IGenericRepository<Project> Projects =>

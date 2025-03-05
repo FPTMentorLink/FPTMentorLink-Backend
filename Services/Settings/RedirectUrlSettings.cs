@@ -1,4 +1,4 @@
-namespace Services.Utils.Hmac;
+namespace Services.Settings;
 
 public class RedirectUrlSettings
 {

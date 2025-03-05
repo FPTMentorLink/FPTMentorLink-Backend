@@ -1,4 +1,4 @@
-﻿namespace Services.Utils.Email;
+﻿namespace Services.Models.Email;
 
 public class EmailContent
 {

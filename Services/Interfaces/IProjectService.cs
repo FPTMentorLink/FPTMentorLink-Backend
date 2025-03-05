@@ -10,5 +10,6 @@ public interface IProjectService
     Task<Result<PaginationResult<ProjectResponse>>> GetPagedAsync(GetProjectsRequest request);
     Task<Result> CreateAsync(CreateProjectRequest request);
     Task<Result> UpdateAsync(Guid id, UpdateProjectRequest request);
+    Task<Result> UpdateStatusAsync(Guid id, UpdateProjectStatusRequest request);
     Task<Result> DeleteAsync(Guid id);
 }

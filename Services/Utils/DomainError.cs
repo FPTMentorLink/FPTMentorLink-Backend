@@ -25,11 +25,44 @@ public static class DomainError
         public static readonly string DuplicateEmailCsv = "Duplicate emails found in CSV: ";
         public static readonly string DuplicateUsernameCsv = "Duplicate usernames found in CSV: ";
         public static readonly string MaxImportAccountsExceeded = "Maximum number of accounts to import is 300.";
-        public static readonly string CsvAccountExist =  "Accounts in csv already exist in the database. Please check again";
+
+        public static readonly string CsvAccountExist =
+            "Accounts in csv already exist in the database. Please check again";
+
         public static readonly string EmailExists = CommonError.Exists(nameof(Repositories.Entities.Account.Email));
-        public static readonly string UsernameExists = CommonError.Exists(nameof(Repositories.Entities.Account.Username));
+
+        public static readonly string UsernameExists =
+            CommonError.Exists(nameof(Repositories.Entities.Account.Username));
+
         public static readonly string AccountNotFound = CommonError.NotFound(nameof(Repositories.Entities.Account));
         public static readonly string InvalidFptEmail = "Email must be an FPT email.";
+    }
+
+    public static class Lecturer
+    {
+        public static readonly string LecturerNotFound = CommonError.NotFound(nameof(Repositories.Entities.Lecturer));
+
+        public static readonly string LecturerCodeExists =
+            CommonError.Exists(nameof(Repositories.Entities.Lecturer.Code));
+
+        public static readonly string DuplicateLecturerCodeCsv = "Duplicate lecturer codes found in CSV: ";
+    }
+
+    public static class Mentor
+    {
+        public static readonly string MentorNotFound = CommonError.NotFound(nameof(Repositories.Entities.Mentor));
+        public static readonly string MentorCodeExists = CommonError.Exists(nameof(Repositories.Entities.Mentor.Code));
+        public static readonly string DuplicateLecturerCodeCsv = "Duplicate mentor codes found in CSV: ";
+    }
+
+    public static class Student
+    {
+        public static readonly string StudentNotFound = CommonError.NotFound(nameof(Repositories.Entities.Student));
+
+        public static readonly string
+            StudentCodeExists = CommonError.Exists(nameof(Repositories.Entities.Student.Code));
+
+        public static readonly string DuplicateStudentCodeCsv = "Duplicate student codes found in CSV: ";
     }
 
     public static class Term
@@ -68,5 +101,10 @@ public static class DomainError
     public static class Project
     {
         public static readonly string ProjectNotFound = CommonError.NotFound(nameof(Repositories.Entities.Project));
+    }
+
+    public static class Faculty
+    {
+        public static readonly string FacultyNotFound = CommonError.NotFound(nameof(Repositories.Entities.Faculty));
     }
 }

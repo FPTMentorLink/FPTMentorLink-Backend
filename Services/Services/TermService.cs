@@ -1,6 +1,5 @@
 using System.Linq.Expressions;
 using MapsterMapper;
-using Microsoft.EntityFrameworkCore;
 using Repositories.Entities;
 using Repositories.UnitOfWork.Interfaces;
 using Services.Interfaces;

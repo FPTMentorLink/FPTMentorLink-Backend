@@ -28,11 +28,10 @@ public class Project : AuditableEntity
 public enum ProjectStatus
 {
     Pending = 1,
-    Accepted = 2, // Accepted By Lecturer
-    Rejected = 3, // Rejected By Lecturer
-    InProgress = 4,
-    PendingReview = 5,
-    Completed = 6,
-    Failed = 7,
-    RevisionRequired = 8
+    InProgress = 2,
+    PendingReview = 3,
+    Completed = 4,
+    Failed = 5,
+    RevisionRequired = 6,
+    Closed = 7
 }

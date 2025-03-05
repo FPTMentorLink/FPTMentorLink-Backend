@@ -1,4 +1,4 @@
-namespace Services.Utils.Email;
+namespace Services.Settings;
 
 public sealed class EmailSettings
 {
