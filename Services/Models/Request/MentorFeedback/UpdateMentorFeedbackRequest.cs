@@ -1,8 +1,9 @@
 using System.ComponentModel.DataAnnotations;
+using Services.Models.Request.Base;
 
 namespace Services.Models.Request.MentorFeedback;
 
-public class UpdateMentorFeedbackRequest
+public class UpdateMentorFeedbackRequest : ValidatableObject
 {
     [MaxLength(2000)] public string? Content { get; set; } = null!;
 

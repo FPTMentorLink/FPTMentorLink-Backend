@@ -5,9 +5,12 @@ using Services.Models.Request.Appointment;
 using Services.Models.Request.AppointmentFeedback;
 using Services.Models.Request.Checkpoint;
 using Services.Models.Request.CheckpointTask;
+using Services.Models.Request.Faculty;
 using Services.Models.Request.Lecturer;
+using Services.Models.Request.LecturingProposal;
 using Services.Models.Request.Mentor;
 using Services.Models.Request.MentorAvailability;
+using Services.Models.Request.MentoringProposal;
 using Services.Models.Request.Project;
 using Services.Models.Request.ProjectStudent;
 using Services.Models.Request.Proposal;
@@ -20,9 +23,12 @@ using Services.Models.Response.AppointmentFeedback;
 using Services.Models.Response.Authentication;
 using Services.Models.Response.Checkpoint;
 using Services.Models.Response.CheckpointTask;
+using Services.Models.Response.Faculty;
 using Services.Models.Response.Lecturer;
+using Services.Models.Response.LecturingProposal;
 using Services.Models.Response.Mentor;
 using Services.Models.Response.MentorAvailability;
+using Services.Models.Response.MentoringProposal;
 using Services.Models.Response.Project;
 using Services.Models.Response.ProjectStudent;
 using Services.Models.Response.Proposal;
@@ -67,8 +73,14 @@ public static class MappingConfig
         TypeAdapterConfig<CreateCheckpointTaskRequest, CheckpointTask>.NewConfig();
         TypeAdapterConfig<UpdateCheckpointTaskRequest, CheckpointTask>.NewConfig()
             .IgnoreNullValues(true);
+        
+        // Faculty
+        TypeAdapterConfig<Faculty, FacultyResponse>.NewConfig();
+        TypeAdapterConfig<CreateFacultyRequest, Faculty>.NewConfig();
+        TypeAdapterConfig<UpdateFacultyRequest, Faculty>.NewConfig()
+            .IgnoreNullValues(true);
 
-        // Feedback
+        // Appointment Feedback
         TypeAdapterConfig<AppointmentFeedback, AppointmentFeedbackResponse>.NewConfig();
         TypeAdapterConfig<CreateAppointmentFeedbackRequest, AppointmentFeedback>.NewConfig();
         TypeAdapterConfig<UpdateAppointmentFeedbackRequest, AppointmentFeedback>.NewConfig()
@@ -89,6 +101,14 @@ public static class MappingConfig
         TypeAdapterConfig<UpdateLecturerRequest, Lecturer>.NewConfig()
             .IgnoreNullValues(true);
 
+        // LecturingProposal
+        TypeAdapterConfig<LecturingProposal, LecturingProposalResponse>.NewConfig();
+        TypeAdapterConfig<CreateLecturingProposalRequest, LecturingProposal>.NewConfig();
+        TypeAdapterConfig<StudentUpdateLecturingProposalRequest, LecturingProposal>.NewConfig()
+            .IgnoreNullValues(true);
+        TypeAdapterConfig<LecturerUpdateLecturingProposalRequest, LecturingProposal>.NewConfig()
+            .IgnoreNullValues(true);
+        
         // Mentor
         TypeAdapterConfig<Account, MentorResponse>.NewConfig();
         TypeAdapterConfig<Mentor, MentorResponse>.NewConfig()
@@ -109,6 +129,14 @@ public static class MappingConfig
         TypeAdapterConfig<MentorAvailability, MentorAvailabilityResponse>.NewConfig();
         TypeAdapterConfig<CreateMentorAvailabilityRequest, MentorAvailability>.NewConfig();
         TypeAdapterConfig<UpdateMentorAvailabilityRequest, MentorAvailability>.NewConfig()
+            .IgnoreNullValues(true);
+        
+        // MentoringProposal
+        TypeAdapterConfig<MentoringProposal, MentoringProposalResponse>.NewConfig();
+        TypeAdapterConfig<CreateMentoringProposalRequest, MentoringProposal>.NewConfig();
+        TypeAdapterConfig<StudentUpdateMentoringProposalRequest, MentoringProposal>.NewConfig()
+            .IgnoreNullValues(true);
+        TypeAdapterConfig<MentorUpdateMentoringProposalRequest, MentoringProposal>.NewConfig()
             .IgnoreNullValues(true);
 
         // Project

@@ -29,48 +29,48 @@ public class MentorAvailabilityService : IMentorAvailabilityService
     }
 
     public async Task<Result<PaginationResult<MentorAvailabilityResponse>>> GetPagedAsync(
-        PaginationParams paginationParams)
-    {
+        GetMentorAvailabilitiesRequest request)
+    { 
         var query = _unitOfWork.MentorAvailabilities.GetQueryable();
         var result =
-            await query.ProjectToPaginatedListAsync<MentorAvailability, MentorAvailabilityResponse>(paginationParams);
+            await query.ProjectToPaginatedListAsync<MentorAvailability, MentorAvailabilityResponse>(request);
 
         return Result.Success(result);
     }
 
-    public async Task<Result<MentorAvailabilityResponse>> CreateAsync(CreateMentorAvailabilityRequest dto)
+    public async Task<Result> CreateAsync(CreateMentorAvailabilityRequest request)
     {
-        var mentorAvailability = _mapper.Map<MentorAvailability>(dto);
+        var mentorAvailability = _mapper.Map<MentorAvailability>(request);
         _unitOfWork.MentorAvailabilities.Add(mentorAvailability);
 
         try
         {
             await _unitOfWork.SaveChangesAsync();
-            return Result.Success(_mapper.Map<MentorAvailabilityResponse>(mentorAvailability));
+            return Result.Success();
         }
         catch (Exception ex)
         {
-            return Result.Failure<MentorAvailabilityResponse>($"Failed to create mentor availability: {ex.Message}");
+            return Result.Failure($"Failed to create mentor availability: {ex.Message}");
         }
     }
 
-    public async Task<Result<MentorAvailabilityResponse>> UpdateAsync(Guid id, UpdateMentorAvailabilityRequest dto)
+    public async Task<Result> UpdateAsync(Guid id, UpdateMentorAvailabilityRequest request)
     {
         var mentorAvailability = await _unitOfWork.MentorAvailabilities.FindByIdAsync(id);
         if (mentorAvailability == null)
-            return Result.Failure<MentorAvailabilityResponse>("Mentor availability not found");
+            return Result.Failure("Mentor availability not found");
 
-        _mapper.Map(dto, mentorAvailability);
+        _mapper.Map(request, mentorAvailability);
         _unitOfWork.MentorAvailabilities.Update(mentorAvailability);
 
         try
         {
             await _unitOfWork.SaveChangesAsync();
-            return Result.Success(_mapper.Map<MentorAvailabilityResponse>(mentorAvailability));
+            return Result.Success();
         }
         catch (Exception ex)
         {
-            return Result.Failure<MentorAvailabilityResponse>($"Failed to update mentor availability: {ex.Message}");
+            return Result.Failure($"Failed to update mentor availability: {ex.Message}");
         }
     }
 

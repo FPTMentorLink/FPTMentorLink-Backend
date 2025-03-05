@@ -1,5 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-using Microsoft.EntityFrameworkCore;
 using Repositories.Entities.Base;
 
 namespace Repositories.Entities;

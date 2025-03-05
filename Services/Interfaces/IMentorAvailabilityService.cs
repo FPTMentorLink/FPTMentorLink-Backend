@@ -7,8 +7,8 @@ namespace Services.Interfaces;
 public interface IMentorAvailabilityService
 {
     Task<Result<MentorAvailabilityResponse>> GetByIdAsync(Guid id);
-    Task<Result<PaginationResult<MentorAvailabilityResponse>>> GetPagedAsync(PaginationParams paginationParams);
-    Task<Result<MentorAvailabilityResponse>> CreateAsync(CreateMentorAvailabilityRequest dto);
-    Task<Result<MentorAvailabilityResponse>> UpdateAsync(Guid id, UpdateMentorAvailabilityRequest dto);
+    Task<Result<PaginationResult<MentorAvailabilityResponse>>> GetPagedAsync(GetMentorAvailabilitiesRequest request);
+    Task<Result> CreateAsync(CreateMentorAvailabilityRequest request);
+    Task<Result> UpdateAsync(Guid id, UpdateMentorAvailabilityRequest request);
     Task<Result> DeleteAsync(Guid id);
 } 

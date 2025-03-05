@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using Repositories.Entities;
+using Services.Settings;
 
 namespace Services.Utils;
 

@@ -4,7 +4,7 @@ using Services.Utils;
 
 namespace Services.Models.Request.Term;
 
-public class UpdateTermRequest : ValidatorObject
+public class UpdateTermRequest : ValidatableObject
 {
     [MaxLength(255)] public string? Code { get; set; }
     public DateTime? StartTime { get; set; }

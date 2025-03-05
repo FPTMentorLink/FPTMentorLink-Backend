@@ -1,8 +1,9 @@
 using System.ComponentModel.DataAnnotations;
+using Services.Models.Request.Base;
 
 namespace Services.Models.Request.MentorFeedback;
 
-public class CreateMentorFeedbackRequest
+public class CreateMentorFeedbackRequest : ValidatableObject
 {
     [Required] public Guid MentorId { get; set; }
 

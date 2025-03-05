@@ -1,12 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Repositories.Entities;
-using System.Text;
 using Services.Models.Request.Base;
 using Services.Utils;
 
 namespace Services.Models.Request.CheckpointTask;
 
-public class CreateCheckpointTaskRequest : ValidatorObject
+public class CreateCheckpointTaskRequest : ValidatableObject
 {
     [Required] public Guid CheckpointId { get; set; }
 

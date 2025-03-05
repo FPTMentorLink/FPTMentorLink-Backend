@@ -1,11 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.Text;
 using Services.Models.Request.Base;
 using Services.Utils;
 
 namespace Services.Models.Request.Checkpoint;
 
-public class UpdateCheckpointRequest : ValidatorObject
+public class UpdateCheckpointRequest : ValidatableObject
 {
     public string? Name { get; set; }
     public Guid? TermId { get; set; }

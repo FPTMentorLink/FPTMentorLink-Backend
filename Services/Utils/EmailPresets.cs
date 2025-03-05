@@ -1,4 +1,6 @@
-﻿namespace Services.Utils.Email;
+﻿using Services.Models.Email;
+
+namespace Services.Utils;
 
 public static class EmailPresets
 {

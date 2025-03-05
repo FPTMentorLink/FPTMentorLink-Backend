@@ -8,8 +8,8 @@ using Repositories.UnitOfWork.Interfaces;
 using Services.Interfaces;
 using Services.Models.Request.ProjectStudent;
 using Services.Models.Response.ProjectStudent;
+using Services.Settings;
 using Services.Utils;
-using Services.Utils.Email;
 
 namespace Services.Services;
 
@@ -177,7 +177,7 @@ public class ProjectStudentService : IProjectStudentService
 
         if (project == null)
             return Result.Failure("Project not found");
-        if ((int)project.Status > (int)ProjectStatus.Rejected)
+        if (project.Status > ProjectStatus.Pending)
             return Result.Failure("Project is not available");
         if (project.StudentCount >= Constants.MaxProjectStudents)
             return Result.Failure("Project is full");

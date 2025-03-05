@@ -8,7 +8,7 @@ public interface IWeeklyReportService
 {
     Task<Result<WeeklyReportResponse>> GetByIdAsync(Guid id);
     Task<Result<PaginationResult<WeeklyReportResponse>>> GetPagedAsync(PaginationParams paginationParams);
-    Task<Result<WeeklyReportResponse>> CreateAsync(CreateWeeklyReportRequest dto);
-    Task<Result<WeeklyReportResponse>> UpdateAsync(Guid id, UpdateWeeklyReportRequest dto);
+    Task<Result<WeeklyReportResponse>> CreateAsync(CreateWeeklyReportRequest request);
+    Task<Result<WeeklyReportResponse>> UpdateAsync(Guid id, UpdateWeeklyReportRequest request);
     Task<Result> DeleteAsync(Guid id);
 } 

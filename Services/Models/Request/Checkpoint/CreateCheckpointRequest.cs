@@ -4,7 +4,7 @@ using Services.Utils;
 
 namespace Services.Models.Request.Checkpoint;
 
-public class CreateCheckpointRequest : ValidatorObject
+public class CreateCheckpointRequest : ValidatableObject
 {
     [Required] public string Name { get; set; } = null!;
     [Required] public Guid TermId { get; set; }

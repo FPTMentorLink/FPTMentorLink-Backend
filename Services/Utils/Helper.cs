@@ -70,6 +70,11 @@ public static class Helper
     {
         return new ValidationResult(error, MemberNames);
     }
+
+    public static bool IsNullOrGuidEmpty(this Guid? guid)
+    {
+        return guid == null || guid == Guid.Empty;
+    }
 }
 
 internal class ReplaceExpressionVisitor(Expression oldValue, Expression newValue) : ExpressionVisitor

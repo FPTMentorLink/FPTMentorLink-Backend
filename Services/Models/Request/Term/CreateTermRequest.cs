@@ -1,10 +1,10 @@
 using System.ComponentModel.DataAnnotations;
-using Services.Utils;
 using Services.Models.Request.Base;
+using Services.Utils;
 
 namespace Services.Models.Request.Term;
 
-public class CreateTermRequest : ValidatorObject
+public class CreateTermRequest : ValidatableObject
 {
     [Required] [MaxLength(255)] public string Code { get; set; } = null!;
 

@@ -20,6 +20,7 @@ using Services.Models.Response.Authorization;
 using Services.Models.Response.Lecturer;
 using Services.Models.Response.Mentor;
 using Services.Models.Response.Student;
+using Services.Settings;
 using Services.Utils;
 
 namespace Services.Services;

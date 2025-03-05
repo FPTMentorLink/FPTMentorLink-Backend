@@ -1,8 +1,10 @@
 using MailKit.Net.Smtp;
 using MailKit.Security;
+using Microsoft.Extensions.Options;
 using MimeKit;
 using Services.Interfaces;
-using Services.Utils.Email;
+using Services.Models.Email;
+using Services.Settings;
 
 namespace Services.Services;
 
@@ -10,9 +12,9 @@ public class EmailService : IEmailService
 {
     private readonly EmailSettings _emailSettings;
 
-    public EmailService(EmailSettings emailSettings)
+    public EmailService(IOptions<EmailSettings> emailSettings)
     {
-        _emailSettings = emailSettings;
+        _emailSettings = emailSettings.Value;
     }
 
     public async Task SendEmailAsync(string to, EmailContent content)

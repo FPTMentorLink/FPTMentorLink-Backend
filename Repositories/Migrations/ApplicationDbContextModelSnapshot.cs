@@ -483,6 +483,57 @@ namespace Repositories.Migrations
                     b.ToTable("Lecturer", (string)null);
                 });
 
+            modelBuilder.Entity("Repositories.Entities.LecturingProposal", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<Guid>("LecturerId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("LecturerNote")
+                        .HasMaxLength(2000)
+                        .HasColumnType("varchar(2000)")
+                        .UseCollation("utf8mb4_0900_ai_ci");
+
+                    MySqlPropertyBuilderExtensions.HasCharSet(b.Property<string>("LecturerNote"), "utf8mb4");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("StudentNote")
+                        .HasMaxLength(2000)
+                        .HasColumnType("varchar(2000)")
+                        .UseCollation("utf8mb4_0900_ai_ci");
+
+                    MySqlPropertyBuilderExtensions.HasCharSet(b.Property<string>("StudentNote"), "utf8mb4");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LecturerId");
+
+                    b.HasIndex("ProjectId");
+
+                    b.ToTable("LecturingProposal", (string)null);
+                });
+
             modelBuilder.Entity("Repositories.Entities.Mentor", b =>
                 {
                     b.Property<Guid>("Id")
@@ -621,9 +672,6 @@ namespace Repositories.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<bool>("IsAccepted")
-                        .HasColumnType("tinyint(1)");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("tinyint(1)");
 
@@ -639,6 +687,10 @@ namespace Repositories.Migrations
 
                     b.Property<Guid>("ProjectId")
                         .HasColumnType("char(36)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.Property<string>("StudentNote")
                         .HasMaxLength(2000)
@@ -1148,6 +1200,25 @@ namespace Repositories.Migrations
                     b.Navigation("Account");
 
                     b.Navigation("Faculty");
+                });
+
+            modelBuilder.Entity("Repositories.Entities.LecturingProposal", b =>
+                {
+                    b.HasOne("Repositories.Entities.Lecturer", "Lecturer")
+                        .WithMany()
+                        .HasForeignKey("LecturerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Repositories.Entities.Project", "Project")
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Lecturer");
+
+                    b.Navigation("Project");
                 });
 
             modelBuilder.Entity("Repositories.Entities.Mentor", b =>

@@ -1,12 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Repositories.Entities;
-using System.Text;
 using Services.Models.Request.Base;
 using Services.Utils;
 
 namespace Services.Models.Request.CheckpointTask;
 
-public class UpdateCheckpointTaskRequest : ValidatorObject
+public class UpdateCheckpointTaskRequest : ValidatableObject
 {
     [MaxLength(255)] public string? Name { get; set; }
 
