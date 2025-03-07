@@ -1,15 +1,23 @@
-﻿using Repositories.Entities;
+﻿using System.Text.Json.Serialization;
+using Repositories.Entities;
 
 namespace Services.Models.Response.Authentication;
 
 public class LoginResponse
 {
-    public Guid Id { get; set; }
-    public required string Email { get; set; }
-    public required string FirstName { get; set; }
-    public required string LastName { get; set; }
-    public string? ImageUrl { get; set; }
-    public AccountRole Role { get; set; }
-    public required string AccessToken { get; set; }
-    public required string RefreshToken { get; set; }
+    [JsonPropertyName("id")] public Guid Id { get; set; }
+
+    [JsonPropertyName("email")] public string Email { get; set; }
+
+    [JsonPropertyName("firstName")] public string FirstName { get; set; }
+
+    [JsonPropertyName("lastName")] public string LastName { get; set; }
+
+    [JsonPropertyName("imageUrl")] public string? ImageUrl { get; set; }
+
+    [JsonPropertyName("role")] public int Role { get; set; }
+
+    [JsonPropertyName("accessToken")] public string AccessToken { get; set; }
+
+    [JsonPropertyName("refreshToken")] public string RefreshToken { get; set; }
 }
