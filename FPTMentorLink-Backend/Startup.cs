@@ -11,6 +11,7 @@ using Repositories.Data;
 using Repositories.UnitOfWork;
 using Repositories.UnitOfWork.Interfaces;
 using Services.InfrastructureService.Redis;
+using Services.InfrastructureService.VnPay;
 using Services.Interfaces;
 using Services.Mappings;
 using Services.Services;
@@ -195,9 +196,14 @@ public static class Startup
         builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
         builder.Services.AddScoped<ITermService, TermService>();
 
+        // Register Infrastructure Services
+        builder.Services.AddSingleton<IVnPayService, VnPayService>();
+        builder.Services.AddSingleton<VnPayLibrary>();
+        
         // Register Utils
         builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
     }
+
 
     /// <summary>
     /// Configures Swagger/OpenAPI documentation
