@@ -1,5 +1,4 @@
 ﻿using Repositories.Entities;
-using Services.Models.Response.Base;
 
 namespace Services.Models.Response.Account;
 

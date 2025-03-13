@@ -1,4 +1,4 @@
-namespace Services.InfrastructureService.Redis;
+namespace Services.Infrastructure.Redis;
 
 public class RedisSettings
 {

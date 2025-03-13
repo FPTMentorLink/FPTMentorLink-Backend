@@ -30,4 +30,27 @@ public static class CodeGenerator
     {
         return GenerateCode($"{term}{faculty}", number, 6);
     }
+    
+    /// <summary>
+    /// Generate a random number with a specific length (default: 6)
+    /// </summary>
+    /// <param name="length"></param>
+    /// <returns></returns>
+    public static long GenerateRandomNumber(int length = 6)
+    {
+        return new Random().Next((int)Math.Pow(10, length - 1), (int)Math.Pow(10, length) - 1);
+    }
+
+    /// <summary>
+    /// Generate a transaction code based on the student code, VnPay transaction Id, and amount
+    /// Ex: SE123456-123456-100000
+    /// </summary>
+    /// <param name="studentCode"></param>
+    /// <param name="vnPayTransactionId"></param>
+    /// <param name="amount"></param>
+    /// <returns></returns>
+    public static string GenerateTransactionCode(string studentCode, long vnPayTransactionId, int amount)
+    {
+        return $"{studentCode}-{vnPayTransactionId}-{amount}";
+    }
 }

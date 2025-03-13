@@ -5,15 +5,15 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 
-namespace Services.InfrastructureService.VnPay;
+namespace Services.Infrastructure.VnPay;
 
 public class VnPayLibrary
 {
-     private readonly SortedList<string, string> _requestData = new SortedList<string, string>(new VnPayCompare());
-    private readonly SortedList<string, string> _responseData = new SortedList<string, string>(new VnPayCompare());
+     private readonly SortedList<string, string> _requestData = new(new VnPayCompare());
+    private readonly SortedList<string, string> _responseData = new(new VnPayCompare());
 
-    private readonly List<string> _requestSpecificKeys = new List<string>
-    {
+    private readonly List<string> _requestSpecificKeys =
+    [
         "vnp_Amount",
         "vnp_CreateDate",
         "vnp_ExpireDate",
@@ -21,7 +21,7 @@ public class VnPayLibrary
         "vnp_OrderType",
         "vnp_TxnRef",
         "vnp_IpAddr"
-    };
+    ];
 
     public void AddRequestData(string key, string value)
     {

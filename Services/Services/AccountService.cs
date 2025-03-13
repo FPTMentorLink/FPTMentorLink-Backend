@@ -198,7 +198,7 @@ public class AccountService : IAccountService
         var account = await _unitOfWork.Accounts.FindByIdAsync(id, cancellationToken);
 
         if (account == null)
-            return Result.Failure<AccountResponse>(DomainError.Account.AccountNotFound);
+            return Result.Failure(DomainError.Account.AccountNotFound);
 
         account.FirstName = request.FirstName ?? account.FirstName;
         account.LastName = request.LastName ?? account.LastName;
@@ -276,10 +276,10 @@ public class AccountService : IAccountService
         return exists ? Result.Failure("Email already exists") : Result.Success();
     }
 
-    public async Task<Result<PaginationResult<AccountsResponse>>> GetPagedAsync(PaginationParams paginationParams)
+    public async Task<Result<PaginationResult<AccountResponse>>> GetPagedAsync(PaginationParams paginationParams)
     {
         var query = _unitOfWork.Accounts.GetQueryable();
-        var result = await query.ProjectToPaginatedListAsync<Account, AccountsResponse>(paginationParams);
+        var result = await query.ProjectToPaginatedListAsync<Account, AccountResponse>(paginationParams);
 
         return Result.Success(result);
     }

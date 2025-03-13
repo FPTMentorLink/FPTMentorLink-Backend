@@ -4,10 +4,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.ConfigureDatabase();
 builder.ConfigureAuthentication();
-builder.ConfigureServices();
 builder.ConfigureRedirectUrl();
 builder.ConfigureRedis();
 builder.ConfigureEmailService();
+builder.ConfigureVnPayService();
+builder.ConfigureServices();
 builder.ConfigureCors();
 builder.ApplyMigration();
 

@@ -5,6 +5,6 @@ namespace Services.Interfaces;
 
 public interface IVnPayService
 {
-    Task<string?> CreatePaymentLink(CreateVnPayPaymentModel model);
-    Task<VnPayIpnResponse> VerifyIpnPayment(IQueryCollection request);
+    string? CreatePaymentLink(CreateVnPayPaymentModel model);
+    VnPayIpnResponse VerifyIpnPayment(IQueryCollection request);
 }
