@@ -2,7 +2,7 @@ using System.Text.Json;
 using Services.Interfaces;
 using StackExchange.Redis;
 
-namespace Services.InfrastructureService.Redis;
+namespace Services.Infrastructure.Redis;
 
 public class RedisService(IConnectionMultiplexer redis) : IRedisService
 {

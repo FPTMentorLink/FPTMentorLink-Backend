@@ -10,7 +10,8 @@ using Microsoft.OpenApi.Models;
 using Repositories.Data;
 using Repositories.UnitOfWork;
 using Repositories.UnitOfWork.Interfaces;
-using Services.InfrastructureService.Redis;
+using Services.Infrastructure.Redis;
+using Services.Infrastructure.VnPay;
 using Services.Interfaces;
 using Services.Mappings;
 using Services.Services;
@@ -162,6 +163,16 @@ public static class Startup
             options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
     }
 
+    public static void ConfigureVnPayService(this WebApplicationBuilder builder)
+    {
+        _ = builder.Configuration.GetSection("VnPaySettings").Get<VnPaySettings>()
+            ?? throw new InvalidOperationException("VnPaySettings is not configured properly.");
+        
+        builder.Services.Configure<VnPaySettings>(builder.Configuration.GetSection("VnPaySettings"));
+        builder.Services.AddSingleton<IVnPayService, VnPayService>();
+        builder.Services.AddSingleton<VnPayLibrary>();
+    }
+
     /// <summary>
     /// Registers all application services for dependency injection
     /// - AutoMapper for object mapping
@@ -191,13 +202,17 @@ public static class Startup
         builder.Services.AddScoped<IProjectService, ProjectService>();
         builder.Services.AddScoped<IProjectStudentService, ProjectStudentService>();
         builder.Services.AddScoped<IProposalService, ProposalService>();
+        builder.Services.AddScoped<IStudentService, StudentService>();
         builder.Services.AddScoped<IWeeklyReportService, WeeklyReportService>();
         builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
         builder.Services.AddScoped<ITermService, TermService>();
 
+        
+        
         // Register Utils
         builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
     }
+
 
     /// <summary>
     /// Configures Swagger/OpenAPI documentation

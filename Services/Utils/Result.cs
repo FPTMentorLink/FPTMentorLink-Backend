@@ -25,6 +25,9 @@ public class Result
     public static Result<T> Success<T>(T value) => new(value, true, null);
     public static Result Failure(string error) => new(false, error);
     public static Result<T> Failure<T>(string error) => new(default, false, error);
+
+    public static Result<T> Create<T>(T? value) =>
+        value is not null ? Success(value) : Failure<T>("No result found");
 }
 
 public class Result<T> : Result
@@ -36,4 +39,6 @@ public class Result<T> : Result
     {
         Value = value;
     }
+    
+    public static implicit operator Result<T>(T? value) => Create(value);
 }

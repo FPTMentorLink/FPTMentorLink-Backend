@@ -51,7 +51,8 @@ public static class MappingConfig
             .IgnoreNullValues(true);
 
         // Account
-        // TypeAdapterConfig<Account, AccountResponse>.NewConfig();
+        TypeAdapterConfig<Account, AccountResponse>.NewConfig()
+            .Map(x => x.RoleName, src => src.Role.ToString());
         TypeAdapterConfig<BaseCreateAccountRequest, Account>.NewConfig()
             .Map(x => x.PasswordHash, src => src.Password);
         TypeAdapterConfig<Account, LoginResponse>.NewConfig();
@@ -126,7 +127,8 @@ public static class MappingConfig
             .IgnoreNullValues(true);
 
         // MentorAvailability
-        TypeAdapterConfig<MentorAvailability, MentorAvailabilityResponse>.NewConfig();
+        TypeAdapterConfig<MentorAvailability, MentorAvailabilityResponse>.NewConfig()
+            .Map(dest => dest.AvailableTimeSlots, src => src.GetAvailableTimeSlots().ToList());
         TypeAdapterConfig<CreateMentorAvailabilityRequest, MentorAvailability>.NewConfig();
         TypeAdapterConfig<UpdateMentorAvailabilityRequest, MentorAvailability>.NewConfig()
             .IgnoreNullValues(true);
