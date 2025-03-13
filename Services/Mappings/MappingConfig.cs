@@ -126,7 +126,8 @@ public static class MappingConfig
             .IgnoreNullValues(true);
 
         // MentorAvailability
-        TypeAdapterConfig<MentorAvailability, MentorAvailabilityResponse>.NewConfig();
+        TypeAdapterConfig<MentorAvailability, MentorAvailabilityResponse>.NewConfig()
+            .Map(dest => dest.AvailableTimeSlots, src => src.GetAvailableTimeSlots().ToList());
         TypeAdapterConfig<CreateMentorAvailabilityRequest, MentorAvailability>.NewConfig();
         TypeAdapterConfig<UpdateMentorAvailabilityRequest, MentorAvailability>.NewConfig()
             .IgnoreNullValues(true);
