@@ -53,4 +53,11 @@ public class AuthenticationController : ControllerBase
         var result = await _authenticationService.LoginAsync(request);
         return result.IsSuccess ? Ok(result.Value) : BadRequest(result);
     }
+    
+    [HttpPost("admin-login")]
+    public async Task<IActionResult> AdminLogin([FromBody] AdminLoginRequest request)
+    {
+        var result = await _authenticationService.AdminLoginAsync(request);
+        return result.IsSuccess ? Ok(result.Value) : BadRequest(result);
+    }
 }

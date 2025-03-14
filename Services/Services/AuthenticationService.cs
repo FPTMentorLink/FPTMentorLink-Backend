@@ -2,6 +2,7 @@ using System.Security.Claims;
 using System.Text.Json;
 using Mapster;
 using Microsoft.Extensions.Options;
+using Repositories.Entities;
 using Repositories.UnitOfWork.Interfaces;
 using Services.Interfaces;
 using Services.Models.Request.Authentication;
@@ -73,10 +74,12 @@ public class AuthenticationService : IAuthenticationService
         var userClaims = TokenGenerator.GetClaims(user);
         var accessToken = TokenGenerator.GenerateAccessToken(_jwtSettings, userClaims);
         var refreshToken = TokenGenerator.GenerateRefreshToken();
-        var loginResponse = user.Adapt<LoginResponse>();
-        loginResponse.AccessToken = accessToken;
-        loginResponse.RefreshToken = refreshToken;
-
+        // var loginResponse = user.Adapt<LoginResponse>();
+        var loginResponse = new LoginResponse
+        {
+            AccessToken = accessToken,
+            RefreshToken = refreshToken
+        };
         var jsonOption = new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -88,5 +91,30 @@ public class AuthenticationService : IAuthenticationService
         // Redirect to FE with key in Redis
         var redirectUrl = _redirectUrlSettings.PostGoogleLoginUrl + contentHash;
         return Result.Success(redirectUrl);
+    }
+
+    public async Task<Result<LoginResponse>> AdminLoginAsync(AdminLoginRequest request)
+    {
+        var user = await _unitOfWork.Accounts.FindSingleAsync(x =>
+            x.Username == request.Username && x.Role == AccountRole.Admin);
+        if (user == null)
+        {
+            return Result.Failure<LoginResponse>(DomainError.Authentication.InvalidCredentials);
+        }
+
+        var validPassword = BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash);
+        if (!validPassword)
+        {
+            return Result.Failure<LoginResponse>(DomainError.Authentication.InvalidCredentials);
+        }
+
+        var userClaims = TokenGenerator.GetClaims(user);
+        var accessToken = TokenGenerator.GenerateAccessToken(_jwtSettings, userClaims);
+        var refreshToken = TokenGenerator.GenerateRefreshToken();
+        return new LoginResponse
+        {
+            AccessToken = accessToken,
+            RefreshToken = refreshToken
+        };
     }
 }

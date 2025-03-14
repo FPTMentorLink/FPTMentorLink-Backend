@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Repositories.Entities;
 using Services.Interfaces;
@@ -42,6 +43,27 @@ public class AccountController : ControllerBase
         var result = await _accountService.GetByIdAsync(id, accountRole, cancellationToken);
         return result.IsSuccess ? Ok(result.Value) : BadRequest(result);
     }
+
+    [HttpGet("profile")]
+    [Authorize(AuthenticationSchemes = "Bearer")]
+    public async Task<IActionResult> GetProfile(CancellationToken cancellationToken)
+    {
+        var userId = User.GetUserId();
+        if (userId == null || userId.IsNullOrGuidEmpty())
+        {
+            return BadRequest(Result.Failure<Account>("User not found"));
+        }
+
+        var role = User.GetRole();
+        if (role == null)
+        {
+            return BadRequest(Result.Failure<Account>("Role not found"));
+        }
+
+        var result = await _accountService.GetProfileAsync(userId.Value, role, cancellationToken);
+        return result.IsSuccess ? Ok(result.Value) : BadRequest(result);
+    }
+
 
     /// <summary>
     /// Role 1: Admin
