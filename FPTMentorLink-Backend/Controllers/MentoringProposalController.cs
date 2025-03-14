@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Services.Interfaces;
 using Services.Models.Request.MentoringProposal;
+using Services.Utils;
 
 namespace FPTMentorLink_Backend.Controllers;
 
@@ -39,27 +41,31 @@ public class MentoringProposalController : ControllerBase
         return result.IsSuccess ? Ok() : BadRequest(result);
     }
 
-    [HttpPatch("{id}/student")]
-    public async Task<IActionResult> StudentUpdate([FromRoute] Guid id, [FromBody] StudentUpdateMentoringProposalRequest request)
+    [HttpPatch("{id}/response")]
+    [Authorize] // Add authorization attribute
+    public async Task<IActionResult> UpdateProposal([FromRoute] Guid id, [FromBody] UpdateMentoringProposalRequest request)
     {
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
-
-        var result = await _mentoringProposalService.StudentUpdateAsync(id, request);
-        return result.IsSuccess ? Ok() : BadRequest(result);
-    }
-
-    [HttpPatch("{id}/mentor")]
-    public async Task<IActionResult> MentorUpdate([FromRoute] Guid id, [FromBody] MentorUpdateMentoringProposalRequest request)
-    {
-        if (!ModelState.IsValid)
+        var result = Result.Failure("Invalid role for this operation");
+        if (User.IsInRole("Student"))
         {
-            return BadRequest(ModelState);
+            var studentUpdateRequest = new StudentUpdateMentoringProposalRequest{
+                StudentNote = request.Note,
+                IsClosed = request.IsClosed ?? false
+            };
+            result = await _mentoringProposalService.StudentUpdateAsync(id, studentUpdateRequest);
         }
-
-        var result = await _mentoringProposalService.MentorUpdateAsync(id, request);
+        else if (User.IsInRole("Mentor"))
+        {
+            var mentorUpdateRequest = new MentorUpdateMentoringProposalRequest{
+                MentorNote = request.Note,
+                IsAccepted = request.IsAccepted
+            };
+            result = await _mentoringProposalService.MentorUpdateAsync(id, mentorUpdateRequest);
+        }
         return result.IsSuccess ? Ok() : BadRequest(result);
     }
 
