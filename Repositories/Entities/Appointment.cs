@@ -10,7 +10,7 @@ public class Appointment : AuditableEntity
     public DateTime StartTime { get; set; }
     public DateTime EndTime { get; set; }
     public int BaseSalaryPerHour { get; set; }
-    public int TotalTime { get; set; }
+    public int TotalTime { get; set; } // in minutes
     public int TotalPayment { get; set; }
     public AppointmentStatus Status { get; set; }
 

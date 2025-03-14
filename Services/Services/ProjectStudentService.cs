@@ -19,13 +19,15 @@ public class ProjectStudentService : IProjectStudentService
     private readonly IMapper _mapper;
     private readonly IEmailService _emailService;
     private readonly JwtSettings _jwtSettings;
+    private readonly IRedisService _redisService;
 
     public ProjectStudentService(IUnitOfWork unitOfWork, IMapper mapper, IEmailService emailService,
-        IOptions<JwtSettings> jwtSettings)
+        IOptions<JwtSettings> jwtSettings, IRedisService redisService)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _emailService = emailService;
+        _redisService = redisService;
         _jwtSettings = jwtSettings.Value;
     }
 
@@ -100,6 +102,12 @@ public class ProjectStudentService : IProjectStudentService
         }
     }
 
+    /// <summary>
+    /// Send project invitation to student via email
+    /// Invitation token is generated and stored in Redis for one-time use
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
     public async Task<Result> SendProjectInvitationAsync(SendProjectInvitationRequest request)
     {
         var student = await _unitOfWork.Students.FindAll()
@@ -131,6 +139,12 @@ public class ProjectStudentService : IProjectStudentService
         var invitationToken =
             TokenGenerator.GenerateInvitationToken(_jwtSettings, request.StudentId, request.ProjectId);
         var emailContent = EmailPresets.ProjectInvitationEmail(invitationToken, projectName);
+
+        // Store token in Redis
+        var key = RedisKeyGenerator.GenerateProjectInvitationKey(request.ProjectId, request.StudentId, invitationToken);
+        await _redisService.SetCacheAsync(key, invitationToken, TimeSpan.FromDays(1));
+
+        // Send email
         await _emailService.SendEmailAsync(student.Email, emailContent);
 
         return Result.Success();
@@ -145,6 +159,15 @@ public class ProjectStudentService : IProjectStudentService
         var projectId = principal.GetGuid("ProjectId");
         if (studentId == null || projectId == null)
             return Result.Failure("Invalid token");
+
+        // Check key in Redis
+        var key = RedisKeyGenerator.GenerateProjectInvitationKey(projectId.Value, studentId.Value, request.Token);
+        var value = await _redisService.GetCacheAsync(key);
+        if (value == null)
+            return Result.Failure("Token is expired");
+
+        // Remove key from Redis (token is one-time use)
+        await _redisService.DeleteCacheAsync(key);
 
         var student = await _unitOfWork.Students.FindAll()
             .Include(x => x.Account)
@@ -191,6 +214,10 @@ public class ProjectStudentService : IProjectStudentService
         };
         _unitOfWork.ProjectStudents.Add(projectStudent);
         await _unitOfWork.SaveChangesAsync();
+        
+        // If this student is successfully added to the project, remove all invitations for this student in Redis
+        var deletePattern = RedisKeyGenerator.GenerateProjectInvitationDeletePattern(studentId.Value);
+        await _redisService.DeleteCacheWithPatternAsync(deletePattern);
 
         return Result.Success();
     }
