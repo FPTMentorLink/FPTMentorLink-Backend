@@ -166,6 +166,27 @@ public static class TimeMapUtils
 
         return false;
     }
+    
+    /// <summary>
+    /// Check if all slots in the range are available
+    /// </summary>
+    /// <param name="timeMap"></param>
+    /// <param name="startTime"></param>
+    /// <param name="endTime"></param>
+    /// <returns>Return true if all slots in the range are available</returns>
+    public static bool IsAvailableInRange(this byte[] timeMap, TimeSpan startTime, TimeSpan endTime)
+    {
+        var startSlot = GetSlotFromTime(startTime);
+        var endSlot = GetSlotFromTime(endTime);
+
+        for (var slot = startSlot; slot < endSlot; slot++)
+        {
+            if (!IsAvailable(timeMap, slot))
+                return false;
+        }
+
+        return true;
+    }
 
     public static int CountAvailableSlots(this byte[] timeMap, TimeSpan startTime, TimeSpan endTime)
     {

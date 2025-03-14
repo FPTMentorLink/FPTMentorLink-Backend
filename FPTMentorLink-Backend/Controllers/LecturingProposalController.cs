@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Services.Interfaces;
 using Services.Models.Request.LecturingProposal;
+using Services.Utils;
 
 namespace FPTMentorLink_Backend.Controllers;
 
@@ -39,27 +41,31 @@ public class LecturingProposalController : ControllerBase
         return result.IsSuccess ? Ok() : BadRequest(result);
     }
 
-    [HttpPatch("{id}/student")]
-    public async Task<IActionResult> StudentUpdate([FromRoute] Guid id, [FromBody] StudentUpdateLecturingProposalRequest request)
+    [HttpPatch("{id:guid}/response")]
+    [Authorize] 
+    public async Task<IActionResult> UpdateProposal([FromRoute] Guid id, [FromBody] UpdateLecturingProposalRequest request)
     {
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
-
-        var result = await _lecturingProposalService.StudentUpdateAsync(id, request);
-        return result.IsSuccess ? Ok() : BadRequest(result);
-    }
-
-    [HttpPatch("{id}/lecturer")]
-    public async Task<IActionResult> LecturerUpdate([FromRoute] Guid id, [FromBody] LecturerUpdateLecturingProposalRequest request)
-    {
-        if (!ModelState.IsValid)
+        var result = Result.Failure("Invalid role for this operation");
+        if (User.IsInRole("Student"))
         {
-            return BadRequest(ModelState);
+            var studentUpdateRequest = new StudentUpdateLecturingProposalRequest{
+                StudentNote = request.Note,
+                IsClosed = request.IsClosed ?? false
+            };
+            result = await _lecturingProposalService.StudentUpdateAsync(id, studentUpdateRequest);
         }
-
-        var result = await _lecturingProposalService.LecturerUpdateAsync(id, request);
+        else if (User.IsInRole("Lecturer"))
+        {
+            var lecturerUpdateRequest = new LecturerUpdateLecturingProposalRequest{
+                LecturerNote = request.Note,
+                IsAccepted = request.IsAccepted
+            };
+            result = await _lecturingProposalService.LecturerUpdateAsync(id, lecturerUpdateRequest);
+        }
         return result.IsSuccess ? Ok() : BadRequest(result);
     }
 

@@ -107,4 +107,9 @@ public static class DomainError
     {
         public static readonly string FacultyNotFound = CommonError.NotFound(nameof(Repositories.Entities.Faculty));
     }
+
+    public static class Authentication
+    {
+        public static readonly string InvalidCredentials = "Invalid username or password.";
+    }
 }

@@ -130,6 +130,13 @@ public static class TokenGenerator
         }
     }
 
+    /// <summary>
+    /// Generate invitation token for project invitation (Expire in 24 hours)
+    /// </summary>
+    /// <param name="jwtSettings"></param>
+    /// <param name="studentId"></param>
+    /// <param name="projectId"></param>
+    /// <returns></returns>
     public static string GenerateInvitationToken(JwtSettings jwtSettings, Guid studentId, Guid projectId)
     {
         var key = Encoding.ASCII.GetBytes(jwtSettings.AccessTokenSecret);

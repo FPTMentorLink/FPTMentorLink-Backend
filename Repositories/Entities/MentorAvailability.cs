@@ -21,6 +21,8 @@ public class MentorAvailability : AuditableEntity
     public void SetAllAvailable() => TimeMap.SetAllAvailable();
     public bool HasAvailabilityInRange(TimeSpan startTime, TimeSpan endTime) => 
         TimeMap.HasAvailabilityInRange(startTime, endTime);
+    public bool IsAvailabilityInRange(TimeSpan startTime, TimeSpan endTime) => 
+        TimeMap.IsAvailableInRange(startTime, endTime);
     public int CountAvailableSlots(TimeSpan startTime, TimeSpan endTime) => 
         TimeMap.CountAvailableSlots(startTime, endTime);
 }

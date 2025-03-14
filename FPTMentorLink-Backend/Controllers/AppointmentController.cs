@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Services.Interfaces;
+using Services.Models.Request.Appointment;
 using Services.Utils;
 
 namespace FPTMentorLink_Backend.Controllers;
@@ -20,5 +21,25 @@ public class AppointmentController : ControllerBase
     {
         var result = await _appointmentService.GetPagedAsync(request);
         return result.IsSuccess ? Ok(result.Value) : BadRequest(result);
+    }
+    
+    [HttpPost]
+    public async Task<IActionResult> CreateAppointment([FromBody] CreateAppointmentRequest request)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+        
+        // Get leaderId from claim
+        var userId = User.GetUserId();
+        if (userId.IsNullOrGuidEmpty())
+        {
+            return BadRequest("Invalid user ID");
+        }
+        request.LeaderId = userId!.Value;
+
+        var result = await _appointmentService.CreateAsync(request);
+        return result.IsSuccess ? Ok() : BadRequest(result);
     }
 }

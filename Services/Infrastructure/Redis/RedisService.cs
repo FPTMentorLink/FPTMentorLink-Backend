@@ -34,4 +34,11 @@ public class RedisService(IConnectionMultiplexer redis) : IRedisService
     {
         return _redis.KeyDeleteAsync(key);
     }
+
+    public Task DeleteCacheWithPatternAsync(string pattern)
+    {
+        var server = _redis.Multiplexer.GetServer(_redis.Multiplexer.GetEndPoints().First());
+        var keys = server.Keys(0, pattern).ToArray();
+        return _redis.KeyDeleteAsync(keys);
+    }
 }
