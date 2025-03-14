@@ -15,6 +15,11 @@ public static class ClaimsPrincipalExtensions
         return userIdClaim != null ? Guid.Parse(userIdClaim) : null;
     }
     
+    public static string? GetRole(this ClaimsPrincipal? principal)
+    {
+        return principal?.FindFirst(ClaimTypes.Role)?.Value;
+    }
+    
     public static Guid? GetGuid(this ClaimsPrincipal? principal, string claimType)
     {
         var claim = principal?.FindFirst(claimType)?.Value;

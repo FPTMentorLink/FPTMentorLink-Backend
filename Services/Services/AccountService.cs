@@ -423,7 +423,7 @@ public class AccountService : IAccountService
         var existCode = await _unitOfWork.Students.AnyAsync(x => code.Contains(x.Code), cancellationToken);
         if (existCode)
             return Result.Failure(DomainError.Student.StudentCodeExists);
-        
+
         // Get all unique faculty codes from the records
         var studentFacultyCodes = studentRecords.Select(r => r.FacultyCode).Distinct().ToList();
 
@@ -723,4 +723,35 @@ public class AccountService : IAccountService
 
         return Result.Success();
     }
+
+    public async Task<Result<object>> GetProfileAsync(Guid userId, string role, CancellationToken cancellationToken)
+        =>
+            role switch
+            {
+                "Admin" => await _unitOfWork.Accounts
+                        .FindSingleAsync(a => a.Id == userId && a.Role == AccountRole.Admin, cancellationToken)
+                    is { } account
+                    ? Result.Success<object>(_mapper.Map<AdminResponse>(account))
+                    : Result.Failure<object>(DomainError.Account.AccountNotFound),
+
+                "Lecturer" => await _unitOfWork.Lecturers
+                        .FindSingleAsync(l => l.Id == userId, cancellationToken, x => x.Account, x => x.Faculty)
+                    is { } lecturer
+                    ? Result.Success<object>(_mapper.Map<LecturerResponse>(lecturer))
+                    : Result.Failure<object>(DomainError.Lecturer.LecturerNotFound),
+
+                "Mentor" => await _unitOfWork.Mentors
+                        .FindSingleAsync(m => m.Id == userId, cancellationToken, x => x.Account)
+                    is { } mentor
+                    ? Result.Success<object>(_mapper.Map<MentorResponse>(mentor))
+                    : Result.Failure<object>(DomainError.Mentor.MentorNotFound),
+
+                "Student" => await _unitOfWork.Students
+                        .FindSingleAsync(s => s.Id == userId, cancellationToken, x => x.Account, x => x.Faculty)
+                    is { } student
+                    ? Result.Success<object>(_mapper.Map<StudentResponse>(student))
+                    : Result.Failure<object>(DomainError.Student.StudentNotFound),
+
+                _ => Result.Failure<object>(DomainError.Account.AccountNotFound)
+            };
 }
