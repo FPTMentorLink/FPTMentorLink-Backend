@@ -123,42 +123,72 @@ public class AppointmentService : IAppointmentService
         }
     }
 
-    public async Task<Result> UpdateAsync(Guid id, UpdateAppointmentRequest request)
+    public async Task<Result> CancelAsync(CancelAppointmentRequest request)
     {
-        var appointment = await _unitOfWork.Appointments.FindByIdAsync(id);
-        if (appointment == null)
-            return Result.Failure<AppointmentResponse>("Appointment not found");
-
-        _mapper.Map(request, appointment);
-        _unitOfWork.Appointments.Update(appointment);
-
-        try
-        {
-            await _unitOfWork.SaveChangesAsync();
-            return Result.Success();
-        }
-        catch (Exception ex)
-        {
-            return Result.Failure($"Failed to update appointment: {ex.Message}");
-        }
-    }
-
-    public async Task<Result> DeleteAsync(Guid id)
-    {
-        var appointment = await _unitOfWork.Appointments.FindByIdAsync(id);
+        // Check if appointment exists and is in correct status
+        var appointment = await _unitOfWork.Appointments.FindByIdAsync(request.AppointmentId);
         if (appointment == null)
             return Result.Failure("Appointment not found");
 
-        _unitOfWork.Appointments.Delete(appointment);
+        if (appointment.Status != AppointmentStatus.Accepted)
+            return Result.Failure("Only accepted appointments can be canceled");
 
-        try
+        // Check if cancellation is within 30 minutes of creation
+        if (DateTime.UtcNow > appointment.CreatedAt.AddMinutes(30))
+            return Result.Failure("Appointments can only be canceled within 30 minutes of creation");
+
+        // Get mentor availability first as it's needed in both cases
+        var mentorAvailability = await _unitOfWork.MentorAvailabilities.FindSingleAsync(x =>
+            x.MentorId == appointment.MentorId && x.Date == appointment.StartTime.Date);
+        if (mentorAvailability == null)
+            return Result.Failure("Mentor availability not found");
+
+        if (request.IsMentorCancel)
         {
-            await _unitOfWork.SaveChangesAsync();
-            return Result.Success();
+            if (appointment.MentorId != request.UserId)
+                return Result.Failure("Only the assigned mentor can cancel this appointment");
+
+            // Get project leader for refund
+            var leader = await _unitOfWork.ProjectStudents
+                .FindAll(x => x.ProjectId == appointment.ProjectId && x.IsLeader)
+                .Include(x => x.Student)
+                .FirstOrDefaultAsync();
+
+            if (leader == null)
+            {
+                return Result.Failure("Project leader not found");
+            }
+
+            leader.Student.Balance += appointment.TotalPayment;
+            _unitOfWork.Students.Update(leader.Student);
         }
-        catch (Exception ex)
+        else
         {
-            return Result.Failure($"Failed to delete appointment: {ex.Message}");
+            var leader = await _unitOfWork.ProjectStudents
+                .FindAll(x => x.ProjectId == appointment.ProjectId &&
+                              x.StudentId == request.UserId &&
+                              x.IsLeader)
+                .Include(x => x.Student)
+                .FirstOrDefaultAsync();
+
+            if (leader == null)
+                return Result.Failure("Only the project leader can cancel this appointment");
+
+            leader.Student.Balance += appointment.TotalPayment;
+            _unitOfWork.Students.Update(leader.Student);
         }
+
+        // Update availability
+        mentorAvailability.SetAvailabilityRange(appointment.StartTime.TimeOfDay, appointment.EndTime.TimeOfDay, true);
+        _unitOfWork.MentorAvailabilities.Update(mentorAvailability);
+
+        // Update appointment status
+        appointment.Status = AppointmentStatus.Canceled;
+        appointment.IsMentorCanceled = request.IsMentorCancel;
+        appointment.CancelReason = request.CancelReason;
+        _unitOfWork.Appointments.Update(appointment);
+
+        await _unitOfWork.SaveChangesAsync();
+        return Result.Success();
     }
 }
