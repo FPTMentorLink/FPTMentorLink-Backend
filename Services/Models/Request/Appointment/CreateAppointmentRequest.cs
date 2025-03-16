@@ -26,8 +26,12 @@ public class CreateAppointmentRequest : ValidatableObject
             yield return Helper.CreateValidationResult("End time must be greater than start time");
         if (StartTime.Date != EndTime.Date)
             yield return Helper.CreateValidationResult("Appointment must be on the same day");
-        if (TotalMinutes < Constants.MinAppointmentSlotLength)
+        // Check if appointment is at least 48 hours in advance
+        if (DateTime.UtcNow.AddHours(Constants.RequireCreateAppointmentInAdvance) > StartTime)
             yield return Helper.CreateValidationResult(
-                $"Appointment must be at least {Constants.MinAppointmentSlotLength} minutes long");
+                $"Appointment must be at least {Constants.RequireCreateAppointmentInAdvance} hours in advance");
+        if (TotalMinutes < Constants.MinAppointmentLength)
+            yield return Helper.CreateValidationResult(
+                $"Appointment must be at least {Constants.MinAppointmentLength} minutes long");
     }
 }

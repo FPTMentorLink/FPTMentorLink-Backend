@@ -5,5 +5,5 @@ namespace Services.Models.Request.Project;
 
 public class UpdateProjectStatusRequest : ValidatableObject
 {
-    public ProjectStatus? Status { get; set; }
+    public ProjectStatus Status { get; set; }
 }

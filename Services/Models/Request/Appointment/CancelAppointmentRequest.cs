@@ -10,7 +10,6 @@ public class CancelAppointmentRequest : ValidatableObject
     [JsonIgnore] public Guid UserId { get; set; }
     [JsonIgnore] public Guid AppointmentId { get; set; }
     public string CancelReason { get; set; } = null!;
-    public bool IsMentorCancel { get; set; }
 
     public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {

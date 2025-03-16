@@ -15,4 +15,7 @@ public class AppointmentResponse : AuditableResponse
     public int TotalTime { get; set; }
     public int TotalPayment { get; set; }
     public AppointmentStatus Status { get; set; }
+    public string StatusName => Status.ToString();
+    public string? CancelReason { get; set; }
+    public string? RejectReason { get; set; }
 }

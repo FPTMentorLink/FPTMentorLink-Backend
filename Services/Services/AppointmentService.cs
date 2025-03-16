@@ -5,6 +5,7 @@ using Repositories.UnitOfWork.Interfaces;
 using Services.Interfaces;
 using Services.Models.Request.Appointment;
 using Services.Models.Response.Appointment;
+using Services.StateMachine.Appointment;
 using Services.Utils;
 
 namespace Services.Services;
@@ -123,72 +124,373 @@ public class AppointmentService : IAppointmentService
         }
     }
 
-    public async Task<Result> CancelAsync(CancelAppointmentRequest request)
+    public async Task<Result> UpdateStatusAsync(Guid id, AccountRole role, UpdateAppointmentStatusRequest request)
     {
-        // Check if appointment exists and is in correct status
-        var appointment = await _unitOfWork.Appointments.FindByIdAsync(request.AppointmentId);
+        var appointment = await _unitOfWork.Appointments.FindByIdAsync(id);
         if (appointment == null)
             return Result.Failure("Appointment not found");
 
-        if (appointment.Status != AppointmentStatus.Accepted)
-            return Result.Failure("Only accepted appointments can be canceled");
+        // Validate state transition and role permission
+        var validation = AppointmentStateManager.ValidateTransition(appointment.Status, request.Status, role);
+        if (!validation.IsSuccess)
+            return validation;
 
-        // Check if cancellation is within 30 minutes of creation
-        if (DateTime.UtcNow > appointment.CreatedAt.AddMinutes(30))
-            return Result.Failure("Appointments can only be canceled within 30 minutes of creation");
-
-        // Get mentor availability first as it's needed in both cases
-        var mentorAvailability = await _unitOfWork.MentorAvailabilities.FindSingleAsync(x =>
-            x.MentorId == appointment.MentorId && x.Date == appointment.StartTime.Date);
-        if (mentorAvailability == null)
-            return Result.Failure("Mentor availability not found");
-
-        if (request.IsMentorCancel)
+        // Handle specific status transition logic
+        var result = appointment.Status switch
         {
-            if (appointment.MentorId != request.UserId)
-                return Result.Failure("Only the assigned mentor can cancel this appointment");
-
-            // Get project leader for refund
-            var leader = await _unitOfWork.ProjectStudents
-                .FindAll(x => x.ProjectId == appointment.ProjectId && x.IsLeader)
-                .Include(x => x.Student)
-                .FirstOrDefaultAsync();
-
-            if (leader == null)
+            AppointmentStatus.Pending => request.Status switch
             {
-                return Result.Failure("Project leader not found");
-            }
+                AppointmentStatus.Accepted => await UpdateToAccepted(appointment),
+                AppointmentStatus.Rejected => await UpdateToRejected(appointment, request),
+                AppointmentStatus.Canceled => await HandlePendingCancellation(appointment, request, role),
+                AppointmentStatus.CancelRequested => await UpdateToCancelRequested(appointment, request),
+                _ => Result.Failure("Invalid status transition")
+            },
+            AppointmentStatus.Accepted => request.Status switch
+            {
+                AppointmentStatus.Canceled => await HandleAcceptedCancellation(appointment, request, role),
+                _ => Result.Failure("Invalid status transition")
+            },
+            AppointmentStatus.PendingConfirmation => request.Status switch
+            {
+                AppointmentStatus.ConfirmedByStudent => await UpdateToConfirmedByStudent(appointment),
+                AppointmentStatus.ConfirmedByMentor => await UpdateToConfirmedByMentor(appointment),
+                AppointmentStatus.CancelRequested => await UpdateToCancelRequested(appointment, request),
+                AppointmentStatus.Canceled => await HandleAdminCancellation(appointment, request),
+                _ => Result.Failure("Invalid status transition")
+            },
+            AppointmentStatus.ConfirmedByStudent => request.Status switch
+            {
+                AppointmentStatus.ConfirmedByMentor => await UpdateToConfirmedByMentor(appointment),
+                AppointmentStatus.Canceled => await HandleAdminCancellation(appointment, request),
+                _ => Result.Failure("Invalid status transition")
+            },
+            AppointmentStatus.ConfirmedByMentor => request.Status switch
+            {
+                AppointmentStatus.ConfirmedByStudent => await UpdateToConfirmedByStudent(appointment),
+                AppointmentStatus.CancelRequested => await UpdateToCancelRequested(appointment, request),
+                AppointmentStatus.Canceled => await HandleAdminCancellation(appointment, request),
+                _ => Result.Failure("Invalid status transition")
+            },
+            AppointmentStatus.CancelRequested => request.Status switch
+            {
+                AppointmentStatus.Canceled => await HandleAdminCancellation(appointment, request),
+                AppointmentStatus.Completed => await UpdateToCompleted(appointment),
+                _ => Result.Failure("Invalid status transition")
+            },
+            _ => Result.Failure("Invalid current status")
+        };
 
-            leader.Student.Balance += appointment.TotalPayment;
-            _unitOfWork.Students.Update(leader.Student);
-        }
-        else
+        if (!result.IsSuccess)
+            return result;
+
+        await _unitOfWork.SaveChangesAsync();
+        return Result.Success();
+    }
+
+    private async Task<Result> UpdateToConfirmedByMentor(Appointment appointment)
+    {
+        // If both confirmed, proceed to completed
+        if (appointment.Status == AppointmentStatus.ConfirmedByStudent)
         {
-            var leader = await _unitOfWork.ProjectStudents
-                .FindAll(x => x.ProjectId == appointment.ProjectId &&
-                              x.StudentId == request.UserId &&
-                              x.IsLeader)
-                .Include(x => x.Student)
-                .FirstOrDefaultAsync();
-
-            if (leader == null)
-                return Result.Failure("Only the project leader can cancel this appointment");
-
-            leader.Student.Balance += appointment.TotalPayment;
-            _unitOfWork.Students.Update(leader.Student);
+            return await UpdateToCompleted(appointment);
         }
 
-        // Update availability
-        mentorAvailability.SetAvailabilityRange(appointment.StartTime.TimeOfDay, appointment.EndTime.TimeOfDay, true);
-        _unitOfWork.MentorAvailabilities.Update(mentorAvailability);
+        appointment.Status = AppointmentStatus.ConfirmedByMentor;
+        _unitOfWork.Appointments.Update(appointment);
+        return Result.Success();
+    }
 
-        // Update appointment status
+    private Task<Result> UpdateToCancelRequested(Appointment appointment,
+        UpdateAppointmentStatusRequest request)
+    {
+        if (DateTime.UtcNow < appointment.EndTime)
+            return Task.FromResult(
+                Result.Failure("Student can only request cancellation after the appointment has ended"));
+        
+        appointment.Status = AppointmentStatus.CancelRequested;
+        appointment.CancelReason = request.CancelReason;
+        _unitOfWork.Appointments.Update(appointment);
+        
+        return Task.FromResult(Result.Success());
+    }
+
+    private async Task<Result> UpdateToConfirmedByStudent(Appointment appointment)
+    {
+        // If both confirmed, proceed to completed
+        if (appointment.Status == AppointmentStatus.ConfirmedByMentor)
+        {
+            return await UpdateToCompleted(appointment);
+        }
+
+        appointment.Status = AppointmentStatus.ConfirmedByStudent;
+        _unitOfWork.Appointments.Update(appointment);
+        return Result.Success();
+    }
+
+    /// <summary>
+    /// At pending status, student, admin can cancel
+    /// </summary>
+    /// <param name="appointment"></param>
+    /// <param name="request"></param>
+    /// <param name="role"></param>
+    /// <returns></returns>
+    private async Task<Result> HandlePendingCancellation(Appointment appointment,
+        UpdateAppointmentStatusRequest request,
+        AccountRole role)
+    {
+        var result = role switch
+        {
+            AccountRole.Student => await HandleStudentPendingCancellation(appointment, request),
+            AccountRole.Admin => await HandleAdminCancellation(appointment, request),
+            _ => Result.Failure($"Role {role} is not allowed to cancel pending appointments")
+        };
+
+        if (!result.IsSuccess)
+            return result;
+
+        return Result.Success();
+    }
+
+    /// <summary>
+    /// At accepted status, student, mentor, admin can cancel
+    /// </summary>
+    /// <param name="appointment"></param>
+    /// <param name="request"></param>
+    /// <param name="role"></param>
+    /// <returns></returns>
+    private async Task<Result> HandleAcceptedCancellation(Appointment appointment,
+        UpdateAppointmentStatusRequest request, AccountRole role)
+    {
+        var result = role switch
+        {
+            AccountRole.Student => await HandleStudentAcceptedCancellation(appointment, request),
+            AccountRole.Mentor => await HandleMentorAcceptedCancellation(appointment, request),
+            AccountRole.Admin => await HandleAdminCancellation(appointment, request),
+            _ => Result.Failure($"Role {role} is not allowed to cancel accepted appointments")
+        };
+        if (!result.IsSuccess)
+            return result;
+        return Result.Success();
+    }
+
+    /// <summary>
+    /// This method updates the status of an appointment to "Canceled"
+    /// This is done by student only
+    /// This will also process refund and return mentor availability
+    /// </summary>
+    /// <param name="appointment"></param>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    private async Task<Result> HandleStudentPendingCancellation(Appointment appointment,
+        UpdateAppointmentStatusRequest request)
+    {
+        if (DateTime.UtcNow.AddHours(Constants.RequireCancelAppointmentInAdvance) > appointment.StartTime)
+            return Result.Failure(
+                $"Appointment cannot be canceled within {Constants.RequireCancelAppointmentInAdvance} hours of the start time");
+        var refundResult = await ProcessAppointmentRefund(appointment);
+        if (refundResult.IsFailure)
+            return refundResult;
+
         appointment.Status = AppointmentStatus.Canceled;
-        appointment.IsMentorCanceled = request.IsMentorCancel;
+        appointment.CancelReason = request.CancelReason;
+        _unitOfWork.Appointments.Update(appointment);
+        
+        return await ReturnMentorAvailability(appointment);
+    }
+
+    /// <summary>
+    /// This method updates the status of an appointment to "Canceled"
+    /// This is done by student only
+    /// This will also process refund and return mentor availability
+    /// </summary>
+    /// <param name="appointment"></param>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    private async Task<Result> HandleStudentAcceptedCancellation(Appointment appointment,
+        UpdateAppointmentStatusRequest request)
+    {
+        if (DateTime.UtcNow.AddHours(Constants.RequireCancelAppointmentInAdvance) > appointment.StartTime)
+            return Result.Failure(
+                $"Appointment cannot be canceled within {Constants.RequireCancelAppointmentInAdvance} hours of the start time");
+        var refundResult = await ProcessAppointmentRefund(appointment);
+        if (refundResult.IsFailure)
+            return refundResult;
+
+        appointment.Status = AppointmentStatus.Canceled;
         appointment.CancelReason = request.CancelReason;
         _unitOfWork.Appointments.Update(appointment);
 
-        await _unitOfWork.SaveChangesAsync();
+        return await ReturnMentorAvailability(appointment);
+    }
+
+    /// <summary>
+    /// This method updates the status of an appointment to "Canceled"
+    /// This is done by mentor only
+    /// This will also process refund
+    /// Mentor must set availability manually as mentor may not be available
+    /// </summary>
+    /// <param name="appointment"></param>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    private async Task<Result> HandleMentorAcceptedCancellation(Appointment appointment,
+        UpdateAppointmentStatusRequest request)
+    {
+        if (DateTime.UtcNow.AddHours(Constants.RequireCancelAppointmentInAdvance) > appointment.StartTime)
+            return Result.Failure(
+                $"Appointment cannot be canceled within {Constants.RequireCancelAppointmentInAdvance} hours of the start time");
+        var refundResult = await ProcessAppointmentRefund(appointment);
+        if (refundResult.IsFailure)
+            return refundResult;
+
+        appointment.Status = AppointmentStatus.Canceled;
+        appointment.CancelReason = request.CancelReason;
+        _unitOfWork.Appointments.Update(appointment);
+
+        return Result.Success();
+    }
+
+    /// <summary>
+    /// This method updates the status of an appointment to "Canceled"
+    /// This is done by admin only
+    /// This will also process refund
+    /// Mentor must set availability manually as mentor may not be available
+    /// </summary>
+    /// <param name="appointment"></param>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    private async Task<Result> HandleAdminCancellation(Appointment appointment, UpdateAppointmentStatusRequest request)
+    {
+        // Admin can cancel with full refund on any appointment on any status
+        var refundResult = await ProcessAppointmentRefund(appointment);
+        if (refundResult.IsFailure)
+            return refundResult;
+
+        appointment.Status = AppointmentStatus.Canceled;
+        appointment.CancelReason = request.CancelReason;
+        _unitOfWork.Appointments.Update(appointment);
+
+        return Result.Success();
+    }
+
+    /// <summary>
+    /// This method updates the status of an appointment to "Accepted"
+    /// This is done by mentor only
+    /// Mentor can only accept appointment before the start time
+    /// </summary>
+    /// <param name="appointment"></param>
+    /// <returns></returns>
+    private Task<Result> UpdateToAccepted(Appointment appointment)
+    {
+        if (DateTime.UtcNow > appointment.StartTime)
+            return Task.FromResult(Result.Failure("Appointment cannot be accepted after the start time"));
+        appointment.Status = AppointmentStatus.Accepted;
+        _unitOfWork.Appointments.Update(appointment);
+        return Task.FromResult(Result.Success());
+    }
+
+    /// <summary>
+    /// This method updates the status of an appointment to "Rejected"
+    /// This is done by mentor only
+    /// This will also process refund
+    /// Mentor must set availability manually as mentor may not be available
+    /// </summary>
+    /// <param name="appointment"></param>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    private async Task<Result> UpdateToRejected(Appointment appointment, UpdateAppointmentStatusRequest request)
+    {
+        if (DateTime.UtcNow.AddHours(Constants.RequireCancelAppointmentInAdvance) > appointment.StartTime)
+            return Result.Failure(
+                $"Appointment cannot be rejected within {Constants.RequireCancelAppointmentInAdvance} hours of the start time");
+        appointment.Status = AppointmentStatus.Rejected;
+        appointment.RejectReason = request.RejectReason;
+
+        // Process refund
+        var refundResult = await ProcessAppointmentRefund(appointment);
+        if (refundResult.IsFailure)
+            return refundResult;
+
+        _unitOfWork.Appointments.Update(appointment);
+        return Result.Success();
+    }
+
+    /// <summary>
+    /// This method updates the status of an appointment to "Completed"
+    /// This is done by admin only
+    /// This will also process payment to mentor
+    /// </summary>
+    /// <param name="appointment"></param>
+    /// <returns></returns>
+    private async Task<Result> UpdateToCompleted(Appointment appointment)
+    {
+        // Process payment
+        var paymentResult = await ProcessAppointmentPayment(appointment);
+        if (paymentResult.IsFailure)
+            return paymentResult;
+
+        appointment.Status = AppointmentStatus.Completed;
+        _unitOfWork.Appointments.Update(appointment);
+        return Result.Success();
+    }
+
+    /// <summary>
+    /// This method update mentor balance
+    /// by adding appointment total payment to mentor balance
+    /// </summary>
+    /// <param name="appointment"></param>
+    /// <returns></returns>
+    private async Task<Result> ProcessAppointmentPayment(Appointment appointment)
+    {
+        var mentor = await _unitOfWork.Mentors.FindByIdAsync(appointment.MentorId);
+        if (mentor == null)
+            return Result.Failure("Mentor not found");
+        mentor.Balance += appointment.TotalPayment;
+        _unitOfWork.Mentors.Update(mentor);
+        return Result.Success();
+    }
+
+    /// <summary>
+    /// This method update student balance
+    /// by adding appointment total payment back to student balance
+    /// </summary>
+    /// <param name="appointment"></param>
+    /// <returns></returns>
+    private async Task<Result> ProcessAppointmentRefund(Appointment appointment)
+    {
+        // Get project leader for refund
+        var leader = await _unitOfWork.ProjectStudents
+            .FindAll(x => x.ProjectId == appointment.ProjectId && x.IsLeader)
+            .Include(x => x.Student)
+            .FirstOrDefaultAsync();
+
+        if (leader == null)
+            return Result.Failure("Project leader not found");
+
+        // Process refund
+        var student = leader.Student;
+        student.Balance += appointment.TotalPayment;
+        _unitOfWork.Students.Update(student);
+
+        return Result.Success();
+    }
+
+    /// <summary>
+    /// This method return mentor availability (set as available)
+    /// </summary>
+    /// <param name="appointment"></param>
+    /// <returns></returns>
+    private async Task<Result> ReturnMentorAvailability(Appointment appointment)
+    {
+        var mentorAvailability = await _unitOfWork.MentorAvailabilities.FindSingleAsync(x =>
+            x.MentorId == appointment.MentorId && x.Date == appointment.StartTime.Date);
+
+        if (mentorAvailability == null)
+            return Result.Failure("Mentor availability not found");
+
+        mentorAvailability.SetAvailabilityRange(appointment.StartTime.TimeOfDay, appointment.EndTime.TimeOfDay, true);
+        _unitOfWork.MentorAvailabilities.Update(mentorAvailability);
+
         return Result.Success();
     }
 }

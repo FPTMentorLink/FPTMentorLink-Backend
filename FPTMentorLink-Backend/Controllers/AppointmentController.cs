@@ -32,37 +32,41 @@ public class AppointmentController : ControllerBase
         }
 
         // Get leaderId from claim
-        var userId = User.GetUserId();
-        if (userId.IsNullOrGuidEmpty())
+        var leaderId = User.GetUserId();
+        if (leaderId == null || leaderId == Guid.Empty)
         {
-            return BadRequest("Invalid user ID");
+            return BadRequest("User not found");
         }
 
-        request.LeaderId = userId!.Value;
+        request.LeaderId = leaderId.Value;
 
         var result = await _appointmentService.CreateAsync(request);
         return result.IsSuccess ? Ok() : BadRequest(result);
     }
 
-    [HttpPost("{id}/cancel")]
-    public async Task<IActionResult> CancelAppointment(Guid id, [FromBody] CancelAppointmentRequest request)
+    [HttpPost("{id:guid}/status")]
+    public async Task<IActionResult> UpdateAppointmentStatus([FromRoute] Guid id,
+        [FromBody] UpdateAppointmentStatusRequest request)
     {
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
 
-        // Get userId from claim
-        var userId = User.GetUserId();
-        if (userId.IsNullOrGuidEmpty())
+        var role = User.GetAccountRole();
+        if (role == null)
         {
-            return BadRequest("Invalid user ID");
+            return BadRequest(Result.Failure("Role not found"));
         }
 
-        request.UserId = userId!.Value;
-        request.AppointmentId = id;
-
-        var result = await _appointmentService.CancelAsync(request);
+        var result = await _appointmentService.UpdateStatusAsync(id, role.Value, request);
         return result.IsSuccess ? Ok() : BadRequest(result);
+    }
+
+    [HttpGet("{id:guid}")]
+    public async Task<IActionResult> GetById([FromRoute] Guid id)
+    {
+        var result = await _appointmentService.GetByIdAsync(id);
+        return result.IsSuccess ? Ok(result.Value) : BadRequest(result);
     }
 }
