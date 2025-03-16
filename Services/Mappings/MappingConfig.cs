@@ -34,7 +34,9 @@ using Services.Models.Response.ProjectStudent;
 using Services.Models.Response.Proposal;
 using Services.Models.Response.Student;
 using Services.Models.Response.Term;
+using Services.Models.Response.Transaction;
 using Services.Models.Response.WeeklyReport;
+using Services.Models.Response.WeeklyReportFeedback;
 
 namespace Services.Mappings;
 
@@ -74,7 +76,7 @@ public static class MappingConfig
         TypeAdapterConfig<CreateCheckpointTaskRequest, CheckpointTask>.NewConfig();
         TypeAdapterConfig<UpdateCheckpointTaskRequest, CheckpointTask>.NewConfig()
             .IgnoreNullValues(true);
-        
+
         // Faculty
         TypeAdapterConfig<Faculty, FacultyResponse>.NewConfig();
         TypeAdapterConfig<CreateFacultyRequest, Faculty>.NewConfig();
@@ -102,6 +104,12 @@ public static class MappingConfig
         TypeAdapterConfig<UpdateLecturerRequest, Lecturer>.NewConfig()
             .IgnoreNullValues(true);
 
+        // Transaction
+        TypeAdapterConfig<Transaction, TransactionResponse>.NewConfig()
+            .Map(dest => dest.TransactionCode, src => src.Code)
+            .Map(dest => dest.FullName, src => src.Account.FirstName + " " + src.Account.LastName)
+            .Map(dest => dest.Role, src => src.Account.Role.ToString());
+
         // LecturingProposal
         TypeAdapterConfig<LecturingProposal, LecturingProposalResponse>.NewConfig();
         TypeAdapterConfig<CreateLecturingProposalRequest, LecturingProposal>.NewConfig();
@@ -109,7 +117,7 @@ public static class MappingConfig
             .IgnoreNullValues(true);
         TypeAdapterConfig<LecturerUpdateLecturingProposalRequest, LecturingProposal>.NewConfig()
             .IgnoreNullValues(true);
-        
+
         // Mentor
         TypeAdapterConfig<Account, MentorResponse>.NewConfig();
         TypeAdapterConfig<Mentor, MentorResponse>.NewConfig()
@@ -132,7 +140,7 @@ public static class MappingConfig
         TypeAdapterConfig<CreateMentorAvailabilityRequest, MentorAvailability>.NewConfig();
         TypeAdapterConfig<UpdateMentorAvailabilityRequest, MentorAvailability>.NewConfig()
             .IgnoreNullValues(true);
-        
+
         // MentoringProposal
         TypeAdapterConfig<MentoringProposal, MentoringProposalResponse>.NewConfig();
         TypeAdapterConfig<CreateMentoringProposalRequest, MentoringProposal>.NewConfig();
@@ -169,7 +177,7 @@ public static class MappingConfig
             .Map(dest => dest.ImageUrl, src => src.Account.ImageUrl)
             .Map(dest => dest.IsSuspended, src => src.Account.IsSuspended)
             .Map(dest => dest.Role, src => src.Account.Role)
-            .Map(dest=>dest.Faculty, src=>src.Faculty.Name);
+            .Map(dest => dest.Faculty, src => src.Faculty.Name);
         TypeAdapterConfig<CreateStudentRequest, Student>.NewConfig();
         TypeAdapterConfig<UpdateStudentRequest, Student>.NewConfig()
             .IgnoreNullValues(true);
@@ -189,6 +197,12 @@ public static class MappingConfig
         TypeAdapterConfig<CreateWeeklyReportRequest, WeeklyReport>.NewConfig();
         TypeAdapterConfig<UpdateWeeklyReportRequest, WeeklyReport>.NewConfig()
             .IgnoreNullValues(true);
+
+        TypeAdapterConfig<WeeklyReport, WeeklyReportDetailResponse>.NewConfig();
+
+        // WeeklyReportFeedback
+        TypeAdapterConfig<WeeklyReportFeedback, WeeklyReportFeedBackResponse>.NewConfig()
+            .Map(dest => dest.LecturerName, src => src.Lecturer.Account.FirstName + " " + src.Lecturer.Account.LastName + " (" + src.Lecturer.Account.Email + ")");
 
         // Term
         TypeAdapterConfig<Term, TermResponse>.NewConfig();

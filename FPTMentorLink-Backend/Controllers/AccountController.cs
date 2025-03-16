@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Repositories.Entities;
 using Services.Interfaces;
 using Services.Models.Request.Account;
+using Services.Models.Request.Base;
 using Services.Models.Request.Lecturer;
 using Services.Models.Request.Mentor;
 using Services.Models.Request.Student;
@@ -30,7 +31,7 @@ public class AccountController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAccounts([FromQuery] PaginationParams request)
+    public async Task<IActionResult> GetAccounts([FromQuery] GetAccountsRequest request)
     {
         var result = await _accountService.GetPagedAsync(request);
         return result.IsSuccess ? Ok(result.Value) : BadRequest(result);

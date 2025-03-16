@@ -16,9 +16,7 @@ public class Appointment : AuditableEntity
 
     [MaxLength(2000)] public string? CancelReason { get; set; }
     [MaxLength(2000)] public string? RejectReason { get; set; }
-    public bool IsMentorCanceled { get; set; }
-
-
+    
     public AppointmentStatus Status { get; set; }
 
     public virtual Project Project { get; set; } = null!;

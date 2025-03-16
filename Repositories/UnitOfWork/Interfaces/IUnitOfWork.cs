@@ -25,6 +25,7 @@ public interface IUnitOfWork : IDisposable
     IGenericRepository<Term> Terms { get; }
     IGenericRepository<Transaction> Transactions { get; }
     IGenericRepository<WeeklyReport> WeeklyReports { get; }
+    IGenericRepository<WeeklyReportFeedback> WeeklyReportFeedbacks { get; }
 
 
     Task<int> SaveChangesAsync(bool trackAudit = true, bool trackSoftDelete = true);

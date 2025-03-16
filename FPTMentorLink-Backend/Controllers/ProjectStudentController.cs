@@ -52,8 +52,8 @@ public class ProjectStudentController : ControllerBase
         return result.IsSuccess ? Ok() : BadRequest(result);
     }
 
-    [HttpPost("{id:guid}")]
-    public async Task<IActionResult> DeleteProjectStudent([FromBody] Guid id)
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> DeleteProjectStudent(Guid id)
     {
         var result = await _projectStudentService.DeleteAsync(id);
         return result.IsSuccess ? Ok() : BadRequest(result);

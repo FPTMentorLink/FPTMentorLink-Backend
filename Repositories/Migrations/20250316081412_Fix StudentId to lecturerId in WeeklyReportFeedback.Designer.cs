@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Repositories.Data;
 
@@ -11,9 +12,11 @@ using Repositories.Data;
 namespace Repositories.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250316081412_Fix StudentId to lecturerId in WeeklyReportFeedback")]
+    partial class FixStudentIdtolecturerIdinWeeklyReportFeedback
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -116,6 +119,9 @@ namespace Repositories.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("IsMentorCanceled")
                         .HasColumnType("tinyint(1)");
 
                     b.Property<Guid>("MentorId")
