@@ -10,4 +10,5 @@ public class ProposalResponse : AuditableResponse
     public string Name { get; set; } = null!;
     public string? Description { get; set; }
     public ProposalStatus Status { get; set; }
+    public string StatusName => Status.ToString();
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Services.Interfaces;
 using Services.Models.Request.Project;
+using Services.Utils;
 
 namespace FPTMentorLink_Backend.Controllers;
 
@@ -36,6 +37,13 @@ public class ProjectController : ControllerBase
             return BadRequest(ModelState);
         }
 
+        var leaderId = User.GetUserId();
+        if (leaderId == null || leaderId == Guid.Empty)
+        {
+            return BadRequest(Result.Failure("User not found"));
+        }
+
+        request.LeaderId = leaderId.Value;
         var result = await _projectService.CreateAsync(request);
         return result.IsSuccess ? Ok() : BadRequest(result);
     }
@@ -61,7 +69,14 @@ public class ProjectController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        var result = await _projectService.UpdateStatusAsync(id, request);
+        var role = User.GetAccountRole();
+
+        if (role == null)
+        {
+            return BadRequest(Result.Failure("Role not found"));
+        }
+
+        var result = await _projectService.UpdateStatusAsync(id, role.Value, request);
         return result.IsSuccess ? Ok() : BadRequest(result);
     }
 

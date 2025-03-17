@@ -11,6 +11,7 @@ public class ProjectDetailResponse : AuditableResponse
     public string Name { get; set; } = null!;
     public string? Description { get; set; }
     public ProjectStatus Status { get; set; }
+    public string StatusName => Status.ToString();
     public Guid TermId { get; set; }
     public string TermCode { get; set; } = null!;
     public Guid FacultyId { get; set; }

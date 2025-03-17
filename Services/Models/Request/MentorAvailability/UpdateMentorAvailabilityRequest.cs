@@ -11,8 +11,8 @@ public class UpdateMentorAvailabilityRequest : ValidatableObject
     public IEnumerable<AvailableTimeSlot> AvailableTimeSlots { get; set; } = [];
     public byte[] TimeMap => AvailableTimeSlots.ToTimeMap();
     public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext){
-        if (!TimeMap.IsTimeMapValid(Constants.MinAppointmentSlotLength)){
-            yield return new ValidationResult($"Each session must be at least {Constants.MinAppointmentSlotLength} minutes");
+        if (!TimeMap.IsTimeMapValid(Constants.MinAppointmentLength)){
+            yield return new ValidationResult($"Each session must be at least {Constants.MinAppointmentLength} minutes");
         }
     }
 }

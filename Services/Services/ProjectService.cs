@@ -8,6 +8,7 @@ using Services.Interfaces;
 using Services.Models.Request.Project;
 using Services.Models.Response.Project;
 using Services.Models.Response.ProjectStudent;
+using Services.StateMachine.Project;
 using Services.Utils;
 
 namespace Services.Services;
@@ -177,12 +178,18 @@ public class ProjectService : IProjectService
         }
     }
 
-    public async Task<Result> UpdateStatusAsync(Guid id, UpdateProjectStatusRequest request)
+    public async Task<Result> UpdateStatusAsync(Guid id, AccountRole role, UpdateProjectStatusRequest request)
     {
         var project = await _unitOfWork.Projects.FindByIdAsync(id);
         if (project == null)
             return Result.Failure("Project not found");
 
+        // Validate state transition and role permission
+        var validation = ProjectStateManager.ValidateTransition(project.Status, request.Status, role);
+        if (!validation.IsSuccess)
+            return validation;
+
+        // Use existing switch-case logic for the actual status update
         var result = project.Status switch
         {
             ProjectStatus.Pending => request.Status switch
@@ -225,6 +232,7 @@ public class ProjectService : IProjectService
         };
 
         if (result.IsFailure) return result;
+        
         // Save changes
         await _unitOfWork.SaveChangesAsync();
         return Result.Success();

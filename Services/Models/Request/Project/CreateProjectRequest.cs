@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using Services.Models.Request.Base;
 
 namespace Services.Models.Request.Project;
@@ -10,6 +11,5 @@ public class CreateProjectRequest : ValidatableObject
 
     [Required] public Guid FacultyId { get; set; }
 
-    //TODO: Should take LeaderId from JWT claim for security
-    [Required] public Guid LeaderId { get; set; }
+    [JsonIgnore] public Guid LeaderId { get; set; }
 }

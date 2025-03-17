@@ -24,13 +24,13 @@ public class ErrorHandlingMiddleware
         {
             await _next(context);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            await HandleExceptionAsync(context);
+            await HandleExceptionAsync(context, ex);
         }
     }
 
-    private static async Task HandleExceptionAsync(HttpContext context)
+    private static async Task HandleExceptionAsync(HttpContext context, Exception? exception = null)
     {
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
@@ -39,7 +39,9 @@ public class ErrorHandlingMiddleware
         {
             context.Response.StatusCode,
             Message = "An internal server error occurred.",
-            DetailedMessage = "An internal server error occurred! Please try again later."
+            DetailedMessage = exception?.Message ?? "An internal server error occurred! Please try again later.",
+            StackTrace = exception?.StackTrace,
+            InnerException = exception?.InnerException?.Message
         };
 
         await context.Response.WriteAsync(JsonSerializer.Serialize(response, JsonOptions));

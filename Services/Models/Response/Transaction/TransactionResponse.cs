@@ -16,4 +16,5 @@ public class TransactionResponse : AuditableResponse
     public string Role { get; set; } = null!;
     public string TransactionMethod { get; set; } = null!;
     public TransactionStatus Status { get; set; }
+    public string StatusName => Status.ToString();
 }

@@ -47,8 +47,6 @@ public static class MappingConfig
         // Appointment
         TypeAdapterConfig<Appointment, AppointmentResponse>.NewConfig();
         TypeAdapterConfig<CreateAppointmentRequest, Appointment>.NewConfig();
-        TypeAdapterConfig<UpdateAppointmentRequest, Appointment>.NewConfig()
-            .IgnoreNullValues(true);
         TypeAdapterConfig<UpdateAppointmentStatusRequest, Appointment>.NewConfig()
             .IgnoreNullValues(true);
 
