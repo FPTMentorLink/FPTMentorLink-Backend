@@ -31,6 +31,7 @@ public class UnitOfWork : IUnitOfWork
     private IGenericRepository<Term>? _terms;
     private IGenericRepository<Transaction>? _transactions;
     private IGenericRepository<WeeklyReport>? _weeklyReports;
+    private IGenericRepository<WeeklyReportFeedback>? _weeklyReportFeedbacks;
 
 
     public UnitOfWork(ApplicationDbContext context)
@@ -101,6 +102,9 @@ public class UnitOfWork : IUnitOfWork
 
     public IGenericRepository<WeeklyReport> WeeklyReports =>
         _weeklyReports ??= new GenericRepository<WeeklyReport>(_context);
+    
+    public IGenericRepository<WeeklyReportFeedback> WeeklyReportFeedbacks =>
+        _weeklyReportFeedbacks ??= new GenericRepository<WeeklyReportFeedback>(_context);
 
     public IGenericRepository<Term> Terms =>
         _terms ??= new GenericRepository<Term>(_context);

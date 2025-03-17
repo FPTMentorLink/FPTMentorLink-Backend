@@ -2,6 +2,7 @@
 using Repositories.Entities;
 using Services.Models.Request.Account;
 using Services.Models.Request.Authorization;
+using Services.Models.Request.Base;
 using Services.Models.Request.Lecturer;
 using Services.Models.Request.Mentor;
 using Services.Models.Request.Student;
@@ -24,7 +25,7 @@ public interface IAccountService
     Task<Result<LoginResponse>> LoginAsync(string email, string password);
     Task<Result<RefreshTokenResponse>> RefreshTokenAsync(RefreshTokenRequest request);
     Task<Result> IsEmailUniqueAsync(string email);
-    Task<Result<PaginationResult<AccountResponse>>> GetPagedAsync(PaginationParams paginationParams);
+    Task<Result<PaginationResult<AccountResponse>>> GetPagedAsync(GetAccountsRequest paginationParams);
     Task<Result<int>> GetTotalAsync(AccountRole[] roles);
     Task<Result> ImportAccountsAsync(IFormFile formFile, AccountRole role, CancellationToken cancellationToken);
     Task<Result> UpdateLecturerAsync(Guid id, UpdateLecturerRequest request, CancellationToken cancellationToken);

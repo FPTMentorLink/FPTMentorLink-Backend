@@ -206,6 +206,7 @@ public static class Startup
         builder.Services.AddScoped<IWeeklyReportService, WeeklyReportService>();
         builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
         builder.Services.AddScoped<ITermService, TermService>();
+        builder.Services.AddScoped<ITransactionService, TransactionService>();
 
         
         

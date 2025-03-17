@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Linq.Expressions;
 using System.Security.Claims;
 using CsvHelper;
 using CsvHelper.Configuration;
@@ -11,6 +12,7 @@ using Repositories.UnitOfWork.Interfaces;
 using Services.Interfaces;
 using Services.Models.Request.Account;
 using Services.Models.Request.Authorization;
+using Services.Models.Request.Base;
 using Services.Models.Request.Lecturer;
 using Services.Models.Request.Mentor;
 using Services.Models.Request.Student;
@@ -276,9 +278,32 @@ public class AccountService : IAccountService
         return exists ? Result.Failure("Email already exists") : Result.Success();
     }
 
-    public async Task<Result<PaginationResult<AccountResponse>>> GetPagedAsync(PaginationParams paginationParams)
-    {
-        var query = _unitOfWork.Accounts.GetQueryable();
+    public async Task<Result<PaginationResult<AccountResponse>>> GetPagedAsync(GetAccountsRequest paginationParams)
+    {   
+        Expression<Func<Account, bool>> filter = account => true;
+        if (!string.IsNullOrEmpty(paginationParams.SearchTerm))
+        {
+            Expression<Func<Account, bool>> searchTermFilter = account =>
+                account.Email.Contains(paginationParams.SearchTerm) ||
+                account.Username.Contains(paginationParams.SearchTerm) ||
+                account.FirstName.Contains(paginationParams.SearchTerm);
+            filter = Helper.CombineAndAlsoExpressions(filter, searchTermFilter);
+        }
+
+        if (paginationParams.Roles != null)
+        {
+            Expression<Func<Account, bool>> roleFilter = account =>
+                paginationParams.Roles.Contains(account.Role);
+            filter = Helper.CombineAndAlsoExpressions(filter, roleFilter);
+        }
+
+        var query = _unitOfWork.Accounts.FindAll(filter);
+        if (!string.IsNullOrEmpty(paginationParams.OrderBy))
+        {
+            var sortProperty = GetSortProperty(paginationParams.OrderBy);
+            query = query.ApplySorting(paginationParams.IsDescending, sortProperty);
+        }
+
         var result = await query.ProjectToPaginatedListAsync<Account, AccountResponse>(paginationParams);
 
         return Result.Success(result);
@@ -754,4 +779,13 @@ public class AccountService : IAccountService
 
                 _ => Result.Failure<object>(DomainError.Account.AccountNotFound)
             };
+
+    private Expression<Func<Account, object>> GetSortProperty(string sortBy) =>
+        sortBy.ToLower().Replace(" ", "") switch
+        {
+            "role" => account => account.Role,
+            "issuspended" => account => account.IsSuspended,
+            "createdat" => account => account.CreatedAt,
+            _ => account => account.Id
+        };
 }
