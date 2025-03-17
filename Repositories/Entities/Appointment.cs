@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using Repositories.Entities.Base;
 
 namespace Repositories.Entities;
@@ -12,6 +13,12 @@ public class Appointment : AuditableEntity
     public int BaseSalaryPerHour { get; set; }
     public int TotalTime { get; set; } // in minutes
     public int TotalPayment { get; set; }
+
+    [MaxLength(2000)] public string? CancelReason { get; set; }
+    [MaxLength(2000)] public string? RejectReason { get; set; }
+    public bool IsMentorCanceled { get; set; }
+
+
     public AppointmentStatus Status { get; set; }
 
     public virtual Project Project { get; set; } = null!;

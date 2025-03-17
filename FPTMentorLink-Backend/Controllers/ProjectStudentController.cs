@@ -28,7 +28,7 @@ public class ProjectStudentController : ControllerBase
         return result.IsSuccess ? Ok(result.Value) : BadRequest(result);
     }
 
-    [HttpPost]
+    [HttpPost("send-invitation")]
     public async Task<IActionResult> SendProjectInvitation([FromBody] SendProjectInvitationRequest request)
     {
         if (!ModelState.IsValid)
@@ -40,8 +40,8 @@ public class ProjectStudentController : ControllerBase
         return result.IsSuccess ? Ok() : BadRequest(result);
     }
 
-    [HttpPost("accept-invitation")]
-    public async Task<IActionResult> AcceptProjectInvitation([FromBody] AcceptProjectInvitationRequest request)
+    [HttpGet("accept-invitation")]
+    public async Task<IActionResult> AcceptProjectInvitation([FromQuery] AcceptProjectInvitationRequest request)
     {
         if (!ModelState.IsValid)
         {
