@@ -1,15 +1,18 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Repositories.Entities;
 using Services.Interfaces;
+using Services.Models.Request.Project;
 using Services.Models.Request.Student;
+using Services.Utils;
 
 namespace FPTMentorLink_Backend.Controllers;
 
-[Route("api/student")]
+[Route("api/students")]
 public class StudentController : ControllerBase
 {
     private readonly IStudentService _studentService;
 
-        public StudentController(IStudentService studentService)
+    public StudentController(IStudentService studentService)
     {
         _studentService = studentService;
     }
@@ -32,5 +35,18 @@ public class StudentController : ControllerBase
         var query = Request.Query;
         var result = await _studentService.HandleVnPayIpn(query);
         return Ok(result);
+    }
+
+    [HttpGet("my-projects")]
+    public async Task<IActionResult> GetMyProjects([FromQuery] GetStudentProjectsRequest request)
+    {
+        var userId = User.GetUserId();
+        if (userId == null || userId.IsNullOrGuidEmpty())
+        {
+            return BadRequest(Result.Failure<Student>("User not found"));
+        }
+        request.StudentId = userId.Value;
+        var result = await _studentService.GetPagedAsync(request);
+        return result.IsSuccess ? Ok(result.Value) : BadRequest(result);
     }
 }
