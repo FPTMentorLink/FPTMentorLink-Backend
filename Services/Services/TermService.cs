@@ -94,6 +94,50 @@ public class TermService : ITermService
         }
     }
 
+    public async Task<Result> UpdateTermStatusAsync(Guid id, UpdateTermStatusRequest request)
+    {
+        var term = await _unitOfWork.Terms.FindByIdAsync(id);
+        if (term == null)
+        {
+            return Result.Failure(DomainError.Term.TermNotFound);
+        }
+
+        // Validate status transition
+        if (term.Status >= (TermStatus)request.Status)
+        {
+            return Result.Failure("Cannot transition to a previous or same status");
+        }
+
+        if ((int)((TermStatus)request.Status) - (int)term.Status > 1)
+        {
+            return Result.Failure("Can only transition to the next status");
+        }
+
+        // Check for active term if trying to activate
+        if ((TermStatus)request.Status == TermStatus.Active)
+        {
+            var anyActiveTerm = await _unitOfWork.Terms.AnyAsync(x =>
+                x.Status == TermStatus.Active && x.Id != id);
+            if (anyActiveTerm)
+            {
+                return Result.Failure("There is already an active term");
+            }
+        }
+
+        term.Status = (TermStatus)request.Status;
+        _unitOfWork.Terms.Update(term);
+
+        try
+        {
+            await _unitOfWork.SaveChangesAsync();
+            return Result.Success();
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure($"Failed to update term status: {ex.Message}");
+        }
+    }
+
     public async Task<Result> DeleteTermAsync(Guid id)
     {
         var term = await _unitOfWork.Terms.FindByIdAsync(id);
