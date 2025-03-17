@@ -11,4 +11,5 @@ public class MentoringProposalResponse : AuditableResponse
     public string? StudentNote { get; set; }
     public string? MentorNote { get; set; }
     public MentoringProposalStatus Status { get; set; }
+    public string StatusName => Status.ToString();
 }

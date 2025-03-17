@@ -12,4 +12,5 @@ public class TransactionResponse : AuditableResponse
     public Guid AccountId { get; set; }
     public required string TransactionMethod { get; set; }
     public TransactionStatus Status { get; set; }
+    public string StatusName => Status.ToString();
 }

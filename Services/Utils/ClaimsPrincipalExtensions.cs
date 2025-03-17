@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Repositories.Entities;
 
 namespace Services.Utils;
 
@@ -18,6 +19,12 @@ public static class ClaimsPrincipalExtensions
     public static string? GetRole(this ClaimsPrincipal? principal)
     {
         return principal?.FindFirst(ClaimTypes.Role)?.Value;
+    }
+    
+    public static AccountRole? GetAccountRole(this ClaimsPrincipal? principal)
+    {
+        var roleClaim = principal?.FindFirst(ClaimTypes.Role)?.Value;
+        return roleClaim != null ? (AccountRole)Enum.Parse(typeof(AccountRole), roleClaim) : null;
     }
     
     public static Guid? GetGuid(this ClaimsPrincipal? principal, string claimType)

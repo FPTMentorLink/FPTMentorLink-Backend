@@ -11,4 +11,5 @@ public class LecturingProposalResponse : AuditableResponse
     public string? StudentNote { get; set; }
     public string? LecturerNote { get; set; }
     public LecturingProposalStatus Status { get; set; }
+    public string StatusName => Status.ToString();
 }
