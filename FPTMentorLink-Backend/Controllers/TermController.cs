@@ -52,6 +52,18 @@ public class TermController : ControllerBase
         return result.IsSuccess ? Ok() : BadRequest(result);
     }
 
+    [HttpPatch("{id}/status")]
+    public async Task<IActionResult> UpdateTermStatusAsync(Guid id, [FromBody] UpdateTermStatusRequest status)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var result = await _termService.UpdateTermStatusAsync(id, status);
+        return result.IsSuccess ? Ok() : BadRequest(result);
+    }
+
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteTermAsync(Guid id)
     {
