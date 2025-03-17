@@ -3,7 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using Repositories.Entities;
 using Repositories.UnitOfWork.Interfaces;
 using Services.Interfaces;
+using Services.Models.Request.Project;
 using Services.Models.Request.Student;
+using Services.Models.Response.Project;
 using Services.Models.Response.Student;
 using Services.Models.VnPay;
 using Services.Utils;
@@ -14,11 +16,13 @@ public class StudentService : IStudentService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IVnPayService _vnPayService;
+    private readonly IProjectService _projectService;
 
-    public StudentService(IUnitOfWork unitOfWork, IVnPayService vnPayService)
+    public StudentService(IUnitOfWork unitOfWork, IVnPayService vnPayService, IProjectService projectService)
     {
         _unitOfWork = unitOfWork;
         _vnPayService = vnPayService;
+        _projectService = projectService;
     }
 
     public async Task<Result<StudentDepositResponse>> DepositAsync(Guid id, StudentDepositRequest request,
@@ -115,11 +119,12 @@ public class StudentService : IStudentService
         {
             transaction.Status = TransactionStatus.Success;
             var student = await _unitOfWork.Students.FindSingleAsync(x => x.Id == transaction.AccountId);
-            if (student == null) return new VnPayIpnResponse
-            {
-                RspCode = "99",
-                Message = "Transaction failed"
-            };
+            if (student == null)
+                return new VnPayIpnResponse
+                {
+                    RspCode = "99",
+                    Message = "Transaction failed"
+                };
             student.Balance += transaction.Amount;
             _unitOfWork.Students.Update(student);
             _unitOfWork.Transactions.Update(transaction);
@@ -139,5 +144,17 @@ public class StudentService : IStudentService
             RspCode = "99",
             Message = "Transaction failed"
         };
+    }
+
+    public async Task<Result<PaginationResult<ProjectResponse>>> GetPagedAsync(GetStudentProjectsRequest request)
+    {
+        return await _projectService.GetPagedAsync(new GetProjectsRequest
+        {
+            StudentId = request.StudentId,
+            Status = request.Status,
+            TermId = request.TermId,
+            PageNumber = request.PageNumber,
+            PageSize = request.PageSize
+        });
     }
 }

@@ -264,13 +264,7 @@ public class ApplicationDbContext : DbContext
                 .UseCollation("utf8mb4_0900_ai_ci");
         });
 
-        modelBuilder.Entity<Student>(entity =>
-        {
-            entity.ToTable(nameof(Student));
-            entity.HasOne(a => a.ProjectStudent)
-                .WithOne(ps => ps.Student)
-                .HasForeignKey<ProjectStudent>(ps => ps.StudentId);
-        });
+        modelBuilder.Entity<Student>(entity => { entity.ToTable(nameof(Student)); });
 
         modelBuilder.Entity<Term>(entity =>
         {

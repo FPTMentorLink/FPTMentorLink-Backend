@@ -16,5 +16,5 @@ public class Student : AuditableEntity
     public virtual Account Account { get; set; } = null!;
     public virtual Faculty Faculty { get; set; } = null!;
     
-    public virtual ProjectStudent? ProjectStudent { get; set; }
+    public virtual ICollection<ProjectStudent> ProjectStudent { get; set; } = [];
 }

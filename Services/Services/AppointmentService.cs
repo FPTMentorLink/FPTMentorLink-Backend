@@ -74,12 +74,9 @@ public class AppointmentService : IAppointmentService
         var mentor = await _unitOfWork.Mentors.FindByIdAsNoTrackingAsync(request.MentorId);
         if (mentor == null)
             return Result.Failure("Mentor not found");
-        var leader = await _unitOfWork.Students.FindAll()
-            .Include(x => x.ProjectStudent)
-            .Where(x => x.Id == request.LeaderId &&
-                        x.ProjectStudent != null &&
-                        x.ProjectStudent.ProjectId == request.ProjectId &&
-                        x.ProjectStudent.IsLeader).FirstOrDefaultAsync();
+        var leader = await _unitOfWork.ProjectStudents.FindAll(x =>
+                x.StudentId == request.LeaderId && x.IsLeader && x.ProjectId == request.ProjectId)
+            .Include(x => x.Student).FirstOrDefaultAsync();
         if (leader == null)
             return Result.Failure("Leader not found");
 
@@ -100,7 +97,7 @@ public class AppointmentService : IAppointmentService
         if (!isAvailable)
             return Result.Failure("Mentor is not available in this time range");
         // Check if leader balance is enough
-        if (leader.Balance < appointment.TotalPayment)
+        if (leader.Student.Balance < appointment.TotalPayment)
             return Result.Failure("Leader balance is not enough");
 
         _unitOfWork.Appointments.Add(appointment);
@@ -110,8 +107,8 @@ public class AppointmentService : IAppointmentService
         _unitOfWork.MentorAvailabilities.Update(mentorAvailability);
 
         // Update leader balance
-        leader.Balance -= appointment.TotalPayment;
-        _unitOfWork.Students.Update(leader);
+        leader.Student.Balance -= appointment.TotalPayment;
+        _unitOfWork.Students.Update(leader.Student);
 
         try
         {
@@ -207,11 +204,11 @@ public class AppointmentService : IAppointmentService
         if (DateTime.UtcNow < appointment.EndTime)
             return Task.FromResult(
                 Result.Failure("Student can only request cancellation after the appointment has ended"));
-        
+
         appointment.Status = AppointmentStatus.CancelRequested;
         appointment.CancelReason = request.CancelReason;
         _unitOfWork.Appointments.Update(appointment);
-        
+
         return Task.FromResult(Result.Success());
     }
 
@@ -295,7 +292,7 @@ public class AppointmentService : IAppointmentService
         appointment.Status = AppointmentStatus.Canceled;
         appointment.CancelReason = request.CancelReason;
         _unitOfWork.Appointments.Update(appointment);
-        
+
         return await ReturnMentorAvailability(appointment);
     }
 
