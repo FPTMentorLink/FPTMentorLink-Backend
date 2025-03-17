@@ -11,5 +11,6 @@ public class CheckpointTaskResponse : AuditableResponse
     public string Name { get; set; } = null!;
     public string? Description { get; set; }
     public CheckpointTaskStatus Status { get; set; }
+    public string StatusName => Status.ToString();
     public double? Score { get; set; }
 }

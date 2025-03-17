@@ -10,4 +10,5 @@ public class TermResponse : AuditableResponse
     public DateTime StartTime { get; set; }
     public DateTime EndTime { get; set; }
     public TermStatus Status { get; set; }
+    public string StatusName => Status.ToString();
 }

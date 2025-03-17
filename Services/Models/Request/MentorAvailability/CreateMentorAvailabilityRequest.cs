@@ -18,7 +18,7 @@ public class CreateMentorAvailabilityRequest : ValidatableObject
         if (Date.Date <= DateTime.Today)
             yield return new ValidationResult("Date must be at least 1 day in advance");
 
-        if (!TimeMap.IsTimeMapValid(Constants.MinAppointmentSlotLength))
-            yield return new ValidationResult($"Each session must be at least {Constants.MinAppointmentSlotLength} minutes");
+        if (!TimeMap.IsTimeMapValid(Constants.MinAppointmentLength))
+            yield return new ValidationResult($"Each session must be at least {Constants.MinAppointmentLength} minutes");
     }
 }
