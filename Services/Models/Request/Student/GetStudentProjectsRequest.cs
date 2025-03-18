@@ -1,11 +1,13 @@
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Repositories.Entities;
+using Services.Models.Request.Base;
 using Services.Utils;
 
 namespace Services.Models.Request.Student;
 
-public class GetStudentProjectsRequest : PaginationParams
+public class GetStudentProjectsRequest : PaginationQuery
 {
     [BindNever] public Guid? StudentId { get; set; }
     public Guid? TermId { get; set; }
