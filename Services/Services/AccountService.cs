@@ -1,6 +1,5 @@
 ﻿using System.Globalization;
 using System.Linq.Expressions;
-using System.Security.Claims;
 using CsvHelper;
 using CsvHelper.Configuration;
 using MapsterMapper;
@@ -11,13 +10,10 @@ using Repositories.Entities;
 using Repositories.UnitOfWork.Interfaces;
 using Services.Interfaces;
 using Services.Models.Request.Account;
-using Services.Models.Request.Authorization;
 using Services.Models.Request.Lecturer;
 using Services.Models.Request.Mentor;
 using Services.Models.Request.Student;
 using Services.Models.Response.Account;
-using Services.Models.Response.Authentication;
-using Services.Models.Response.Authorization;
 using Services.Models.Response.Lecturer;
 using Services.Models.Response.Mentor;
 using Services.Models.Response.Student;
@@ -221,59 +217,6 @@ public class AccountService : IAccountService
         await _unitOfWork.SaveChangesAsync();
 
         return Result.Success();
-    }
-
-    public async Task<Result<LoginResponse>> LoginAsync(string email, string password)
-    {
-        var account = await _unitOfWork.Accounts.FindSingleAsync(a => a.Email == email);
-        if (account == null || !_passwordHasher.VerifyPassword(password, account.PasswordHash))
-            return Result.Failure<LoginResponse>("Invalid email or password");
-
-        var claims = new List<Claim>
-        {
-            new(ClaimTypes.NameIdentifier, account.Id.ToString()),
-            new(ClaimTypes.Email, account.Email),
-            new(ClaimTypes.Role, account.Role.ToString())
-        };
-        var accessToken = TokenGenerator.GenerateAccessToken(_jwtSettings, claims);
-        var refreshToken = TokenGenerator.GenerateRefreshToken();
-
-        var response = _mapper.Map<LoginResponse>(account);
-        response.AccessToken = accessToken;
-        response.RefreshToken = refreshToken;
-
-        return Result.Success(response);
-    }
-
-    public async Task<Result<RefreshTokenResponse>> RefreshTokenAsync(RefreshTokenRequest request)
-    {
-        // Check if access token is valid when it is expired
-        var principal = TokenGenerator.GetPrincipalFromToken(_jwtSettings, request.AccessToken, false);
-        if (principal == null)
-            return Result.Failure<RefreshTokenResponse>("Invalid token");
-
-        var userId = principal.GetUserId();
-        if (userId == null)
-            return Result.Failure<RefreshTokenResponse>("Invalid token");
-
-        var claims = principal.Claims.ToList();
-        var newAccessToken = TokenGenerator.GenerateAccessToken(_jwtSettings, claims);
-        var newRefreshToken = TokenGenerator.GenerateRefreshToken();
-
-        // TODO: implement refresh token invalidation and database update logic
-        await Task.Delay(100);
-
-        return Result.Success(new RefreshTokenResponse
-        {
-            AccessToken = newAccessToken,
-            RefreshToken = newRefreshToken
-        });
-    }
-
-    public async Task<Result> IsEmailUniqueAsync(string email)
-    {
-        var exists = await _unitOfWork.Accounts.AnyAsync(a => a.Email == email);
-        return exists ? Result.Failure("Email already exists") : Result.Success();
     }
 
     public async Task<Result<PaginationResult<AccountResponse>>> GetPagedAsync(GetAccountsRequest request)

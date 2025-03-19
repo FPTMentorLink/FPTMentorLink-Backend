@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Linq.Expressions;
+using Microsoft.AspNetCore.Http;
 
 namespace Services.Utils;
 
@@ -74,6 +75,17 @@ public static class Helper
     public static bool IsNullOrGuidEmpty(this Guid? guid)
     {
         return !guid.HasValue || guid.Value == Guid.Empty;
+    }
+    
+    public static string? GetAccessToken(this HttpContext httpContext)
+    {
+        var authHeader = httpContext.Request.Headers.Authorization.FirstOrDefault();
+        if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
+        {
+            return null;
+        }
+        
+        return authHeader["Bearer ".Length..];
     }
 }
 
