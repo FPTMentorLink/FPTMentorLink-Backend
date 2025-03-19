@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq.Expressions;
 using Repositories.Entities.Base;
 
 namespace Repositories.Entities;
@@ -16,11 +17,27 @@ public class Appointment : AuditableEntity
 
     [MaxLength(2000)] public string? CancelReason { get; set; }
     [MaxLength(2000)] public string? RejectReason { get; set; }
-    
+
     public AppointmentStatus Status { get; set; }
 
     public virtual Project Project { get; set; } = null!;
     public virtual Mentor Mentor { get; set; } = null!;
+
+    public static Expression<Func<Appointment, object>> GetSortValue(string sortColumn)
+    {
+        return sortColumn switch
+        {
+            "starttime" => x => x.StartTime,
+            "endtime" => x => x.EndTime,
+            "totaltime" => x => x.TotalTime,
+            "totalpayment" => x => x.TotalPayment,
+            "status" => x => x.Status,
+            "createdat" => x => x.CreatedAt,
+            "updatedat" => x => x.UpdatedAt ?? x.CreatedAt,
+            "id" => x => x.Id,
+            _ => x => x.StartTime
+        };
+    }
 }
 
 public enum AppointmentStatus

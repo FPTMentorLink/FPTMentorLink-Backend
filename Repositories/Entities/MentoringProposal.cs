@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq.Expressions;
 using Repositories.Entities.Base;
 
 namespace Repositories.Entities;
@@ -13,6 +14,15 @@ public class MentoringProposal : AuditableEntity
     public MentoringProposalStatus Status { get; set; }
     public virtual Mentor Mentor { get; set; } = null!;
     public virtual Project Project { get; set; } = null!;
+    
+    public static Expression<Func<MentoringProposal, object>> GetSortValue(string sortColumn) =>
+        sortColumn switch
+        {
+            "status" => proposal => proposal.Status,
+            "createdat" => proposal => proposal.CreatedAt,
+            "updatedat" => proposal => proposal.UpdatedAt ?? proposal.CreatedAt,
+            _ => proposal => proposal.UpdatedAt ?? proposal.CreatedAt
+        };
 }
 
 public enum MentoringProposalStatus

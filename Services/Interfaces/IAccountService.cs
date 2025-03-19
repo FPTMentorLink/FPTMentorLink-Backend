@@ -25,7 +25,7 @@ public interface IAccountService
     Task<Result<LoginResponse>> LoginAsync(string email, string password);
     Task<Result<RefreshTokenResponse>> RefreshTokenAsync(RefreshTokenRequest request);
     Task<Result> IsEmailUniqueAsync(string email);
-    Task<Result<PaginationResult<AccountResponse>>> GetPagedAsync(GetAccountsRequest paginationParams);
+    Task<Result<PaginationResult<AccountResponse>>> GetPagedAsync(GetAccountsRequest request);
     Task<Result<int>> GetTotalAsync(AccountRole[] roles);
     Task<Result> ImportAccountsAsync(IFormFile formFile, AccountRole role, CancellationToken cancellationToken);
     Task<Result> UpdateLecturerAsync(Guid id, UpdateLecturerRequest request, CancellationToken cancellationToken);

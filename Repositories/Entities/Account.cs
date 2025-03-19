@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Linq.Expressions;
 using CsvHelper.Configuration.Attributes;
 using Repositories.Entities.Base;
 
@@ -20,12 +21,22 @@ public class Account : AuditableEntity
     public virtual Student? Student { get; set; }
     public virtual Mentor? Mentor { get; set; }
     public virtual Lecturer? Lecturer { get; set; }
+
+    public static Expression<Func<Account, object>> GetSortValue(string sortColumn) =>
+        sortColumn switch
+        {
+            "username" => account => account.Username,
+            "role" => account => account.Role,
+            "issuspended" => account => account.IsSuspended,
+            "createdat" => account => account.CreatedAt,
+            "updatedat" => account => account.UpdatedAt ?? account.CreatedAt,
+            _ => account => account.UpdatedAt ?? account.CreatedAt
+        };
 }
 
 public abstract class CsvAccount
 {
-    [Name("Email")]
-    public string Email { get; set; } = null!;
+    [Name("Email")] public string Email { get; set; } = null!;
 
     [Name("Username")] public string Username { get; set; } = null!;
     [Name("Password")] public string Password { get; set; } = null!;
@@ -48,7 +59,6 @@ public class CsvLecturer : CsvAccount
 {
     [Name("LecturerCode")] public string Code { get; set; } = null!;
     [Name("FacultyCode")] public string FacultyCode { get; set; } = null!;
-
 }
 
 public enum AccountRole

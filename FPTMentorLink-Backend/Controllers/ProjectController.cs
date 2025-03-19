@@ -38,12 +38,12 @@ public class ProjectController : ControllerBase
         }
 
         var leaderId = User.GetUserId();
-        if (leaderId == null || leaderId == Guid.Empty)
+        if (leaderId.IsNullOrGuidEmpty())
         {
             return BadRequest(Result.Failure("User not found"));
         }
 
-        request.LeaderId = leaderId.Value;
+        request.LeaderId = leaderId!.Value;
         var result = await _projectService.CreateAsync(request);
         return result.IsSuccess ? Ok() : BadRequest(result);
     }

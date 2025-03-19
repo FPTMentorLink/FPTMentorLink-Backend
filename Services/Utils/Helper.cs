@@ -12,7 +12,7 @@ public static class Helper
     /// <param name="second"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    public static Expression<Func<T, bool>> CombineAndAlsoExpressions<T>(Expression<Func<T, bool>> first,
+    public static Expression<Func<T, bool>> CombineAndAlsoExpressions<T>(this Expression<Func<T, bool>> first,
         Expression<Func<T, bool>> second)
     {
         return CombineExpressions(first, second, Expression.AndAlso);
@@ -25,13 +25,13 @@ public static class Helper
     /// <param name="second"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    public static Expression<Func<T, bool>> CombineOrExpressions<T>(Expression<Func<T, bool>> first,
+    public static Expression<Func<T, bool>> CombineOrExpressions<T>(this Expression<Func<T, bool>> first,
         Expression<Func<T, bool>> second)
     {
         return CombineExpressions(first, second, Expression.OrElse);
     }
 
-    private static Expression<Func<T, bool>> CombineExpressions<T>(Expression<Func<T, bool>> expr1,
+    private static Expression<Func<T, bool>> CombineExpressions<T>(this Expression<Func<T, bool>> expr1,
         Expression<Func<T, bool>> expr2, Func<Expression, Expression, BinaryExpression> combiner)
     {
         var parameter = Expression.Parameter(typeof(T));
@@ -73,7 +73,7 @@ public static class Helper
 
     public static bool IsNullOrGuidEmpty(this Guid? guid)
     {
-        return guid == null || guid == Guid.Empty;
+        return !guid.HasValue || guid.Value == Guid.Empty;
     }
 }
 

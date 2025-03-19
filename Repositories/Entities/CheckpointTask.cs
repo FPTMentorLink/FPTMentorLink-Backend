@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq.Expressions;
 using Repositories.Entities.Base;
 
 namespace Repositories.Entities;
@@ -14,6 +15,17 @@ public class CheckpointTask : AuditableEntity
     public double? Score { get; set; }
     public virtual Checkpoint Checkpoint { get; set; } = null!;
     public virtual Project Project { get; set; } = null!;
+
+    public static Expression<Func<CheckpointTask, object>> GetSortValue(string sortColumn) =>
+        sortColumn switch
+        {
+            "name" => task => task.Name,
+            "status" => task => task.Status,
+            "score" => task => task.Score ?? 0,
+            "createdat" => task => task.CreatedAt,
+            "updatedat" => task => task.UpdatedAt ?? task.CreatedAt,
+            _ => task => task.UpdatedAt ?? task.CreatedAt
+        };
 }
 
 public enum CheckpointTaskStatus

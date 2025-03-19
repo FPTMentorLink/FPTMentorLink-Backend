@@ -1,4 +1,5 @@
-﻿using MapsterMapper;
+﻿using System.Linq.Expressions;
+using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Repositories.Entities;
 using Repositories.UnitOfWork.Interfaces;
@@ -30,12 +31,41 @@ public class AppointmentService : IAppointmentService
         return Result.Success(_mapper.Map<AppointmentResponse>(appointment));
     }
 
-    public async Task<Result<PaginationResult<AppointmentResponse>>> GetPagedAsync(PaginationParams paginationParams)
+    public async Task<Result<PaginationResult<AppointmentResponse>>> GetPagedAsync(GetAppointmentsRequest request)
     {
-        var query = _unitOfWork.Appointments.GetQueryable();
-        var result = await query.ProjectToPaginatedListAsync<Appointment, AppointmentResponse>(paginationParams);
+        var query = _unitOfWork.Appointments.FindAll();
+        Expression<Func<Appointment, bool>> condition = x => true;
+        if (!request.ProjectId.IsNullOrGuidEmpty())
+            condition.CombineAndAlsoExpressions(x => x.ProjectId == request.ProjectId);
+        if (!request.MentorId.IsNullOrGuidEmpty())
+            condition.CombineAndAlsoExpressions(x => x.MentorId == request.MentorId);
+        if (request.Status.HasValue)
+            condition.CombineAndAlsoExpressions(x => x.Status == request.Status);
+        if (!request.StudentId.IsNullOrGuidEmpty())
+        {
+            query = query.Include(x => x.Project).ThenInclude(x => x.ProjectStudents);
+            condition.CombineAndAlsoExpressions(x =>
+                x.Project.ProjectStudents.Any(y => y.StudentId == request.StudentId));
+        }
+
+        query = query.Where(condition);
+
+        query = ApplySorting(query, request);
+
+        var result = await query.ProjectToPaginatedListAsync<Appointment, AppointmentResponse>(request);
 
         return Result.Success(result);
+    }
+
+    private static IQueryable<Appointment> ApplySorting(IQueryable<Appointment> query,
+        PaginationParams paginationParams)
+    {
+        var orderBy = paginationParams.OrderBy;
+        var isDescending = paginationParams.IsDescending;
+        return orderBy.ToLower().Replace(" ", "") switch
+        {
+            _ => query.ApplySorting(isDescending, Appointment.GetSortValue(orderBy))
+        };
     }
 
     /// <summary>

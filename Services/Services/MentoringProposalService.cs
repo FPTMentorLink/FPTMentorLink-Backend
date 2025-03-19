@@ -1,4 +1,6 @@
-﻿using MapsterMapper;
+﻿using System.Linq.Expressions;
+using MapsterMapper;
+using Microsoft.EntityFrameworkCore;
 using Repositories.Entities;
 using Repositories.UnitOfWork.Interfaces;
 using Services.Interfaces;
@@ -31,10 +33,40 @@ public class MentoringProposalService : IMentoringProposalService
     public async Task<Result<PaginationResult<MentoringProposalResponse>>> GetPagedAsync(
         GetMentoringProposalsRequest request)
     {
-        var query = _unitOfWork.MentoringProposals.GetQueryable();
+        var query = _unitOfWork.MentoringProposals.FindAll();
+        Expression<Func<MentoringProposal, bool>> condition = x => true;
+
+        if (!request.ProjectId.IsNullOrGuidEmpty())
+            condition = condition.CombineAndAlsoExpressions(x => x.ProjectId == request.ProjectId);
+
+        if (!request.MentorId.IsNullOrGuidEmpty())
+            condition = condition.CombineAndAlsoExpressions(x => x.MentorId == request.MentorId);
+        
+        if (!request.StudentId.IsNullOrGuidEmpty())
+        {
+            query = query.Include(x => x.Project).ThenInclude(x => x.ProjectStudents);
+            condition.CombineAndAlsoExpressions(x =>
+                x.Project.ProjectStudents.Any(y => y.StudentId == request.StudentId));
+        }
+
+        query = query.Where(condition);
+        
+        query = ApplySorting(query, request);
+
         var result = await query.ProjectToPaginatedListAsync<MentoringProposal, MentoringProposalResponse>(request);
 
         return Result.Success(result);
+    }
+
+    private static IQueryable<MentoringProposal> ApplySorting(IQueryable<MentoringProposal> query,
+        PaginationParams paginationParams)
+    {
+        var orderBy = paginationParams.OrderBy;
+        var isDescending = paginationParams.IsDescending;
+        return orderBy.ToLower().Replace(" ", "") switch
+        {
+            _ => query.ApplySorting(isDescending, MentoringProposal.GetSortValue(orderBy))
+        };
     }
 
     public async Task<Result> CreateAsync(CreateMentoringProposalRequest request)

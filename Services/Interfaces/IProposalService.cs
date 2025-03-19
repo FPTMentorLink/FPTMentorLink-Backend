@@ -7,7 +7,7 @@ namespace Services.Interfaces;
 public interface IProposalService
 {
     Task<Result<ProposalResponse>> GetByIdAsync(Guid id);
-    Task<Result<PaginationResult<ProposalResponse>>> GetPagedAsync(PaginationParams paginationParams);
+    Task<Result<PaginationResult<ProposalResponse>>> GetPagedAsync(GetProposalsRequest request);
     Task<Result<ProposalResponse>> CreateAsync(CreateProposalRequest request);
     Task<Result<ProposalResponse>> UpdateAsync(Guid id, UpdateProposalRequest request);
     Task<Result> DeleteAsync(Guid id);

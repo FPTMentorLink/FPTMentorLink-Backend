@@ -11,10 +11,10 @@ public class Student : AuditableEntity
     [MaxLength(255)] public required string Code { get; set; }
     [ForeignKey(nameof(Faculty))] public Guid FacultyId { get; set; }
     public int Balance { get; set; }
-    public bool IsGraduated { get; set; } = false; //default value
+    public bool IsGraduated { get; set; } //default value
 
     public virtual Account Account { get; set; } = null!;
     public virtual Faculty Faculty { get; set; } = null!;
     
-    public virtual ICollection<ProjectStudent> ProjectStudent { get; set; } = [];
+    public virtual ICollection<ProjectStudent> ProjectStudents { get; set; } = [];
 }

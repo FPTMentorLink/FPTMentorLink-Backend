@@ -33,7 +33,7 @@ public class MentorAvailabilityService : IMentorAvailabilityService
     public async Task<Result<PaginationResult<MentorAvailabilityResponse>>> GetPagedAsync(
         GetMentorAvailabilitiesRequest request)
     { 
-        var query = _unitOfWork.MentorAvailabilities.GetQueryable();
+        var query = _unitOfWork.MentorAvailabilities.FindAll();
         if (request.MentorId != Guid.Empty)
             query = query.Where(x => x.MentorId == request.MentorId);
         if (request.Date != null)

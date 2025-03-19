@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq.Expressions;
 using Repositories.Entities.Base;
 
 namespace Repositories.Entities;
@@ -16,6 +17,18 @@ public class Transaction : AuditableEntity
     public TransactionStatus Status { get; set; }
 
     public virtual Account Account { get; set; } = null!;
+    
+    public static Expression<Func<Transaction, object>> GetSortValue(string sortColumn) =>
+        sortColumn.ToLower().Replace(" ", "") switch
+        {
+            "code" => transaction => transaction.Code,
+            "amount" => transaction => transaction.Amount,
+            "status" => transaction => transaction.Status,
+            "type" => transaction => transaction.Type,
+            "createdat" => transaction => transaction.CreatedAt,
+            "updatedat" => transaction => transaction.UpdatedAt ?? transaction.CreatedAt,
+            _ => transaction => transaction.UpdatedAt ?? transaction.CreatedAt
+        };
 }
 
 public enum TransactionType
