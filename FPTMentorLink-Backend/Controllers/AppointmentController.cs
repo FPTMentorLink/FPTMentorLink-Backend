@@ -17,14 +17,14 @@ public class AppointmentController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAppointments([FromQuery] GetAppointmentsRequest request)
+    public async Task<IActionResult> GetPaged([FromQuery] GetAppointmentsRequest request)
     {
         var result = await _appointmentService.GetPagedAsync(request);
         return result.IsSuccess ? Ok(result.Value) : BadRequest(result);
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateAppointment([FromBody] CreateAppointmentRequest request)
+    public async Task<IActionResult> Create([FromBody] CreateAppointmentRequest request)
     {
         if (!ModelState.IsValid)
         {
@@ -45,7 +45,7 @@ public class AppointmentController : ControllerBase
     }
 
     [HttpPost("{id:guid}/status")]
-    public async Task<IActionResult> UpdateAppointmentStatus([FromRoute] Guid id,
+    public async Task<IActionResult> UpdateStatus([FromRoute] Guid id,
         [FromBody] UpdateAppointmentStatusRequest request)
     {
         if (!ModelState.IsValid)

@@ -72,7 +72,7 @@ public class LecturingProposalController : ControllerBase
 
     [HttpPatch("{id:guid}/response")]
     [Authorize]
-    public async Task<IActionResult> UpdateProposal([FromRoute] Guid id,
+    public async Task<IActionResult> UpdateResponse([FromRoute] Guid id,
         [FromBody] UpdateLecturingProposalRequest request)
     {
         if (!ModelState.IsValid)
