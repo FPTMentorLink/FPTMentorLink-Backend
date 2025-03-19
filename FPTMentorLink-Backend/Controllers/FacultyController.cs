@@ -15,21 +15,21 @@ public class FacultyController : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
-    public async Task<IActionResult> GetFacultyByIdAsync([FromRoute] Guid id)
+    public async Task<IActionResult> GetById([FromRoute] Guid id)
     {
         var result = await _facultyService.GetByIdAsync(id);
         return result.IsSuccess ? Ok(result.Value) : BadRequest(result);
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetFacultyPagedAsync([FromQuery] GetFacultiesRequest request)
+    public async Task<IActionResult> GetPaged([FromQuery] GetFacultiesRequest request)
     {
         var result = await _facultyService.GetPagedAsync(request);
         return result.IsSuccess ? Ok(result.Value) : BadRequest(result);
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateFacultyAsync([FromBody] CreateFacultyRequest request)
+    public async Task<IActionResult> Create([FromBody] CreateFacultyRequest request)
     {
         if (!ModelState.IsValid)
         {
@@ -41,7 +41,7 @@ public class FacultyController : ControllerBase
     }
 
     [HttpPatch("{id:guid}")]
-    public async Task<IActionResult> UpdateAsync([FromRoute] Guid id, [FromBody] UpdateFacultyRequest request)
+    public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdateFacultyRequest request)
     {
         if (!ModelState.IsValid)
         {
@@ -53,7 +53,7 @@ public class FacultyController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> DeleteAsync([FromRoute] Guid id)
+    public async Task<IActionResult> Delete([FromRoute] Guid id)
     {
         var result = await _facultyService.DeleteAsync(id);
         return result.IsSuccess ? Ok() : BadRequest(result);

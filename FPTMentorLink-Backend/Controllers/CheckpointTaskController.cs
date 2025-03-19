@@ -14,22 +14,22 @@ public class CheckpointTaskController : ControllerBase
         _checkpointTaskService = checkpointTaskService;
     }
 
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetCheckpointTaskByIdAsync(Guid id)
+    [HttpGet("{id:guid}")]
+    public async Task<IActionResult> GetById(Guid id)
     {
         var result = await _checkpointTaskService.GetByIdAsync(id);
         return result.IsSuccess ? Ok(result.Value) : BadRequest(result);
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetCheckpointTaskPagedAsync([FromQuery] GetCheckpointTasksRequest request)
+    public async Task<IActionResult> GetPaged([FromQuery] GetCheckpointTasksRequest request)
     {
         var result = await _checkpointTaskService.GetPagedAsync(request);
         return result.IsSuccess ? Ok(result.Value) : BadRequest(result);
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateCheckpointTaskAsync([FromBody] CreateCheckpointTaskRequest request)
+    public async Task<IActionResult> Create([FromBody] CreateCheckpointTaskRequest request)
     {
         if (!ModelState.IsValid)
         {
@@ -40,8 +40,8 @@ public class CheckpointTaskController : ControllerBase
         return result.IsSuccess ? Ok() : BadRequest(result);
     }
 
-    [HttpPatch("{id}")]
-    public async Task<IActionResult> UpdateCheckpointTaskAsync(Guid id, [FromBody] UpdateCheckpointTaskRequest request)
+    [HttpPatch("{id:guid}")]
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateCheckpointTaskRequest request)
     {
         if (!ModelState.IsValid)
         {
@@ -52,8 +52,8 @@ public class CheckpointTaskController : ControllerBase
         return result.IsSuccess ? Ok() : BadRequest(result);
     }
 
-    [HttpPatch("{id}/status")]
-    public async Task<IActionResult> UpdateCheckpointTaskStatusAsync(Guid id,
+    [HttpPatch("{id:guid}/status")]
+    public async Task<IActionResult> UpdateStatus(Guid id,
         [FromBody] UpdateCheckpointTaskStatusRequest request)
     {
         if (!ModelState.IsValid)
@@ -65,8 +65,8 @@ public class CheckpointTaskController : ControllerBase
         return result.IsSuccess ? Ok() : BadRequest(result);
     }
 
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteCheckpointTaskAsync(Guid id)
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Delete(Guid id)
     {
         var result = await _checkpointTaskService.DeleteCheckpointTaskAsync(id);
         return result.IsSuccess ? Ok() : BadRequest(result);

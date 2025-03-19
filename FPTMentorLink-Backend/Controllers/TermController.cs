@@ -15,21 +15,21 @@ public class TermController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetTermByIdAsync(Guid id)
+    public async Task<IActionResult> GetById(Guid id)
     {
         var result = await _termService.GetByIdAsync(id);
         return result.IsSuccess ? Ok(result.Value) : BadRequest(result);
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetTermPagedAsync([FromQuery] GetTermsRequest request)
+    public async Task<IActionResult> GetPaged([FromQuery] GetTermsRequest request)
     {
         var result = await _termService.GetPagedAsync(request);
         return result.IsSuccess ? Ok(result.Value) : BadRequest(result);
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateTermAsync([FromBody] CreateTermRequest request)
+    public async Task<IActionResult> Create([FromBody] CreateTermRequest request)
     {
         if (!ModelState.IsValid)
         {
@@ -41,7 +41,7 @@ public class TermController : ControllerBase
     }
 
     [HttpPatch("{id}")]
-    public async Task<IActionResult> UpdateTermAsync(Guid id, [FromBody] UpdateTermRequest request)
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateTermRequest request)
     {
         if (!ModelState.IsValid)
         {
@@ -53,7 +53,7 @@ public class TermController : ControllerBase
     }
 
     [HttpPatch("{id}/status")]
-    public async Task<IActionResult> UpdateTermStatusAsync(Guid id, [FromBody] UpdateTermStatusRequest status)
+    public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] UpdateTermStatusRequest status)
     {
         if (!ModelState.IsValid)
         {
@@ -65,7 +65,7 @@ public class TermController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteTermAsync(Guid id)
+    public async Task<IActionResult> Delete(Guid id)
     {
         var result = await _termService.DeleteTermAsync(id);
         return result.IsSuccess ? Ok() : BadRequest(result);

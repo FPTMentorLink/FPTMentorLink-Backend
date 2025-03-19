@@ -65,7 +65,7 @@ public class ProjectService : IProjectService
             .ToListAsync();
 
         result.ProjectStudents = projectStudent;
-        return Result.Success(_mapper.Map<ProjectDetailResponse>(project));
+        return Result.Success(result);
     }
 
     public async Task<Result<PaginationResult<ProjectResponse>>> GetPagedAsync(GetProjectsRequest request)

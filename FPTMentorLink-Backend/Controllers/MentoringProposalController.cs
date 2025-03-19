@@ -72,7 +72,7 @@ public class MentoringProposalController : ControllerBase
 
     [HttpPatch("{id}/response")]
     [Authorize] // Add authorization attribute
-    public async Task<IActionResult> UpdateProposal([FromRoute] Guid id,
+    public async Task<IActionResult> UpdateResponse([FromRoute] Guid id,
         [FromBody] UpdateMentoringProposalRequest request)
     {
         if (!ModelState.IsValid)
