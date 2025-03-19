@@ -160,40 +160,39 @@ public class TermService : ITermService
     }
 
     public async Task<Result<PaginationResult<TermResponse>>> GetPagedAsync(
-        GetTermsRequest paginationParams)
+        GetTermsRequest request)
     {
-        Expression<Func<Term, bool>> filter = term => true;
-        if (!string.IsNullOrEmpty(paginationParams.SearchTerm))
+        var query = _unitOfWork.Terms.FindAll();
+        Expression<Func<Term, bool>> condition = term => true;
+        if (!string.IsNullOrEmpty(request.SearchTerm))
         {
             Expression<Func<Term, bool>> searchTermFilter = term =>
-                term.Code.Contains(paginationParams.SearchTerm);
-            filter = Helper.CombineAndAlsoExpressions(filter, searchTermFilter);
+                term.Code.Contains(request.SearchTerm);
+            condition = condition.CombineAndAlsoExpressions(searchTermFilter);
         }
 
-        if (paginationParams.Status.HasValue)
+        if (request.Status.HasValue)
         {
-            Expression<Func<Term, bool>> statusFilter = term => term.Status == paginationParams.Status;
-            filter = Helper.CombineAndAlsoExpressions(filter, statusFilter);
+            Expression<Func<Term, bool>> statusFilter = term => term.Status == request.Status;
+            condition = condition.CombineAndAlsoExpressions(statusFilter);
         }
 
-        var query = _unitOfWork.Terms.FindAll(filter);
-        if (!string.IsNullOrEmpty(paginationParams.OrderBy))
-        {
-            var sortProperty = GetSortProperty(paginationParams.OrderBy);
-            query = query.ApplySorting(paginationParams.IsDescending, sortProperty);
-        }
+        query = query.Where(condition);
 
-        var result = await query.ProjectToPaginatedListAsync<Term, TermResponse>(paginationParams);
+        query = ApplySorting(query, request);
+
+        var result = await query.ProjectToPaginatedListAsync<Term, TermResponse>(request);
         return Result.Success(result);
     }
 
-    private Expression<Func<Term, object>> GetSortProperty(string sortBy) =>
-        sortBy.ToLower().Replace(" ", "") switch
+    private static IQueryable<Term> ApplySorting(IQueryable<Term> query,
+        PaginationParams paginationParams)
+    {
+        var orderBy = paginationParams.OrderBy;
+        var isDescending = paginationParams.IsDescending;
+        return orderBy.ToLower().Replace(" ", "") switch
         {
-            "code" => term => term.Code,
-            "starttime" => term => term.StartTime,
-            "endtime" => term => term.EndTime,
-            "status" => term => term.Status,
-            _ => term => term.Id
+            _ => query.ApplySorting(isDescending, Term.GetSortValue(orderBy))
         };
+    }
 }

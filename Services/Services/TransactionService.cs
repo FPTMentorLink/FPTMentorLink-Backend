@@ -17,34 +17,51 @@ public class TransactionService : ITransactionService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<Result<PaginationResult<TransactionResponse>>> GetPagedAsync(GetTransactionsRequest paginationParams)
+    public async Task<Result<PaginationResult<TransactionResponse>>> GetPagedAsync(GetTransactionsRequest request)
     {
-        Expression<Func<Transaction, bool>> searchTermFilter = transaction => true;
-        if(!string.IsNullOrEmpty(paginationParams.SearchTerm))
+        var query = _unitOfWork.Transactions.FindAll();
+        Expression<Func<Transaction, bool>> condition = x => true;
+
+        if (!string.IsNullOrEmpty(request.SearchTerm))
         {
-            searchTermFilter = transaction =>
-                transaction.Code.Contains(paginationParams.SearchTerm) ||
-                transaction.AccountId.ToString().Contains(paginationParams.SearchTerm)||
-                transaction.Account.Email.Contains(paginationParams.SearchTerm); 
+            Expression<Func<Transaction, bool>> searchTermFilter = x =>
+                x.Code.Contains(request.SearchTerm) ||
+                x.AccountId.ToString().Contains(request.SearchTerm) ||
+                x.Description.Contains(request.SearchTerm);
+            condition = condition.CombineAndAlsoExpressions(searchTermFilter);
         }
-        var query = _unitOfWork.Transactions.FindAll(searchTermFilter);
-        if (!string.IsNullOrEmpty(paginationParams.OrderBy))
+
+        if (!request.AccountId.IsNullOrGuidEmpty())
         {
-            var sortProperty = GetSortProperty(paginationParams.OrderBy);
-            query = query.ApplySorting(paginationParams.IsDescending, sortProperty);
+            condition = condition.CombineAndAlsoExpressions(x => x.AccountId == request.AccountId);
         }
-        var result = await query.ProjectToPaginatedListAsync<Transaction , TransactionResponse>(paginationParams);
+
+        if (request.Status.HasValue)
+        {
+            condition = condition.CombineAndAlsoExpressions(x => x.Status == request.Status);
+        }
+
+        if (request.Type.HasValue)
+        {
+            condition = condition.CombineAndAlsoExpressions(x => x.Type == request.Type);
+        }
+
+        query = query.Where(condition);
+
+        query = ApplySorting(query, request);
+
+        var result = await query.ProjectToPaginatedListAsync<Transaction, TransactionResponse>(request);
         return Result.Success(result);
     }
-    
-    private Expression<Func<Transaction, object>> GetSortProperty(string sortBy) =>
-        sortBy.ToLower().Replace(" ", "") switch
+
+    private static IQueryable<Transaction> ApplySorting(IQueryable<Transaction> query,
+        PaginationParams paginationParams)
+    {
+        var orderBy = paginationParams.OrderBy;
+        var isDescending = paginationParams.IsDescending;
+        return orderBy.ToLower().Replace(" ", "") switch
         {
-            "code" => transaction => transaction.Code,
-            "type" => transaction => transaction.Type,
-            "amount" => transaction => transaction.Amount,
-            "status" => transaction => transaction.Status,
-            _ => transaction => transaction.Id
+            _ => query.ApplySorting(isDescending, Transaction.GetSortValue(orderBy))
         };
-    
+    }
 }

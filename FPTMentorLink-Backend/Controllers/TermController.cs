@@ -22,9 +22,9 @@ public class TermController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetTermPagedAsync([FromQuery] GetTermsRequest paginationParams)
+    public async Task<IActionResult> GetTermPagedAsync([FromQuery] GetTermsRequest request)
     {
-        var result = await _termService.GetPagedAsync(paginationParams);
+        var result = await _termService.GetPagedAsync(request);
         return result.IsSuccess ? Ok(result.Value) : BadRequest(result);
     }
 

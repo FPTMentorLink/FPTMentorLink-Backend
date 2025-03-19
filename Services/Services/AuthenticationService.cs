@@ -1,12 +1,13 @@
 using System.Security.Claims;
 using System.Text.Json;
-using Mapster;
 using Microsoft.Extensions.Options;
 using Repositories.Entities;
 using Repositories.UnitOfWork.Interfaces;
 using Services.Interfaces;
 using Services.Models.Request.Authentication;
+using Services.Models.Request.Authorization;
 using Services.Models.Response.Authentication;
+using Services.Models.Response.Authorization;
 using Services.Settings;
 using Services.Utils;
 
@@ -116,5 +117,30 @@ public class AuthenticationService : IAuthenticationService
             AccessToken = accessToken,
             RefreshToken = refreshToken
         };
+    }
+
+    public async Task<Result<RefreshTokenResponse>> RefreshTokenAsync(RefreshTokenRequest request)
+    {
+        // Check if access token is valid when it is expired
+        var principal = TokenGenerator.GetPrincipalFromToken(_jwtSettings, request.AccessToken);
+        if (principal == null)
+            return Result.Failure<RefreshTokenResponse>("Invalid token");
+
+        var userId = principal.GetUserId();
+        if (userId == null)
+            return Result.Failure<RefreshTokenResponse>("User not found");
+
+        var claims = principal.Claims.ToList();
+        var newAccessToken = TokenGenerator.GenerateAccessToken(_jwtSettings, claims);
+        var newRefreshToken = TokenGenerator.GenerateRefreshToken();
+
+        // TODO: implement refresh token invalidation and database update logic
+        await Task.Delay(10);
+
+        return Result.Success(new RefreshTokenResponse
+        {
+            AccessToken = newAccessToken,
+            RefreshToken = newRefreshToken
+        });
     }
 }

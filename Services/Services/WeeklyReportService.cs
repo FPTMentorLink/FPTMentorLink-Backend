@@ -28,7 +28,7 @@ public class WeeklyReportService : IWeeklyReportService
         var weeklyReport = await _unitOfWork.WeeklyReports.FindByIdAsync(id);
         if (weeklyReport == null)
             return Result.Failure<WeeklyReportDetailResponse>("Weekly report not found");
-        
+
         var weeklyReportFeedback = await _unitOfWork.WeeklyReportFeedbacks
             .FindAll()
             .Include(x => x.Lecturer)
@@ -38,45 +38,46 @@ public class WeeklyReportService : IWeeklyReportService
 
         var response = _mapper.Map<WeeklyReportDetailResponse>(weeklyReport);
         response.Feedback = _mapper.Map<WeeklyReportFeedBackResponse[]>(weeklyReportFeedback);
-        
+
         return Result.Success(response);
     }
 
     public async Task<Result<PaginationResult<WeeklyReportResponse>>> GetPagedAsync(GetWeeklyReportRequest request)
     {
-        Expression<Func<WeeklyReport, bool>> filter = report => true;
+        var query = _unitOfWork.WeeklyReports.FindAll();
+        Expression<Func<WeeklyReport, bool>> condition = report => true;
 
         if (!string.IsNullOrEmpty(request.SearchTerm))
         {
             Expression<Func<WeeklyReport, bool>> searchFilter = report =>
                 report.Title.Contains(request.SearchTerm) || report.Content.Contains(request.SearchTerm);
-            filter = Helper.CombineAndAlsoExpressions(filter, searchFilter);
+            condition = condition.CombineAndAlsoExpressions(searchFilter);
         }
 
         if (request.ProjectId.HasValue)
         {
             Expression<Func<WeeklyReport, bool>> projectFilter = report => report.ProjectId == request.ProjectId;
-            filter = Helper.CombineAndAlsoExpressions(filter, projectFilter);
+            condition = condition.CombineAndAlsoExpressions(projectFilter);
         }
 
-        var query = _unitOfWork.WeeklyReports.FindAll(filter);
-        if (!string.IsNullOrEmpty(request.OrderBy))
-        {
-            var sortProperty = GetSortProperty(request.OrderBy);
-            query = query.ApplySorting(request.IsDescending, sortProperty);
-        }
+        query = query.Where(condition);
+
+        query = ApplySorting(query, request);
 
         var result = await query.ProjectToPaginatedListAsync<WeeklyReport, WeeklyReportResponse>(request);
         return Result.Success(result);
     }
 
-    private Expression<Func<WeeklyReport, object>> GetSortProperty(string sortBy) =>
-        sortBy.ToLower().Replace(" ", "") switch
+    private static IQueryable<WeeklyReport> ApplySorting(IQueryable<WeeklyReport> query,
+        PaginationParams paginationParams)
+    {
+        var orderBy = paginationParams.OrderBy;
+        var isDescending = paginationParams.IsDescending;
+        return orderBy.ToLower().Replace(" ", "") switch
         {
-            "createdat" => report => report.CreatedAt,
-            "updatedat" => report => report.UpdatedAt!,
-            _ => report => report.Id
+            _ => query.ApplySorting(isDescending, WeeklyReport.GetSortValue(orderBy))
         };
+    }
 
     public async Task<Result<WeeklyReportResponse>> CreateAsync(CreateWeeklyReportRequest request)
     {

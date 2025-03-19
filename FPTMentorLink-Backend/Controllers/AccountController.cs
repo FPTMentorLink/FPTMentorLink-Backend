@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Repositories.Entities;
 using Services.Interfaces;
 using Services.Models.Request.Account;
-using Services.Models.Request.Base;
 using Services.Models.Request.Lecturer;
 using Services.Models.Request.Mentor;
 using Services.Models.Request.Student;
@@ -50,7 +49,7 @@ public class AccountController : ControllerBase
     public async Task<IActionResult> GetProfile(CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
-        if (userId == null || userId.IsNullOrGuidEmpty())
+        if (userId.IsNullOrGuidEmpty())
         {
             return BadRequest(Result.Failure<Account>("User not found"));
         }
@@ -61,7 +60,7 @@ public class AccountController : ControllerBase
             return BadRequest(Result.Failure<Account>("Role not found"));
         }
 
-        var result = await _accountService.GetProfileAsync(userId.Value, role, cancellationToken);
+        var result = await _accountService.GetProfileAsync(userId!.Value, role, cancellationToken);
         return result.IsSuccess ? Ok(result.Value) : BadRequest(result);
     }
 

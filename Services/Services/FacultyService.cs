@@ -30,7 +30,7 @@ public class FacultyService : IFacultyService
 
     public async Task<Result<PaginationResult<FacultyResponse>>> GetPagedAsync(GetFacultiesRequest request)
     {
-        var query = _unitOfWork.Faculties.GetQueryable();
+        var query = _unitOfWork.Faculties.FindAll();
         var result = await query.ProjectToPaginatedListAsync<Faculty, FacultyResponse>(request);
 
         return Result.Success(result);

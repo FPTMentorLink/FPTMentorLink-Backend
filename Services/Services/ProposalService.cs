@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using MapsterMapper;
 using Repositories.Entities;
 using Repositories.UnitOfWork.Interfaces;
@@ -28,13 +29,47 @@ public class ProposalService : IProposalService
         return Result.Success(_mapper.Map<ProposalResponse>(proposal));
     }
 
-    public async Task<Result<PaginationResult<ProposalResponse>>> GetPagedAsync(PaginationParams paginationParams)
+    public async Task<Result<PaginationResult<ProposalResponse>>> GetPagedAsync(GetProposalsRequest request)
     {
-        var query = _unitOfWork.Proposals.GetQueryable();
-        var result =
-            await query.ProjectToPaginatedListAsync<Proposal, ProposalResponse>(paginationParams);
+        var query = _unitOfWork.Proposals.FindAll();
+        Expression<Func<Proposal, bool>> condition = x => true;
+        if (!string.IsNullOrEmpty(request.SearchTerm))
+        {
+            Expression<Func<Proposal, bool>> searchTermFilter = proposal =>
+                proposal.Name.Contains(request.SearchTerm) ||
+                proposal.Code.Contains(request.SearchTerm);
+            condition = condition.CombineAndAlsoExpressions(searchTermFilter);
+        }
+
+        if (request.Status.HasValue)
+        {
+            Expression<Func<Proposal, bool>> statusFilter = proposal => proposal.Status == request.Status;
+            condition = condition.CombineAndAlsoExpressions(statusFilter);
+        }
+
+        if (!request.FacultyId.IsNullOrGuidEmpty())
+        {
+            condition = condition.CombineAndAlsoExpressions(x => x.FacultyId == request.FacultyId);
+        }
+
+        query = query.Where(condition);
+
+        query = ApplySorting(query, request);
+
+        var result = await query.ProjectToPaginatedListAsync<Proposal, ProposalResponse>(request);
 
         return Result.Success(result);
+    }
+
+    private static IQueryable<Proposal> ApplySorting(IQueryable<Proposal> query,
+        PaginationParams paginationParams)
+    {
+        var orderBy = paginationParams.OrderBy;
+        var isDescending = paginationParams.IsDescending;
+        return orderBy.ToLower().Replace(" ", "") switch
+        {
+            _ => query.ApplySorting(isDescending, Proposal.GetSortValue(orderBy))
+        };
     }
 
     public async Task<Result<ProposalResponse>> CreateAsync(CreateProposalRequest request)

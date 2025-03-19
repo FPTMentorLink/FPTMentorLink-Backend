@@ -22,9 +22,9 @@ public class CheckpointController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetCheckpointPagedAsync([FromQuery] GetCheckpointsRequest paginationParams)
+    public async Task<IActionResult> GetCheckpointPagedAsync([FromQuery] GetCheckpointsRequest request)
     {
-        var result = await _checkpointService.GetPagedAsync(paginationParams);
+        var result = await _checkpointService.GetPagedAsync(request);
         return result.IsSuccess ? Ok(result.Value) : BadRequest(result);
     }
 

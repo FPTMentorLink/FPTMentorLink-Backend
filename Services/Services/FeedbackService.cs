@@ -31,7 +31,7 @@ public class FeedbackService : IFeedbackService
     public async Task<Result<PaginationResult<AppointmentFeedbackResponse>>> GetPagedAsync(
         PaginationParams paginationParams)
     {
-        var query = _unitOfWork.AppointmentFeedbacks.GetQueryable();
+        var query = _unitOfWork.AppointmentFeedbacks.FindAll();
         var result =
             await query.ProjectToPaginatedListAsync<AppointmentFeedback, AppointmentFeedbackResponse>(paginationParams);
 
