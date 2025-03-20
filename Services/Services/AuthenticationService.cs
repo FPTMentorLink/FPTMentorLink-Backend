@@ -58,12 +58,6 @@ public class AuthenticationService : IAuthenticationService
             return Result.Failure<string>(DomainError.Account.AccountNotFound);
         }
 
-        var isFptEmail = email.EndsWith("@fpt.edu.vn") || email.EndsWith("@fe.edu.vn");
-        if (!isFptEmail)
-        {
-            return Result.Failure<string>(DomainError.Account.InvalidFptEmail);
-        }
-
         var user = await _unitOfWork.Accounts.FindSingleAsync(x => x.Email == email);
         if (user == null)
         {
