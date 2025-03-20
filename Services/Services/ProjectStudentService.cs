@@ -51,10 +51,10 @@ public class ProjectStudentService : IProjectStudentService
         Expression<Func<ProjectStudent, bool>> condition = x => true;
 
         if (request.StudentId.HasValue && request.StudentId != Guid.Empty)
-            condition = Helper.CombineAndAlsoExpressions(condition, x => x.StudentId == request.StudentId);
+            condition = condition.CombineAndAlsoExpressions(x => x.StudentId == request.StudentId);
 
         if (request.ProjectId.HasValue && request.ProjectId != Guid.Empty)
-            condition = Helper.CombineAndAlsoExpressions(condition, x => x.ProjectId == request.ProjectId);
+            condition = condition.CombineAndAlsoExpressions(x => x.ProjectId == request.ProjectId);
 
         query = query.Where(condition);
 
@@ -112,13 +112,11 @@ public class ProjectStudentService : IProjectStudentService
     {
         var student = await _unitOfWork.Students.FindAll()
             .Include(x => x.Account)
-            .Include(x => x.ProjectStudent)
             .Where(x => x.Id == request.StudentId)
             .Select(x => new
             {
                 x.Account.Email,
                 x.IsGraduated,
-                IsProjectStudent = x.ProjectStudent != null
             }).FirstOrDefaultAsync();
 
         // Check if student is valid
@@ -126,8 +124,16 @@ public class ProjectStudentService : IProjectStudentService
             return Result.Failure("Student not found");
         if (student.IsGraduated)
             return Result.Failure("Student is graduated");
-        if (student.IsProjectStudent)
+        // Check if student is already a member of a project (not including closed or failed projects)
+        var isProjectStudent = await _unitOfWork.ProjectStudents.FindAll()
+            .Include(x => x.Project)
+            .AnyAsync(x => x.StudentId == request.StudentId &&
+                           x.Project.Status != ProjectStatus.Closed &&
+                           x.Project.Status != ProjectStatus.Failed);
+        if (isProjectStudent)
             return Result.Failure("Student is already a member of a project");
+
+
         var projectName = await _unitOfWork.Projects.FindAll()
             .Where(x => x.Id == request.ProjectId)
             .Select(x => x.Name)
@@ -171,13 +177,11 @@ public class ProjectStudentService : IProjectStudentService
 
         var student = await _unitOfWork.Students.FindAll()
             .Include(x => x.Account)
-            .Include(x => x.ProjectStudent)
             .Where(x => x.Id == studentId)
             .Select(x => new
             {
                 x.Account.Email,
                 x.IsGraduated,
-                IsProjectStudent = x.ProjectStudent != null
             }).FirstOrDefaultAsync();
 
         // Check if student is valid
@@ -185,8 +189,16 @@ public class ProjectStudentService : IProjectStudentService
             return Result.Failure("Student not found");
         if (student.IsGraduated)
             return Result.Failure("Student is graduated");
-        if (student.IsProjectStudent)
+        
+        // Check if student is already a member of a project (not including closed or failed projects)
+        var isProjectStudent = await _unitOfWork.ProjectStudents.FindAll()
+            .Include(x => x.Project)
+            .AnyAsync(x => x.StudentId == studentId &&
+                           x.Project.Status != ProjectStatus.Closed &&
+                           x.Project.Status != ProjectStatus.Failed);
+        if (isProjectStudent)
             return Result.Failure("Student is already a member of a project");
+
 
         // Check if project is valid
         var project = await _unitOfWork.Projects.FindAll()
@@ -214,7 +226,7 @@ public class ProjectStudentService : IProjectStudentService
         };
         _unitOfWork.ProjectStudents.Add(projectStudent);
         await _unitOfWork.SaveChangesAsync();
-        
+
         // If this student is successfully added to the project, remove all invitations for this student in Redis
         var deletePattern = RedisKeyGenerator.GenerateProjectInvitationDeletePattern(studentId.Value);
         await _redisService.DeleteCacheWithPatternAsync(deletePattern);

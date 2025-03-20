@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Repositories.Entities;
 using Services.Interfaces;
-using Services.Models.Request.Project;
 using Services.Models.Request.Student;
 using Services.Utils;
 
@@ -41,12 +40,27 @@ public class StudentController : ControllerBase
     public async Task<IActionResult> GetMyProjects([FromQuery] GetStudentProjectsRequest request)
     {
         var userId = User.GetUserId();
-        if (userId == null || userId.IsNullOrGuidEmpty())
+        if (userId.IsNullOrGuidEmpty())
         {
-            return BadRequest(Result.Failure<Student>("User not found"));
+            return BadRequest(Result.Failure("User not found"));
         }
-        request.StudentId = userId.Value;
-        var result = await _studentService.GetPagedAsync(request);
+
+        request.StudentId = userId!.Value;
+        var result = await _studentService.GetMyProjectPagedAsync(request);
+        return result.IsSuccess ? Ok(result.Value) : BadRequest(result);
+    }
+
+    [HttpGet("my-appointments")]
+    public async Task<IActionResult> GetMyAppointments([FromQuery] GetStudentAppointmentsRequest request)
+    {
+        var userId = User.GetUserId();
+        if (userId.IsNullOrGuidEmpty())
+        {
+            return BadRequest(Result.Failure("User not found"));
+        }
+
+        request.StudentId = userId!.Value;
+        var result = await _studentService.GetMyAppointmentPagedAsync(request);
         return result.IsSuccess ? Ok(result.Value) : BadRequest(result);
     }
 }

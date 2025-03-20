@@ -22,10 +22,7 @@ public interface IAccountService
     Task<Result> CreateStudentAsync(CreateStudentRequest request, CancellationToken cancellationToken);
     Task<Result> UpdateAdminAsync(Guid id, UpdateAdminRequest request, CancellationToken cancellationToken);
     Task<Result> DeleteAsync(Guid id, CancellationToken cancellationToken);
-    Task<Result<LoginResponse>> LoginAsync(string email, string password);
-    Task<Result<RefreshTokenResponse>> RefreshTokenAsync(RefreshTokenRequest request);
-    Task<Result> IsEmailUniqueAsync(string email);
-    Task<Result<PaginationResult<AccountResponse>>> GetPagedAsync(GetAccountsRequest paginationParams);
+    Task<Result<PaginationResult<AccountResponse>>> GetPagedAsync(GetAccountsRequest request);
     Task<Result<int>> GetTotalAsync(AccountRole[] roles);
     Task<Result> ImportAccountsAsync(IFormFile formFile, AccountRole role, CancellationToken cancellationToken);
     Task<Result> UpdateLecturerAsync(Guid id, UpdateLecturerRequest request, CancellationToken cancellationToken);

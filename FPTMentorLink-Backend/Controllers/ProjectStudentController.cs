@@ -15,14 +15,14 @@ public class ProjectStudentController : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
-    public async Task<IActionResult> GetProjectStudentById([FromRoute] Guid id)
+    public async Task<IActionResult> GetById([FromRoute] Guid id)
     {
         var result = await _projectStudentService.GetByIdAsync(id);
         return result.IsSuccess ? Ok(result.Value) : BadRequest(result);
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetProjectStudentPaged([FromQuery] GetProjectStudentsRequest request)
+    public async Task<IActionResult> GetPaged([FromQuery] GetProjectStudentsRequest request)
     {
         var result = await _projectStudentService.GetPagedAsync(request);
         return result.IsSuccess ? Ok(result.Value) : BadRequest(result);
@@ -53,7 +53,7 @@ public class ProjectStudentController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> DeleteProjectStudent([FromRoute] Guid id)
+    public async Task<IActionResult> Delete([FromRoute] Guid id)
     {
         var result = await _projectStudentService.DeleteAsync(id);
         return result.IsSuccess ? Ok() : BadRequest(result);

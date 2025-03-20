@@ -58,7 +58,7 @@ public interface IGenericRepository<TEntity, in TKey> where TEntity : class, IEn
         CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] includes);
 
     /// <summary>
-    /// As no tracking
+    /// Get a queryable with as no tracking
     /// </summary>
     /// <param name="predicate"></param>
     /// <param name="includes"></param>

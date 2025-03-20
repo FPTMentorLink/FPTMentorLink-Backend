@@ -16,21 +16,21 @@ public class ProjectController : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
-    public async Task<IActionResult> GetProjectByIdAsync([FromRoute] Guid id)
+    public async Task<IActionResult> GetById([FromRoute] Guid id)
     {
         var result = await _projectService.GetByIdAsync(id);
         return result.IsSuccess ? Ok(result.Value) : BadRequest(result);
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetProjectPagedAsync([FromQuery] GetProjectsRequest request)
+    public async Task<IActionResult> GetPaged([FromQuery] GetProjectsRequest request)
     {
         var result = await _projectService.GetPagedAsync(request);
         return result.IsSuccess ? Ok(result.Value) : BadRequest(result);
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateProjectAsync([FromBody] CreateProjectRequest request)
+    public async Task<IActionResult> Create([FromBody] CreateProjectRequest request)
     {
         if (!ModelState.IsValid)
         {
@@ -38,18 +38,18 @@ public class ProjectController : ControllerBase
         }
 
         var leaderId = User.GetUserId();
-        if (leaderId == null || leaderId == Guid.Empty)
+        if (leaderId.IsNullOrGuidEmpty())
         {
             return BadRequest(Result.Failure("User not found"));
         }
 
-        request.LeaderId = leaderId.Value;
+        request.LeaderId = leaderId!.Value;
         var result = await _projectService.CreateAsync(request);
         return result.IsSuccess ? Ok() : BadRequest(result);
     }
 
     [HttpPatch("{id:guid}")]
-    public async Task<IActionResult> UpdateAsync([FromRoute] Guid id, [FromBody] UpdateProjectRequest request)
+    public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdateProjectRequest request)
     {
         if (!ModelState.IsValid)
         {
@@ -61,7 +61,7 @@ public class ProjectController : ControllerBase
     }
 
     [HttpPatch("{id:guid}/status")]
-    public async Task<IActionResult> UpdateStatusAsync([FromRoute] Guid id,
+    public async Task<IActionResult> UpdateStatus([FromRoute] Guid id,
         [FromBody] UpdateProjectStatusRequest request)
     {
         if (!ModelState.IsValid)
@@ -81,7 +81,7 @@ public class ProjectController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> DeleteAsync([FromRoute] Guid id)
+    public async Task<IActionResult> Delete([FromRoute] Guid id)
     {
         var result = await _projectService.DeleteAsync(id);
         return result.IsSuccess ? Ok() : BadRequest(result);

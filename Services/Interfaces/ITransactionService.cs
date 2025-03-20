@@ -6,5 +6,5 @@ namespace Services.Interfaces;
 
 public interface ITransactionService
 {
-    Task<Result<PaginationResult<TransactionResponse>>> GetPagedAsync(GetTransactionsRequest paginationParams);
+    Task<Result<PaginationResult<TransactionResponse>>> GetPagedAsync(GetTransactionsRequest request);
 }

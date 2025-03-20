@@ -5,7 +5,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Services.Models.Request.Authentication;
+using Services.Models.Request.Authorization;
 using Services.Settings;
+using Services.Utils;
 using IAuthenticationService = Services.Interfaces.IAuthenticationService;
 
 namespace FPTMentorLink_Backend.Controllers;
@@ -43,7 +45,7 @@ public class AuthenticationController : ControllerBase
 
         // Sign out the user from the authentication scheme
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-        
+
         return Redirect(redirectUrl);
     }
 
@@ -53,11 +55,26 @@ public class AuthenticationController : ControllerBase
         var result = await _authenticationService.LoginAsync(request);
         return result.IsSuccess ? Ok(result.Value) : BadRequest(result);
     }
-    
+
     [HttpPost("admin-login")]
     public async Task<IActionResult> AdminLogin([FromBody] AdminLoginRequest request)
     {
         var result = await _authenticationService.AdminLoginAsync(request);
+        return result.IsSuccess ? Ok(result.Value) : BadRequest(result);
+    }
+
+    [HttpPost("refresh-token")]
+    [Authorize]
+    public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
+    {
+        var accessToken = HttpContext.GetAccessToken();
+        if (accessToken == null)
+        {
+            return BadRequest(Result.Failure("Invalid access token"));
+        }
+
+        request.AccessToken = accessToken;
+        var result = await _authenticationService.RefreshTokenAsync(request);
         return result.IsSuccess ? Ok(result.Value) : BadRequest(result);
     }
 }

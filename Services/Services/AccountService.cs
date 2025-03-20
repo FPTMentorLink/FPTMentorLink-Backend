@@ -1,6 +1,5 @@
 ﻿using System.Globalization;
 using System.Linq.Expressions;
-using System.Security.Claims;
 using CsvHelper;
 using CsvHelper.Configuration;
 using MapsterMapper;
@@ -11,14 +10,10 @@ using Repositories.Entities;
 using Repositories.UnitOfWork.Interfaces;
 using Services.Interfaces;
 using Services.Models.Request.Account;
-using Services.Models.Request.Authorization;
-using Services.Models.Request.Base;
 using Services.Models.Request.Lecturer;
 using Services.Models.Request.Mentor;
 using Services.Models.Request.Student;
 using Services.Models.Response.Account;
-using Services.Models.Response.Authentication;
-using Services.Models.Response.Authorization;
 using Services.Models.Response.Lecturer;
 using Services.Models.Response.Mentor;
 using Services.Models.Response.Student;
@@ -79,7 +74,6 @@ public class AccountService : IAccountService
     /// </summary>
     /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
-    /// <param name="role"></param>
     /// <returns></returns>
     private async Task<Result> BaseValidateAccountAsync(BaseCreateAccountRequest request,
         CancellationToken cancellationToken)
@@ -225,93 +219,49 @@ public class AccountService : IAccountService
         return Result.Success();
     }
 
-    public async Task<Result<LoginResponse>> LoginAsync(string email, string password)
+    public async Task<Result<PaginationResult<AccountResponse>>> GetPagedAsync(GetAccountsRequest request)
     {
-        var account = await _unitOfWork.Accounts.FindSingleAsync(a => a.Email == email);
-        if (account == null || !_passwordHasher.VerifyPassword(password, account.PasswordHash))
-            return Result.Failure<LoginResponse>("Invalid email or password");
-
-        var claims = new List<Claim>
-        {
-            new(ClaimTypes.NameIdentifier, account.Id.ToString()),
-            new(ClaimTypes.Email, account.Email),
-            new(ClaimTypes.Role, account.Role.ToString())
-        };
-        var accessToken = TokenGenerator.GenerateAccessToken(_jwtSettings, claims);
-        var refreshToken = TokenGenerator.GenerateRefreshToken();
-
-        var response = _mapper.Map<LoginResponse>(account);
-        response.AccessToken = accessToken;
-        response.RefreshToken = refreshToken;
-
-        return Result.Success(response);
-    }
-
-    public async Task<Result<RefreshTokenResponse>> RefreshTokenAsync(RefreshTokenRequest request)
-    {
-        // Check if access token is valid when it is expired
-        var principal = TokenGenerator.GetPrincipalFromToken(_jwtSettings, request.AccessToken, false);
-        if (principal == null)
-            return Result.Failure<RefreshTokenResponse>("Invalid token");
-
-        var userId = principal.GetUserId();
-        if (userId == null)
-            return Result.Failure<RefreshTokenResponse>("Invalid token");
-
-        var claims = principal.Claims.ToList();
-        var newAccessToken = TokenGenerator.GenerateAccessToken(_jwtSettings, claims);
-        var newRefreshToken = TokenGenerator.GenerateRefreshToken();
-
-        // TODO: implement refresh token invalidation and database update logic
-        await Task.Delay(100);
-
-        return Result.Success(new RefreshTokenResponse
-        {
-            AccessToken = newAccessToken,
-            RefreshToken = newRefreshToken
-        });
-    }
-
-    public async Task<Result> IsEmailUniqueAsync(string email)
-    {
-        var exists = await _unitOfWork.Accounts.AnyAsync(a => a.Email == email);
-        return exists ? Result.Failure("Email already exists") : Result.Success();
-    }
-
-    public async Task<Result<PaginationResult<AccountResponse>>> GetPagedAsync(GetAccountsRequest paginationParams)
-    {   
-        Expression<Func<Account, bool>> filter = account => true;
-        if (!string.IsNullOrEmpty(paginationParams.SearchTerm))
+        var query = _unitOfWork.Accounts.FindAll();
+        Expression<Func<Account, bool>> condition = account => true;
+        if (!string.IsNullOrEmpty(request.SearchTerm))
         {
             Expression<Func<Account, bool>> searchTermFilter = account =>
-                account.Email.Contains(paginationParams.SearchTerm) ||
-                account.Username.Contains(paginationParams.SearchTerm) ||
-                account.FirstName.Contains(paginationParams.SearchTerm);
-            filter = Helper.CombineAndAlsoExpressions(filter, searchTermFilter);
+                account.Email.Contains(request.SearchTerm) ||
+                account.Username.Contains(request.SearchTerm) ||
+                account.FirstName.Contains(request.SearchTerm);
+            condition = condition.CombineAndAlsoExpressions(searchTermFilter);
         }
 
-        if (paginationParams.Roles != null)
+        if (request.Roles != null)
         {
             Expression<Func<Account, bool>> roleFilter = account =>
-                paginationParams.Roles.Contains(account.Role);
-            filter = Helper.CombineAndAlsoExpressions(filter, roleFilter);
+                request.Roles.Contains(account.Role);
+            condition = condition.CombineAndAlsoExpressions(roleFilter);
         }
 
-        var query = _unitOfWork.Accounts.FindAll(filter);
-        if (!string.IsNullOrEmpty(paginationParams.OrderBy))
-        {
-            var sortProperty = GetSortProperty(paginationParams.OrderBy);
-            query = query.ApplySorting(paginationParams.IsDescending, sortProperty);
-        }
+        query = query.Where(condition);
 
-        var result = await query.ProjectToPaginatedListAsync<Account, AccountResponse>(paginationParams);
+        query = ApplySorting(query, request);
+
+        var result = await query.ProjectToPaginatedListAsync<Account, AccountResponse>(request);
 
         return Result.Success(result);
     }
 
+    private static IQueryable<Account> ApplySorting(IQueryable<Account> query,
+        PaginationParams paginationParams)
+    {
+        var orderBy = paginationParams.OrderBy;
+        var isDescending = paginationParams.IsDescending;
+        return orderBy.ToLower().Replace(" ", "") switch
+        {
+            _ => query.ApplySorting(isDescending, Account.GetSortValue(orderBy))
+        };
+    }
+
     public async Task<Result<int>> GetTotalAsync(AccountRole[] roles)
     {
-        var query = _unitOfWork.Accounts.GetQueryable();
+        var query = _unitOfWork.Accounts.FindAll();
         if (roles.Length > 0) query = query.Where(a => roles.Contains(a.Role));
 
         var total = await query.CountAsync();
@@ -779,13 +729,4 @@ public class AccountService : IAccountService
 
                 _ => Result.Failure<object>(DomainError.Account.AccountNotFound)
             };
-
-    private Expression<Func<Account, object>> GetSortProperty(string sortBy) =>
-        sortBy.ToLower().Replace(" ", "") switch
-        {
-            "role" => account => account.Role,
-            "issuspended" => account => account.IsSuspended,
-            "createdat" => account => account.CreatedAt,
-            _ => account => account.Id
-        };
 }

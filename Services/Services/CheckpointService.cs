@@ -126,41 +126,40 @@ public class CheckpointService : ICheckpointService
     }
 
     public async Task<Result<PaginationResult<CheckpointResponse>>> GetPagedAsync(
-        GetCheckpointsRequest paginationParams)
+        GetCheckpointsRequest request)
     {
-        Expression<Func<Checkpoint, bool>> filter = checkpoint => true;
-        if (!string.IsNullOrEmpty(paginationParams.SearchTerm))
+        var query = _unitOfWork.Checkpoints.FindAll();
+        Expression<Func<Checkpoint, bool>> condition = checkpoint => true;
+        if (!string.IsNullOrEmpty(request.SearchTerm))
         {
             Expression<Func<Checkpoint, bool>> searchTermFilter = checkpoint =>
-                checkpoint.Name.Contains(paginationParams.SearchTerm);
-            filter = Helper.CombineAndAlsoExpressions(filter, searchTermFilter);
+                checkpoint.Name.Contains(request.SearchTerm);
+            condition = condition.CombineAndAlsoExpressions(searchTermFilter);
         }
 
-        if (paginationParams.TermId != Guid.Empty)
+        if (request.TermId != Guid.Empty)
         {
             Expression<Func<Checkpoint, bool>> termIdFilter = checkpoint =>
-                checkpoint.TermId == paginationParams.TermId;
-            filter = Helper.CombineAndAlsoExpressions(filter, termIdFilter);
+                checkpoint.TermId == request.TermId;
+            condition = condition.CombineAndAlsoExpressions(termIdFilter);
         }
 
-        var query = _unitOfWork.Checkpoints.FindAll(filter);
-        if (!string.IsNullOrEmpty(paginationParams.OrderBy))
-        {
-            var sortProperty = GetSortProperty(paginationParams.OrderBy);
-            query = query.ApplySorting(paginationParams.IsDescending, sortProperty);
-        }
+        query = query.Where(condition);
 
-        var result = await query.ProjectToPaginatedListAsync<Checkpoint, CheckpointResponse>(paginationParams);
+        query = ApplySorting(query, request);
+
+        var result = await query.ProjectToPaginatedListAsync<Checkpoint, CheckpointResponse>(request);
         return Result.Success(result);
     }
 
-    private Expression<Func<Checkpoint, object>> GetSortProperty(string sortBy) =>
-        sortBy.ToLower().Replace(" ", "") switch
+    private static IQueryable<Checkpoint> ApplySorting(IQueryable<Checkpoint> query,
+        PaginationParams paginationParams)
+    {
+        var orderBy = paginationParams.OrderBy;
+        var isDescending = paginationParams.IsDescending;
+        return orderBy.ToLower().Replace(" ", "") switch
         {
-            "name" => checkpoint => checkpoint.Name,
-            "term" => checkpoint => checkpoint.TermId,
-            "starttime" => checkpoint => checkpoint.StartTime,
-            "endtime" => checkpoint => checkpoint.EndTime,
-            _ => checkpoint => checkpoint.Id
+            _ => query.ApplySorting(isDescending, Checkpoint.GetSortValue(orderBy))
         };
+    }
 }

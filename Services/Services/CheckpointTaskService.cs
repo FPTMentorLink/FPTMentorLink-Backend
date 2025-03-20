@@ -151,55 +151,50 @@ public class CheckpointTaskService : ICheckpointTaskService
     public async Task<Result<PaginationResult<CheckpointTaskResponse>>> GetPagedAsync(
         GetCheckpointTasksRequest request)
     {
-        Expression<Func<CheckpointTask, bool>> filter = task => true;
+        var query = _unitOfWork.CheckpointTasks.FindAll();
+        Expression<Func<CheckpointTask, bool>> condition = x => true;
 
         if (!string.IsNullOrEmpty(request.SearchTerm))
         {
-            Expression<Func<CheckpointTask, bool>> searchFilter = task =>
+            Expression<Func<CheckpointTask, bool>> searchTermFilter = task =>
                 task.Name.Contains(request.SearchTerm) || task.Description!.Contains(request.SearchTerm);
-            filter = Helper.CombineAndAlsoExpressions(filter, searchFilter);
+            condition = condition.CombineAndAlsoExpressions(searchTermFilter);
         }
 
         if (request.CheckpointId.HasValue)
         {
-            Expression<Func<CheckpointTask, bool>> checkpointFilter = task =>
-                task.CheckpointId == request.CheckpointId.Value;
-            filter = Helper.CombineAndAlsoExpressions(filter, checkpointFilter);
+            condition = condition.CombineAndAlsoExpressions(task =>
+                task.CheckpointId == request.CheckpointId.Value);
         }
 
         if (request.ProjectId.HasValue)
         {
-            Expression<Func<CheckpointTask, bool>> projectFilter = task =>
-                task.ProjectId == request.ProjectId.Value;
-            filter = Helper.CombineAndAlsoExpressions(filter, projectFilter);
+            condition = condition.CombineAndAlsoExpressions(task =>
+                task.ProjectId == request.ProjectId.Value);
         }
 
         if (request.Status.HasValue)
         {
-            Expression<Func<CheckpointTask, bool>> statusFilter = task =>
-                task.Status == request.Status.Value;
-            filter = Helper.CombineAndAlsoExpressions(filter, statusFilter);
+            condition = condition.CombineAndAlsoExpressions(task =>
+                task.Status == request.Status.Value);
         }
 
-        var query = _unitOfWork.CheckpointTasks.FindAll(filter);
-        if (!string.IsNullOrEmpty(request.OrderBy))
-        {
-            var sortProperty = GetSortProperty(request.OrderBy);
-            query = query.ApplySorting(request.IsDescending, sortProperty);
-        }
+        query = query.Where(condition);
+
+        query = ApplySorting(query, request);
 
         var result = await query.ProjectToPaginatedListAsync<CheckpointTask, CheckpointTaskResponse>(request);
         return Result.Success(result);
     }
 
-    private Expression<Func<CheckpointTask, object>> GetSortProperty(string sortBy) =>
-        sortBy.ToLower().Replace(" ", "") switch
+    private static IQueryable<CheckpointTask> ApplySorting(IQueryable<CheckpointTask> query,
+        PaginationParams paginationParams)
+    {
+        var orderBy = paginationParams.OrderBy;
+        var isDescending = paginationParams.IsDescending;
+        return orderBy.ToLower().Replace(" ", "") switch
         {
-            "name" => task => task.Name,
-            "status" => task => task.Status,
-            "score" => task => task.Score ?? 0,
-            "checkpoint" => task => task.CheckpointId,
-            "project" => task => task.ProjectId,
-            _ => task => task.Id
+            _ => query.ApplySorting(isDescending, CheckpointTask.GetSortValue(orderBy))
         };
+    }
 }

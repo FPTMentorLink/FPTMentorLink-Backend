@@ -65,12 +65,12 @@ public class ProjectService : IProjectService
             .ToListAsync();
 
         result.ProjectStudents = projectStudent;
-        return Result.Success(_mapper.Map<ProjectDetailResponse>(project));
+        return Result.Success(result);
     }
 
     public async Task<Result<PaginationResult<ProjectResponse>>> GetPagedAsync(GetProjectsRequest request)
     {
-        var query = _unitOfWork.Projects.GetQueryable()
+        var query = _unitOfWork.Projects.FindAll()
             .Include(x => x.Term)
             .Include(x => x.Faculty)
             // Include project students to prevent N+1 problem on condition checking
@@ -80,31 +80,51 @@ public class ProjectService : IProjectService
         Expression<Func<Project, bool>> condition = x => true;
 
         if (request.TermId.HasValue && request.TermId != Guid.Empty)
-            condition = Helper.CombineAndAlsoExpressions(condition, x => x.TermId == request.TermId);
+            condition = condition.CombineAndAlsoExpressions(x => x.TermId == request.TermId);
 
         if (request.FacultyId.HasValue && request.FacultyId != Guid.Empty)
-            condition = Helper.CombineAndAlsoExpressions(condition, x => x.FacultyId == request.FacultyId);
+            condition = condition.CombineAndAlsoExpressions(x => x.FacultyId == request.FacultyId);
 
         if (request.MentorId.HasValue && request.MentorId != Guid.Empty)
-            condition = Helper.CombineAndAlsoExpressions(condition, x => x.MentorId == request.MentorId);
+            condition = condition.CombineAndAlsoExpressions(x => x.MentorId == request.MentorId);
 
         if (request.LecturerId.HasValue && request.LecturerId != Guid.Empty)
-            condition = Helper.CombineAndAlsoExpressions(condition, x => x.LecturerId == request.LecturerId);
+            condition = condition.CombineAndAlsoExpressions(x => x.LecturerId == request.LecturerId);
 
         if (request.StudentId.HasValue && request.StudentId != Guid.Empty)
-            condition = Helper.CombineAndAlsoExpressions(condition,
-                x => x.ProjectStudents.Any(y => y.StudentId == request.StudentId));
+            condition = condition.CombineAndAlsoExpressions(x => x.ProjectStudents.Any(y => y.StudentId == request.StudentId));
 
 
         if (request.Status.HasValue)
-            condition = Helper.CombineAndAlsoExpressions(condition, x => x.Status == request.Status);
+            condition = condition.CombineAndAlsoExpressions(x => x.Status == request.Status);
 
         query = query.Where(condition);
 
-        var result =
-            await query.ProjectToPaginatedListAsync<Project, ProjectResponse>(request);
+        query = ApplySorting(query, request);
+
+        var result = await query.ProjectToPaginatedListAsync<Project, ProjectResponse>(request);
 
         return Result.Success(result);
+    }
+
+    /// <summary>
+    /// Apply sorting to query
+    /// (Custom sorting & default sorting)
+    /// </summary>
+    /// <param name="query"></param>
+    /// <param name="paginationParams"></param>
+    /// <returns></returns>
+    private static IQueryable<Project> ApplySorting(IQueryable<Project> query, PaginationParams paginationParams)
+    {
+        var orderBy = paginationParams.OrderBy;
+        var isDescending = paginationParams.IsDescending;
+        return orderBy.ToLower().Replace(" ", "") switch
+        {
+            "termcode" => query
+                .Include(x => x.Term)
+                .ApplySorting(isDescending, x => x.Term.Code),
+            _ => query.ApplySorting(isDescending, Project.GetSortValue(orderBy))
+        };
     }
 
     public async Task<Result> CreateAsync(CreateProjectRequest request)
@@ -232,7 +252,7 @@ public class ProjectService : IProjectService
         };
 
         if (result.IsFailure) return result;
-        
+
         // Save changes
         await _unitOfWork.SaveChangesAsync();
         return Result.Success();

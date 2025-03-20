@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq.Expressions;
 using Repositories.Entities.Base;
 
 namespace Repositories.Entities;
@@ -23,6 +24,17 @@ public class Project : AuditableEntity
     public virtual ICollection<WeeklyReport> Reports { get; set; } = [];
     public virtual ICollection<Appointment> Appointments { get; set; } = [];
     public virtual ICollection<ProjectStudent> ProjectStudents { get; set; } = [];
+
+    public static Expression<Func<Project, object>> GetSortValue(string sortColumn) =>
+        sortColumn switch
+        {
+            "code" => project => project.Code,
+            "name" => project => project.Name,
+            "status" => project => project.Status,
+            "createdat" => project => project.CreatedAt,
+            "updatedat" => project => project.UpdatedAt ?? project.CreatedAt,
+            _ => project => project.UpdatedAt ?? project.CreatedAt
+        };
 }
 
 public enum ProjectStatus

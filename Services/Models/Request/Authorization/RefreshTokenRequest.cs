@@ -1,7 +1,9 @@
-﻿namespace Services.Models.Request.Authorization;
+﻿using System.Text.Json.Serialization;
+
+namespace Services.Models.Request.Authorization;
 
 public class RefreshTokenRequest
 {
-    public required string AccessToken { get; set; }
-    public required string RefreshToken { get; set; }
+    [JsonIgnore] public string AccessToken { get; set; } = null!;
+    public required string RefreshToken { get; set; } 
 }
