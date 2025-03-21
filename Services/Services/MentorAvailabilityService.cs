@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Repositories.Entities;
@@ -34,10 +35,15 @@ public class MentorAvailabilityService : IMentorAvailabilityService
         GetMentorAvailabilitiesRequest request)
     {
         var query = _unitOfWork.MentorAvailabilities.FindAll();
+        Expression<Func<MentorAvailability, bool>> condition = x => true;
         if (request.MentorId != Guid.Empty)
-            query = query.Where(x => x.MentorId == request.MentorId);
+            condition = condition.CombineAndAlsoExpressions(x => x.MentorId == request.MentorId);
         if (request.Date != null)
-            query = query.Where(x => x.Date.Date == request.Date.Value.Date);
+            condition = condition.CombineAndAlsoExpressions(x => x.Date.Date == request.Date.Value.Date);
+        
+        query = query.Where(condition);
+        query = query.OrderBy(x => x.Date);
+        
         var result =
             await query.ProjectToPaginatedListAsync<MentorAvailability, MentorAvailabilityResponse>(request);
 

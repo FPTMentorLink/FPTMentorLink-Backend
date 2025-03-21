@@ -9,13 +9,13 @@ public static class TimeMapUtils
         var minConsecutiveBits = minAppointmentSessionLength / 15;
         if (minConsecutiveBits <= 1)
             return true;
-        
+
         var consecutiveCount = 0;
-        
+
         for (var byteIndex = 0; byteIndex < timeMap.Length; byteIndex++)
         {
             var currentByte = timeMap[byteIndex];
-            
+
             if (currentByte == 0)
             {
                 if (consecutiveCount > 0 && consecutiveCount < minConsecutiveBits)
@@ -23,17 +23,17 @@ public static class TimeMapUtils
                 consecutiveCount = 0;
                 continue;
             }
-            
+
             if (currentByte == 0xFF)
             {
                 consecutiveCount += 8;
                 continue;
             }
-            
+
             for (var bitIndex = 0; bitIndex < 8; bitIndex++)
             {
                 var isAvailable = (currentByte & (1 << bitIndex)) != 0;
-                
+
                 if (isAvailable)
                     consecutiveCount++;
                 else if (consecutiveCount > 0)
@@ -44,10 +44,10 @@ public static class TimeMapUtils
                 }
             }
         }
-        
+
         if (consecutiveCount > 0 && consecutiveCount < minConsecutiveBits)
             return false;
-        
+
         return true;
     }
 
@@ -68,7 +68,7 @@ public static class TimeMapUtils
 
         var byteIndex = slotIndex / 8;
         var bitIndex = slotIndex % 8;
-        
+
         if (isAvailable)
             timeMap[byteIndex] |= (byte)(1 << bitIndex);
         else
@@ -89,7 +89,7 @@ public static class TimeMapUtils
         }
     }
 
-    public static IEnumerable<AvailableTimeSlot> GetAvailableTimeSlots(this byte[] timeMap)
+    public static IEnumerable<AvailableTimeSlot> GetAvailableTimeSlots(this byte[] timeMap, DateTime date)
     {
         var slots = new List<AvailableTimeSlot>();
         int? rangeStart = null;
@@ -102,24 +102,30 @@ public static class TimeMapUtils
             }
             else
             {
-                if (rangeStart.HasValue)
+                if (!rangeStart.HasValue) continue;
+                var startTime = GetTimeFromSlot(rangeStart.Value);
+                var endTime = GetTimeFromSlot(slot);
+                slots.Add(new AvailableTimeSlot
                 {
-                    slots.Add(new AvailableTimeSlot
-                    {
-                        StartTime = GetTimeFromSlot(rangeStart.Value),
-                        EndTime = GetTimeFromSlot(slot)
-                    });
-                    rangeStart = null;
-                }
+                    StartTime = startTime,
+                    EndTime = endTime,
+                    StartDate = date.Add(startTime),
+                    EndDate = date.Add(endTime)
+                });
+                rangeStart = null;
             }
         }
 
         if (rangeStart.HasValue)
         {
+            var startTime = GetTimeFromSlot(rangeStart.Value);
+            var endTime = new TimeSpan(24, 0, 0);
             slots.Add(new AvailableTimeSlot
             {
-                StartTime = GetTimeFromSlot(rangeStart.Value),
-                EndTime = new TimeSpan(24, 0, 0)
+                StartTime = startTime,
+                EndTime = endTime,
+                StartDate = date.Add(startTime),
+                EndDate = date.Add(endTime)
             });
         }
 
@@ -166,7 +172,7 @@ public static class TimeMapUtils
 
         return false;
     }
-    
+
     /// <summary>
     /// Check if all slots in the range are available
     /// </summary>
@@ -210,6 +216,7 @@ public static class TimeMapUtils
         {
             SetAvailabilityRange(timeMap, slot.StartTime, slot.EndTime, true);
         }
+
         return timeMap;
     }
 }
