@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using Repositories.Entities;
 using Repositories.Utils;
 using Services.Models.Request.Base;
@@ -8,7 +9,7 @@ namespace Services.Models.Request.MentorAvailability;
 
 public class CreateMentorAvailabilityRequest : ValidatableObject
 {
-    public Guid MentorId { get; set; }
+    [JsonIgnore] public Guid MentorId { get; set; }
     public DateTime Date { get; set; }
     public IEnumerable<AvailableTimeSlot> AvailableTimeSlots { get; set; } = [];
     public byte[] TimeMap => AvailableTimeSlots.ToTimeMap();
@@ -19,6 +20,7 @@ public class CreateMentorAvailabilityRequest : ValidatableObject
             yield return new ValidationResult("Date must be at least 1 day in advance");
 
         if (!TimeMap.IsTimeMapValid(Constants.MinAppointmentLength))
-            yield return new ValidationResult($"Each session must be at least {Constants.MinAppointmentLength} minutes");
+            yield return
+                new ValidationResult($"Each session must be at least {Constants.MinAppointmentLength} minutes");
     }
 }
