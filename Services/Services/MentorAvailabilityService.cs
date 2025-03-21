@@ -49,6 +49,9 @@ public class MentorAvailabilityService : IMentorAvailabilityService
         var date = request.Date.Date;
         var existingMentorAvailability = await _unitOfWork.MentorAvailabilities
             .FindSingleAsync(x => x.MentorId == request.MentorId && x.Date == date);
+        var mentorExist = await _unitOfWork.Mentors.AnyAsync(x => x.Id == request.MentorId);
+        if (!mentorExist)
+            return Result.Failure("Mentor not found");
         if (existingMentorAvailability != null)
             return Result.Failure("Mentor availability for this date already exists");
         var mentorAvailability = _mapper.Map<MentorAvailability>(request);
@@ -72,6 +75,9 @@ public class MentorAvailabilityService : IMentorAvailabilityService
             return Result.Failure("Mentor availability not found");
         if (mentorAvailability.MentorId != request.MentorId)
             return Result.Failure("Mentor availability cannot be updated for another mentor");
+        var mentorExist = await _unitOfWork.Mentors.AnyAsync(x => x.Id == request.MentorId);
+        if (!mentorExist)
+            return Result.Failure("Mentor not found");
         var date = mentorAvailability.Date.Date;
 
         // Check if the new date is in the past
@@ -137,6 +143,9 @@ public class MentorAvailabilityService : IMentorAvailabilityService
             return Result.Failure("Mentor availability not found");
         if (mentorAvailability.MentorId != mentorId)
             return Result.Failure("Mentor availability cannot be deleted for another mentor");
+        var mentorExist = await _unitOfWork.Mentors.AnyAsync(x => x.Id == mentorId);
+        if (!mentorExist)
+            return Result.Failure("Mentor not found");
 
         _unitOfWork.MentorAvailabilities.Delete(mentorAvailability);
 
