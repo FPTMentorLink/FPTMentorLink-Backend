@@ -5,6 +5,6 @@ namespace Services.Models.Request.ProjectStudent;
 
 public class SendProjectInvitationRequest : ValidatableObject
 {
-    [Required] public Guid StudentId { get; set; }
+    [EmailAddress] [Required] public required string Email { get; set; }
     [Required] public Guid ProjectId { get; set; }
 }

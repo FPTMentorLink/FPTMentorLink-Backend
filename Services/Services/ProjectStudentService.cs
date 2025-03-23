@@ -110,13 +110,13 @@ public class ProjectStudentService : IProjectStudentService
     /// <returns></returns>
     public async Task<Result> SendProjectInvitationAsync(SendProjectInvitationRequest request)
     {
-        var student = await _unitOfWork.Students.FindAll()
-            .Include(x => x.Account)
-            .Where(x => x.Id == request.StudentId)
+        var student = await _unitOfWork.Accounts.FindAll()
+            .Include(x => x.Student)
+            .Where(x => x.Email == request.Email)
             .Select(x => new
             {
-                x.Account.Email,
-                x.IsGraduated,
+                x.Id,
+                IsGraduated = x.Student != null && x.Student.IsGraduated
             }).FirstOrDefaultAsync();
 
         // Check if student is valid
@@ -127,7 +127,7 @@ public class ProjectStudentService : IProjectStudentService
         // Check if student is already a member of a project (not including closed or failed projects)
         var isProjectStudent = await _unitOfWork.ProjectStudents.FindAll()
             .Include(x => x.Project)
-            .AnyAsync(x => x.StudentId == request.StudentId &&
+            .AnyAsync(x => x.StudentId == student.Id &&
                            x.Project.Status != ProjectStatus.Closed &&
                            x.Project.Status != ProjectStatus.Failed);
         if (isProjectStudent)
@@ -143,15 +143,15 @@ public class ProjectStudentService : IProjectStudentService
 
         // Generate invitation token and send email
         var invitationToken =
-            TokenGenerator.GenerateInvitationToken(_jwtSettings, request.StudentId, request.ProjectId);
+            TokenGenerator.GenerateInvitationToken(_jwtSettings, student.Id, request.ProjectId);
         var emailContent = EmailPresets.ProjectInvitationEmail(invitationToken, projectName);
 
         // Store token in Redis
-        var key = RedisKeyGenerator.GenerateProjectInvitationKey(request.ProjectId, request.StudentId, invitationToken);
+        var key = RedisKeyGenerator.GenerateProjectInvitationKey(request.ProjectId, student.Id, invitationToken);
         await _redisService.SetCacheAsync(key, invitationToken, TimeSpan.FromDays(1));
 
         // Send email
-        await _emailService.SendEmailAsync(student.Email, emailContent);
+        await _emailService.SendEmailAsync(request.Email, emailContent);
 
         return Result.Success();
     }
@@ -189,7 +189,7 @@ public class ProjectStudentService : IProjectStudentService
             return Result.Failure("Student not found");
         if (student.IsGraduated)
             return Result.Failure("Student is graduated");
-        
+
         // Check if student is already a member of a project (not including closed or failed projects)
         var isProjectStudent = await _unitOfWork.ProjectStudents.FindAll()
             .Include(x => x.Project)
