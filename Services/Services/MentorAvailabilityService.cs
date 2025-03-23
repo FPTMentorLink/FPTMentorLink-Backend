@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Repositories.Entities;
@@ -32,12 +33,17 @@ public class MentorAvailabilityService : IMentorAvailabilityService
 
     public async Task<Result<PaginationResult<MentorAvailabilityResponse>>> GetPagedAsync(
         GetMentorAvailabilitiesRequest request)
-    { 
+    {
         var query = _unitOfWork.MentorAvailabilities.FindAll();
+        Expression<Func<MentorAvailability, bool>> condition = x => true;
         if (request.MentorId != Guid.Empty)
-            query = query.Where(x => x.MentorId == request.MentorId);
+            condition = condition.CombineAndAlsoExpressions(x => x.MentorId == request.MentorId);
         if (request.Date != null)
-            query = query.Where(x => x.Date.Date == request.Date.Value.Date);
+            condition = condition.CombineAndAlsoExpressions(x => x.Date.Date == request.Date.Value.Date);
+        
+        query = query.Where(condition);
+        query = query.OrderBy(x => x.Date);
+        
         var result =
             await query.ProjectToPaginatedListAsync<MentorAvailability, MentorAvailabilityResponse>(request);
 
@@ -49,6 +55,9 @@ public class MentorAvailabilityService : IMentorAvailabilityService
         var date = request.Date.Date;
         var existingMentorAvailability = await _unitOfWork.MentorAvailabilities
             .FindSingleAsync(x => x.MentorId == request.MentorId && x.Date == date);
+        var mentorExist = await _unitOfWork.Mentors.AnyAsync(x => x.Id == request.MentorId);
+        if (!mentorExist)
+            return Result.Failure("Mentor not found");
         if (existingMentorAvailability != null)
             return Result.Failure("Mentor availability for this date already exists");
         var mentorAvailability = _mapper.Map<MentorAvailability>(request);
@@ -70,6 +79,11 @@ public class MentorAvailabilityService : IMentorAvailabilityService
         var mentorAvailability = await _unitOfWork.MentorAvailabilities.FindByIdAsync(id);
         if (mentorAvailability == null)
             return Result.Failure("Mentor availability not found");
+        if (mentorAvailability.MentorId != request.MentorId)
+            return Result.Failure("Mentor availability cannot be updated for another mentor");
+        var mentorExist = await _unitOfWork.Mentors.AnyAsync(x => x.Id == request.MentorId);
+        if (!mentorExist)
+            return Result.Failure("Mentor not found");
         var date = mentorAvailability.Date.Date;
 
         // Check if the new date is in the past
@@ -87,11 +101,11 @@ public class MentorAvailabilityService : IMentorAvailabilityService
         // Get existing appointments for this mentor on this date
         var nextDay = date.AddDays(1);
         var existingAppointments = await _unitOfWork.Appointments
-            .FindAll(a => a.MentorId == mentorAvailability.MentorId && 
-                a.StartTime >= date && 
-                a.StartTime < nextDay &&
-                a.Status != AppointmentStatus.Rejected && 
-                a.Status != AppointmentStatus.Canceled).ToListAsync();
+            .FindAll(a => a.MentorId == mentorAvailability.MentorId &&
+                          a.StartTime >= date &&
+                          a.StartTime < nextDay &&
+                          a.Status != AppointmentStatus.Rejected &&
+                          a.Status != AppointmentStatus.Canceled).ToListAsync();
 
         // Check for conflicts with existing appointments
         foreach (var appointment in existingAppointments)
@@ -101,7 +115,7 @@ public class MentorAvailabilityService : IMentorAvailabilityService
                 new TimeSpan(appointment.StartTime.Hour, appointment.StartTime.Minute, 0));
             var endSlot = TimeMapUtils.GetSlotFromTime(
                 new TimeSpan(appointment.EndTime.Hour, appointment.EndTime.Minute, 0));
-            
+
             // Check if any required slot is available in the new time map
             // Slots with appointments should be unavailable
             for (var slot = startSlot; slot < endSlot; slot++)
@@ -109,7 +123,7 @@ public class MentorAvailabilityService : IMentorAvailabilityService
                 if (tempAvailability.IsAvailable(slot))
                 {
                     return Result.Failure($"Cannot update availability: Time slot from " +
-                                         $"{appointment.StartTime:HH:mm} to {appointment.EndTime:HH:mm} is already booked");
+                                          $"{appointment.StartTime:HH:mm} to {appointment.EndTime:HH:mm} is already booked");
                 }
             }
         }
@@ -128,11 +142,16 @@ public class MentorAvailabilityService : IMentorAvailabilityService
         }
     }
 
-    public async Task<Result> DeleteAsync(Guid id)
+    public async Task<Result> DeleteAsync(Guid id, Guid mentorId)
     {
         var mentorAvailability = await _unitOfWork.MentorAvailabilities.FindByIdAsync(id);
         if (mentorAvailability == null)
             return Result.Failure("Mentor availability not found");
+        if (mentorAvailability.MentorId != mentorId)
+            return Result.Failure("Mentor availability cannot be deleted for another mentor");
+        var mentorExist = await _unitOfWork.Mentors.AnyAsync(x => x.Id == mentorId);
+        if (!mentorExist)
+            return Result.Failure("Mentor not found");
 
         _unitOfWork.MentorAvailabilities.Delete(mentorAvailability);
 

@@ -10,5 +10,5 @@ public interface IMentorAvailabilityService
     Task<Result<PaginationResult<MentorAvailabilityResponse>>> GetPagedAsync(GetMentorAvailabilitiesRequest request);
     Task<Result> CreateAsync(CreateMentorAvailabilityRequest request);
     Task<Result> UpdateAsync(Guid id, UpdateMentorAvailabilityRequest request);
-    Task<Result> DeleteAsync(Guid id);
+    Task<Result> DeleteAsync(Guid id, Guid mentorId);
 } 
