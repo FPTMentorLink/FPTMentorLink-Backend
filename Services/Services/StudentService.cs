@@ -4,9 +4,11 @@ using Repositories.Entities;
 using Repositories.UnitOfWork.Interfaces;
 using Services.Interfaces;
 using Services.Models.Request.Appointment;
+using Services.Models.Request.CheckpointTask;
 using Services.Models.Request.Project;
 using Services.Models.Request.Student;
 using Services.Models.Response.Appointment;
+using Services.Models.Response.CheckpointTask;
 using Services.Models.Response.Project;
 using Services.Models.Response.Student;
 using Services.Models.VnPay;
@@ -20,13 +22,16 @@ public class StudentService : IStudentService
     private readonly IVnPayService _vnPayService;
     private readonly IProjectService _projectService;
     private readonly IAppointmentService _appointmentService;
+    private readonly ICheckpointTaskService _checkpointTaskService;
 
-    public StudentService(IUnitOfWork unitOfWork, IVnPayService vnPayService, IProjectService projectService, IAppointmentService appointmentService)
+    public StudentService(IUnitOfWork unitOfWork, IVnPayService vnPayService, IProjectService projectService,
+        IAppointmentService appointmentService, ICheckpointTaskService checkpointTaskService)
     {
         _unitOfWork = unitOfWork;
         _vnPayService = vnPayService;
         _projectService = projectService;
         _appointmentService = appointmentService;
+        _checkpointTaskService = checkpointTaskService;
     }
 
     public async Task<Result<StudentDepositResponse>> DepositAsync(Guid id, StudentDepositRequest request,
@@ -150,7 +155,8 @@ public class StudentService : IStudentService
         };
     }
 
-    public async Task<Result<PaginationResult<ProjectResponse>>> GetMyProjectPagedAsync(GetStudentProjectsRequest request)
+    public async Task<Result<PaginationResult<ProjectResponse>>> GetMyProjectPagedAsync(
+        GetStudentProjectsRequest request)
     {
         return await _projectService.GetPagedAsync(new GetProjectsRequest
         {
@@ -165,9 +171,25 @@ public class StudentService : IStudentService
         });
     }
 
-    public async Task<Result<PaginationResult<AppointmentResponse>>> GetMyAppointmentPagedAsync(GetStudentAppointmentsRequest request)
+    public async Task<Result<PaginationResult<AppointmentResponse>>> GetMyAppointmentPagedAsync(
+        GetStudentAppointmentsRequest request)
     {
         return await _appointmentService.GetPagedAsync(new GetAppointmentsRequest
+        {
+            StudentId = request.StudentId,
+            Status = request.Status,
+            SearchTerm = request.SearchTerm,
+            OrderBy = request.OrderBy,
+            IsDescending = request.IsDescending,
+            PageNumber = request.PageNumber,
+            PageSize = request.PageSize
+        });
+    }
+
+    public async Task<Result<PaginationResult<CheckpointTaskResponse>>> GetMyCheckpointTaskPagedAsync(
+        GetStudentCheckpointTasksRequest request)
+    {
+        return await _checkpointTaskService.GetPagedAsync(new GetCheckpointTasksRequest
         {
             StudentId = request.StudentId,
             Status = request.Status,
