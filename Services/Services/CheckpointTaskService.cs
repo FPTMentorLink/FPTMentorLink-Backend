@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using MapsterMapper;
+using Microsoft.EntityFrameworkCore;
 using Repositories.Entities;
 using Repositories.UnitOfWork.Interfaces;
 using Services.Interfaces;
@@ -159,6 +160,13 @@ public class CheckpointTaskService : ICheckpointTaskService
             Expression<Func<CheckpointTask, bool>> searchTermFilter = task =>
                 task.Name.Contains(request.SearchTerm) || task.Description!.Contains(request.SearchTerm);
             condition = condition.CombineAndAlsoExpressions(searchTermFilter);
+        }
+
+        if (request.StudentId.HasValue)
+        {
+            query = query.Include(x => x.Project).ThenInclude(x => x.ProjectStudents);
+            condition = condition.CombineAndAlsoExpressions(task =>
+                task.Project.ProjectStudents.Any(x => x.StudentId == request.StudentId.Value));
         }
 
         if (request.CheckpointId.HasValue)
