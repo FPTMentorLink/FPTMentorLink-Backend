@@ -40,10 +40,13 @@ public class MentorAvailabilityService : IMentorAvailabilityService
             condition = condition.CombineAndAlsoExpressions(x => x.MentorId == request.MentorId);
         if (request.Date != null)
             condition = condition.CombineAndAlsoExpressions(x => x.Date.Date == request.Date.Value.Date);
-        
+        if (request.StartDate != null)
+            condition = condition.CombineAndAlsoExpressions(x => x.Date >= request.StartDate.Value.Date);
+        if (request.EndDate != null)
+            condition = condition.CombineAndAlsoExpressions(x => x.Date <= request.EndDate.Value.Date);
         query = query.Where(condition);
         query = query.OrderBy(x => x.Date);
-        
+
         var result =
             await query.ProjectToPaginatedListAsync<MentorAvailability, MentorAvailabilityResponse>(request);
 
