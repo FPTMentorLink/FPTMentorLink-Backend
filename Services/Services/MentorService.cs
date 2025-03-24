@@ -19,12 +19,11 @@ public class MentorService : IMentorService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
 
-    public MentorService(
-        IAppointmentService appointmentService,
-        IUnitOfWork unitOfWork,
-        IMapper mapper)
+    public MentorService(IAppointmentService appointmentService, IUnitOfWork unitOfWork, IMapper mapper)
     {
         _appointmentService = appointmentService;
+        _unitOfWork = unitOfWork;
+        _mapper = mapper;
     }
 
     public async Task<Result<PaginationResult<AppointmentResponse>>> GetMyAppointmentPagedAsync(
@@ -51,8 +50,8 @@ public class MentorService : IMentorService
 
         if (!string.IsNullOrEmpty(request.SearchTerm))
         {
-            query = query.Where(x => 
-                x.Code.Contains(request.SearchTerm) || 
+            query = query.Where(x =>
+                x.Code.Contains(request.SearchTerm) ||
                 x.Description.Contains(request.SearchTerm));
         }
 
