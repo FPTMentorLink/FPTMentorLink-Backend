@@ -41,7 +41,7 @@ public class MentoringProposalService : IMentoringProposalService
 
         if (!request.MentorId.IsNullOrGuidEmpty())
             condition = condition.CombineAndAlsoExpressions(x => x.MentorId == request.MentorId);
-        
+
         if (!request.StudentId.IsNullOrGuidEmpty())
         {
             query = query.Include(x => x.Project).ThenInclude(x => x.ProjectStudents);
@@ -50,7 +50,7 @@ public class MentoringProposalService : IMentoringProposalService
         }
 
         query = query.Where(condition);
-        
+
         query = ApplySorting(query, request);
 
         var result = await query.ProjectToPaginatedListAsync<MentoringProposal, MentoringProposalResponse>(request);
@@ -71,7 +71,25 @@ public class MentoringProposalService : IMentoringProposalService
 
     public async Task<Result> CreateAsync(CreateMentoringProposalRequest request)
     {
+        var isExistProject = await _unitOfWork.Projects.AnyAsync(x => x.Id == request.ProjectId);
+        if (!isExistProject)
+            return Result.Failure("Project not found");
+
+        var isExistMentor =
+            await _unitOfWork.Accounts
+                .FindAll(x => x.Email == request.Email && x.Role == AccountRole.Mentor)
+                .Select(x => x.Id)
+                .FirstOrDefaultAsync();
+        if (isExistMentor == Guid.Empty)
+            return Result.Failure("Mentor not found");
+
+        var isExistProposal = await _unitOfWork.MentoringProposals.AnyAsync(x =>
+            x.ProjectId == request.ProjectId && x.MentorId == isExistMentor);
+        if (isExistProposal)
+            return Result.Failure("Mentoring proposal already exists");
+
         var mentoringProposal = _mapper.Map<MentoringProposal>(request);
+        mentoringProposal.MentorId = isExistMentor;
         // Default status is pending for mentor to accept
         mentoringProposal.Status = MentoringProposalStatus.Pending;
         _unitOfWork.MentoringProposals.Add(mentoringProposal);

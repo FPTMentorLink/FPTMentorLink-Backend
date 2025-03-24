@@ -39,7 +39,7 @@ public class LecturingProposalService : ILecturingProposalService
             condition.CombineAndAlsoExpressions(x => x.ProjectId == request.ProjectId);
         if (!request.LecturerId.IsNullOrGuidEmpty())
             condition.CombineAndAlsoExpressions(x => x.LecturerId == request.LecturerId);
-        
+
         if (!request.StudentId.IsNullOrGuidEmpty())
         {
             query = query.Include(x => x.Project).ThenInclude(x => x.ProjectStudents);
@@ -69,7 +69,23 @@ public class LecturingProposalService : ILecturingProposalService
 
     public async Task<Result> CreateAsync(CreateLecturingProposalRequest request)
     {
+        var isExistProject = await _unitOfWork.Projects.AnyAsync(x => x.Id == request.ProjectId);
+        if (!isExistProject)
+            return Result.Failure("Project not found");
+        var isExistLecturer =
+            await _unitOfWork.Accounts
+                .FindAll(x => x.Email == request.Email && x.Role == AccountRole.Lecturer)
+                .Select(x => x.Id)
+                .FirstOrDefaultAsync();
+        if (isExistLecturer == Guid.Empty)
+            return Result.Failure("Lecturer not found");
+        var isExistProposal = await _unitOfWork.LecturingProposals.AnyAsync(x =>
+            x.ProjectId == request.ProjectId && x.LecturerId == isExistLecturer);
+        if (isExistProposal)
+            return Result.Failure("Lecturing proposal already exists");
+
         var lecturingProposal = _mapper.Map<LecturingProposal>(request);
+        lecturingProposal.LecturerId = isExistLecturer;
         // Default status is pending for mentor to accept
         lecturingProposal.Status = LecturingProposalStatus.Pending;
         _unitOfWork.LecturingProposals.Add(lecturingProposal);
