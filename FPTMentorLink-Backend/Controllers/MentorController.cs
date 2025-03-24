@@ -30,4 +30,19 @@ public class MentorController : ControllerBase
         var result = await _mentorService.GetMyAppointmentPagedAsync(request);
         return result.IsSuccess ? Ok(result.Value) : BadRequest(result);
     }
+
+    [HttpGet("my-transactions")]
+    [Authorize(Roles = "Mentor")]
+    public async Task<IActionResult> GetMyTransactions([FromQuery] GetMentorTransactionsRequest request)
+    {
+        var userId = User.GetUserId();
+        if (userId.IsNullOrGuidEmpty())
+        {
+            return BadRequest(Result.Failure("User not found"));
+        }
+
+        request.MentorId = userId!.Value;
+        var result = await _mentorService.GetMyTransactionPagedAsync(request);
+        return result.IsSuccess ? Ok(result.Value) : BadRequest(result);
+    }
 }
