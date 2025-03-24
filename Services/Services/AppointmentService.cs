@@ -109,11 +109,12 @@ public class AppointmentService : IAppointmentService
             .Include(x => x.Student).FirstOrDefaultAsync();
         if (leader == null)
             return Result.Failure("Leader not found");
-
+        
+        // Create appointment
         var appointment = _mapper.Map<Appointment>(request);
         appointment.BaseSalaryPerHour = mentor.BaseSalaryPerHour;
         appointment.TotalTime = request.TotalMinutes;
-        appointment.TotalPayment = appointment.BaseSalaryPerHour * appointment.TotalTime;
+        appointment.TotalPayment = CalculateTotalPaymentVnd(request.TotalMinutes, mentor.BaseSalaryPerHour);
         appointment.Status = AppointmentStatus.Pending;
 
         var mentorAvailability = await _unitOfWork.MentorAvailabilities.FindSingleAsync(x =>
@@ -149,6 +150,18 @@ public class AppointmentService : IAppointmentService
         {
             return Result.Failure($"Failed to create appointment: {ex.Message}");
         }
+    }
+
+    private int CalculateTotalPaymentVnd(int totalMinutes, decimal baseSalaryPerHour)
+    {
+        // Convert minutes to hours with decimal precision
+        decimal totalHours = totalMinutes / 60m;
+
+        // Calculate total payment in VND (always whole numbers)
+        decimal totalPayment = totalHours * baseSalaryPerHour;
+
+        // Round to nearest VND (no decimal places)
+        return (int)Math.Round(totalPayment, 0, MidpointRounding.AwayFromZero);
     }
 
     public async Task<Result> UpdateStatusAsync(Guid id, AccountRole role, UpdateAppointmentStatusRequest request)
