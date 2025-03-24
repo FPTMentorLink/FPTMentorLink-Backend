@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services.Interfaces;
 using Services.Models.Request.Appointment;
@@ -17,6 +18,7 @@ public class AppointmentController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize]
     public async Task<IActionResult> GetPaged([FromQuery] GetAppointmentsRequest request)
     {
         var result = await _appointmentService.GetPagedAsync(request);
@@ -24,6 +26,7 @@ public class AppointmentController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "Student")]
     public async Task<IActionResult> Create([FromBody] CreateAppointmentRequest request)
     {
         if (!ModelState.IsValid)
@@ -45,6 +48,7 @@ public class AppointmentController : ControllerBase
     }
 
     [HttpPost("{id:guid}/status")]
+    [Authorize]
     public async Task<IActionResult> UpdateStatus([FromRoute] Guid id,
         [FromBody] UpdateAppointmentStatusRequest request)
     {
@@ -64,6 +68,7 @@ public class AppointmentController : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
+    [Authorize]
     public async Task<IActionResult> GetById([FromRoute] Guid id)
     {
         var result = await _appointmentService.GetByIdAsync(id);

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services.Interfaces;
 using Services.Models.Request.Checkpoint;
@@ -15,6 +16,7 @@ public class CheckpointController : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
+    [Authorize]
     public async Task<IActionResult> GetById(Guid id)
     {
         var result = await _checkpointService.GetByIdAsync(id);
@@ -22,6 +24,7 @@ public class CheckpointController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize]
     public async Task<IActionResult> GetPaged([FromQuery] GetCheckpointsRequest request)
     {
         var result = await _checkpointService.GetPagedAsync(request);
@@ -29,6 +32,7 @@ public class CheckpointController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Create([FromBody] CreateCheckpointRequest request)
     {
         if (!ModelState.IsValid)
@@ -41,6 +45,7 @@ public class CheckpointController : ControllerBase
     }
 
     [HttpPatch("{id:guid}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateCheckpointRequest request)
     {
         if (!ModelState.IsValid)
@@ -53,6 +58,7 @@ public class CheckpointController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(Guid id)
     {
         var result = await _checkpointService.DeleteCheckpointAsync(id);

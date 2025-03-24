@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Repositories.Entities;
 using Services.Interfaces;
 using Services.Models.Request.Student;
@@ -17,6 +18,7 @@ public class StudentController : ControllerBase
     }
 
     [HttpPost("{id:guid}/deposit")]
+    [Authorize(Roles = "Student")]
     public async Task<IActionResult> Deposit([FromRoute] Guid id, StudentDepositRequest request)
     {
         if (!ModelState.IsValid)
@@ -37,6 +39,7 @@ public class StudentController : ControllerBase
     }
 
     [HttpGet("my-projects")]
+    [Authorize(Roles = "Student")]
     public async Task<IActionResult> GetMyProjects([FromQuery] GetStudentProjectsRequest request)
     {
         var userId = User.GetUserId();
@@ -51,6 +54,7 @@ public class StudentController : ControllerBase
     }
 
     [HttpGet("my-appointments")]
+    [Authorize(Roles = "Student")]
     public async Task<IActionResult> GetMyAppointments([FromQuery] GetStudentAppointmentsRequest request)
     {
         var userId = User.GetUserId();
@@ -65,6 +69,7 @@ public class StudentController : ControllerBase
     }
 
     [HttpGet("my-checkpoint-tasks")]
+    [Authorize(Roles = "Student")]
     public async Task<IActionResult> GetMyCheckpointTasks([FromQuery] GetStudentCheckpointTasksRequest request)
     {
         var userId = User.GetUserId();

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Services.Interfaces;
 using Services.Models.Request.Faculty;
 
@@ -29,6 +30,7 @@ public class FacultyController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Create([FromBody] CreateFacultyRequest request)
     {
         if (!ModelState.IsValid)
@@ -41,6 +43,7 @@ public class FacultyController : ControllerBase
     }
 
     [HttpPatch("{id:guid}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdateFacultyRequest request)
     {
         if (!ModelState.IsValid)
@@ -53,6 +56,7 @@ public class FacultyController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete([FromRoute] Guid id)
     {
         var result = await _facultyService.DeleteAsync(id);

@@ -18,6 +18,7 @@ public class MentoringProposalController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [Authorize]
     public async Task<IActionResult> GetById([FromRoute] Guid id)
     {
         var result = await _mentoringProposalService.GetByIdAsync(id);
@@ -59,6 +60,7 @@ public class MentoringProposalController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "Student")]
     public async Task<IActionResult> Create([FromBody] CreateMentoringProposalRequest request)
     {
         if (!ModelState.IsValid)
@@ -71,7 +73,7 @@ public class MentoringProposalController : ControllerBase
     }
 
     [HttpPatch("{id}/response")]
-    [Authorize] // Add authorization attribute
+    [Authorize(Roles = "Student,Mentor")]
     public async Task<IActionResult> UpdateResponse([FromRoute] Guid id,
         [FromBody] UpdateMentoringProposalRequest request)
     {
@@ -117,6 +119,7 @@ public class MentoringProposalController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [Authorize(Roles = "Student,Mentor")]
     public async Task<IActionResult> Delete([FromRoute] Guid id)
     {
         var result = await _mentoringProposalService.DeleteAsync(id);

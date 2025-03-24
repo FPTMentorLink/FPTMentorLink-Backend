@@ -57,6 +57,7 @@ public class AuthenticationController : ControllerBase
     }
 
     [HttpPost("admin-login")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> AdminLogin([FromBody] AdminLoginRequest request)
     {
         var result = await _authenticationService.AdminLoginAsync(request);

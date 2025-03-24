@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Repositories.Entities;
 using Services.Interfaces;
 using Services.Models.Request.MentorAvailability;
@@ -17,6 +18,7 @@ public class MentorAvailabilityController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [Authorize]
     public async Task<IActionResult> GetById([FromRoute] Guid id)
     {
         var result = await _mentorAvailabilityService.GetByIdAsync(id);
@@ -24,6 +26,7 @@ public class MentorAvailabilityController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize]
     public async Task<IActionResult> GetPaged([FromQuery] GetMentorAvailabilitiesRequest request)
     {
         var result = await _mentorAvailabilityService.GetPagedAsync(request);
@@ -31,6 +34,7 @@ public class MentorAvailabilityController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "Mentor")]
     public async Task<IActionResult> Create([FromBody] CreateMentorAvailabilityRequest request)
     {
         if (!ModelState.IsValid)
@@ -57,6 +61,7 @@ public class MentorAvailabilityController : ControllerBase
     }
 
     [HttpPatch("{id:guid}")]
+    [Authorize(Roles = "Mentor")]
     public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdateMentorAvailabilityRequest request)
     {
         if (!ModelState.IsValid)
@@ -83,6 +88,7 @@ public class MentorAvailabilityController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [Authorize(Roles = "Mentor")]
     public async Task<IActionResult> Delete([FromRoute] Guid id)
     {
         var userId = User.GetUserId();

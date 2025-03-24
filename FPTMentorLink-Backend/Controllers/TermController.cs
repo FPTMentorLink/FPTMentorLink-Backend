@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services.Interfaces;
 using Services.Models.Request.Term;
@@ -29,6 +30,7 @@ public class TermController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Create([FromBody] CreateTermRequest request)
     {
         if (!ModelState.IsValid)
@@ -41,6 +43,7 @@ public class TermController : ControllerBase
     }
 
     [HttpPatch("{id}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateTermRequest request)
     {
         if (!ModelState.IsValid)
@@ -53,6 +56,7 @@ public class TermController : ControllerBase
     }
 
     [HttpPatch("{id}/status")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] UpdateTermStatusRequest status)
     {
         if (!ModelState.IsValid)
@@ -65,6 +69,7 @@ public class TermController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(Guid id)
     {
         var result = await _termService.DeleteTermAsync(id);

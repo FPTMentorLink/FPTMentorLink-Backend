@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Services.Interfaces;
 using Services.Models.Request.Project;
 using Services.Utils;
@@ -30,6 +31,7 @@ public class ProjectController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "Student")]
     public async Task<IActionResult> Create([FromBody] CreateProjectRequest request)
     {
         if (!ModelState.IsValid)
@@ -49,6 +51,7 @@ public class ProjectController : ControllerBase
     }
 
     [HttpPatch("{id:guid}")]
+    [Authorize(Roles = "Student")]
     public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdateProjectRequest request)
     {
         if (!ModelState.IsValid)
@@ -61,6 +64,7 @@ public class ProjectController : ControllerBase
     }
 
     [HttpPatch("{id:guid}/status")]
+    [Authorize(Roles = "Admin, Lecturer, Student")]
     public async Task<IActionResult> UpdateStatus([FromRoute] Guid id,
         [FromBody] UpdateProjectStatusRequest request)
     {
@@ -81,6 +85,7 @@ public class ProjectController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [Authorize(Roles = "Admin,Lecturer,Student")]
     public async Task<IActionResult> Delete([FromRoute] Guid id)
     {
         var result = await _projectService.DeleteAsync(id);

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services.Interfaces;
 using Services.Models.Request.CheckpointTask;
@@ -15,6 +16,7 @@ public class CheckpointTaskController : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
+    [Authorize]
     public async Task<IActionResult> GetById(Guid id)
     {
         var result = await _checkpointTaskService.GetByIdAsync(id);
@@ -22,6 +24,7 @@ public class CheckpointTaskController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize]
     public async Task<IActionResult> GetPaged([FromQuery] GetCheckpointTasksRequest request)
     {
         var result = await _checkpointTaskService.GetPagedAsync(request);
@@ -29,6 +32,7 @@ public class CheckpointTaskController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "Admin,Lecturer")]
     public async Task<IActionResult> Create([FromBody] CreateCheckpointTaskRequest request)
     {
         if (!ModelState.IsValid)
@@ -41,6 +45,7 @@ public class CheckpointTaskController : ControllerBase
     }
 
     [HttpPatch("{id:guid}")]
+    [Authorize(Roles = "Admin,Lecturer")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateCheckpointTaskRequest request)
     {
         if (!ModelState.IsValid)
@@ -53,6 +58,7 @@ public class CheckpointTaskController : ControllerBase
     }
 
     [HttpPatch("{id:guid}/status")]
+    [Authorize(Roles = "Admin,Lecturer")]
     public async Task<IActionResult> UpdateStatus(Guid id,
         [FromBody] UpdateCheckpointTaskStatusRequest request)
     {
@@ -66,6 +72,7 @@ public class CheckpointTaskController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [Authorize(Roles = "Admin,Lecturer")]
     public async Task<IActionResult> Delete(Guid id)
     {
         var result = await _checkpointTaskService.DeleteCheckpointTaskAsync(id);

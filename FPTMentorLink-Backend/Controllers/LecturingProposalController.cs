@@ -18,6 +18,7 @@ public class LecturingProposalController : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
+    [Authorize(Roles = "Admin,Student,Lecturer")]
     public async Task<IActionResult> GetById([FromRoute] Guid id)
     {
         var result = await _lecturingProposalService.GetByIdAsync(id);
@@ -25,7 +26,7 @@ public class LecturingProposalController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize]
+    [Authorize(Roles = "Admin,Student,Lecturer")]
     public async Task<IActionResult> GetPaged([FromQuery] GetLecturingProposalsRequest request)
     {
         var userId = User.GetUserId();
@@ -59,6 +60,7 @@ public class LecturingProposalController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "Student")]
     public async Task<IActionResult> Create([FromBody] CreateLecturingProposalRequest request)
     {
         if (!ModelState.IsValid)
@@ -71,7 +73,7 @@ public class LecturingProposalController : ControllerBase
     }
 
     [HttpPatch("{id:guid}/response")]
-    [Authorize]
+    [Authorize(Roles = "Student,Lecturer")]
     public async Task<IActionResult> UpdateResponse([FromRoute] Guid id,
         [FromBody] UpdateLecturingProposalRequest request)
     {
@@ -117,6 +119,7 @@ public class LecturingProposalController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [Authorize(Roles = "Student,Lecturer")]
     public async Task<IActionResult> Delete([FromRoute] Guid id)
     {
         var result = await _lecturingProposalService.DeleteAsync(id);
