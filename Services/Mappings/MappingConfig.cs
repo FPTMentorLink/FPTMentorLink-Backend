@@ -45,7 +45,9 @@ public static class MappingConfig
     public static void RegisterMappings()
     {
         // Appointment
-        TypeAdapterConfig<Appointment, AppointmentResponse>.NewConfig();
+        TypeAdapterConfig<Appointment, AppointmentResponse>.NewConfig()
+            .Map(dest => dest.ProjectName, src => src.Project.Name)
+            .Map(dest => dest.MentorName, src => src.Mentor.Account.FirstName + " " + src.Mentor.Account.LastName);
         TypeAdapterConfig<CreateAppointmentRequest, Appointment>.NewConfig();
         TypeAdapterConfig<UpdateAppointmentStatusRequest, Appointment>.NewConfig()
             .IgnoreNullValues(true);
@@ -70,7 +72,9 @@ public static class MappingConfig
             .IgnoreNullValues(true);
 
         // CheckpointTask
-        TypeAdapterConfig<CheckpointTask, CheckpointTaskResponse>.NewConfig();
+        TypeAdapterConfig<CheckpointTask, CheckpointTaskResponse>.NewConfig()
+            .Map(dest => dest.CheckpointName, src => src.Checkpoint.Name)
+            .Map(dest => dest.ProjectName, src => src.Project.Name);
         TypeAdapterConfig<CreateCheckpointTaskRequest, CheckpointTask>.NewConfig();
         TypeAdapterConfig<UpdateCheckpointTaskRequest, CheckpointTask>.NewConfig()
             .IgnoreNullValues(true);

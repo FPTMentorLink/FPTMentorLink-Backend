@@ -23,7 +23,9 @@ public class CheckpointTaskService : ICheckpointTaskService
 
     public async Task<Result<CheckpointTaskResponse>> GetByIdAsync(Guid id)
     {
-        var checkpointTask = await _unitOfWork.CheckpointTasks.FindByIdAsync(id);
+        var checkpointTask = await _unitOfWork.CheckpointTasks.FindAll()
+            .Include(x => x.Project).Include(x => x.Checkpoint)
+            .FirstOrDefaultAsync(x => x.Id == id);
         if (checkpointTask == null)
         {
             return Result.Failure<CheckpointTaskResponse>(DomainError.CheckpointTask.CheckpointTaskNotFound);
@@ -152,7 +154,9 @@ public class CheckpointTaskService : ICheckpointTaskService
     public async Task<Result<PaginationResult<CheckpointTaskResponse>>> GetPagedAsync(
         GetCheckpointTasksRequest request)
     {
-        var query = _unitOfWork.CheckpointTasks.FindAll();
+        var query = _unitOfWork.CheckpointTasks.FindAll()
+            .Include(x => x.Project)
+            .Include(x => x.Checkpoint).AsQueryable();
         Expression<Func<CheckpointTask, bool>> condition = x => true;
 
         if (!string.IsNullOrEmpty(request.SearchTerm))

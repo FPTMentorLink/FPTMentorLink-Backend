@@ -33,7 +33,10 @@ public class AppointmentService : IAppointmentService
 
     public async Task<Result<PaginationResult<AppointmentResponse>>> GetPagedAsync(GetAppointmentsRequest request)
     {
-        var query = _unitOfWork.Appointments.FindAll();
+        var query = _unitOfWork.Appointments.FindAll()
+            .Include(x => x.Project)
+            .Include(x => x.Mentor)
+            .ThenInclude(x => x.Account).AsQueryable();
         Expression<Func<Appointment, bool>> condition = x => true;
         if (!request.ProjectId.IsNullOrGuidEmpty())
             condition.CombineAndAlsoExpressions(x => x.ProjectId == request.ProjectId);
@@ -109,7 +112,7 @@ public class AppointmentService : IAppointmentService
             .Include(x => x.Student).FirstOrDefaultAsync();
         if (leader == null)
             return Result.Failure("Leader not found");
-        
+
         // Create appointment
         var appointment = _mapper.Map<Appointment>(request);
         appointment.BaseSalaryPerHour = mentor.BaseSalaryPerHour;

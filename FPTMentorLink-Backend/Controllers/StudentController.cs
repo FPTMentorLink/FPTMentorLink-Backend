@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Repositories.Entities;
 using Services.Interfaces;
 using Services.Models.Request.Student;
 using Services.Utils;
