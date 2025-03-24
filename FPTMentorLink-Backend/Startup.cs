@@ -197,6 +197,7 @@ public static class Startup
         builder.Services.AddScoped<IFacultyService, FacultyService>();
         builder.Services.AddScoped<ILecturingProposalService, LecturingProposalService>();
         builder.Services.AddScoped<IFeedbackService, FeedbackService>();
+        builder.Services.AddScoped<IMentorService, MentorService>();
         builder.Services.AddScoped<IMentorAvailabilityService, MentorAvailabilityService>();
         builder.Services.AddScoped<IMentoringProposalService, MentoringProposalService>();
         builder.Services.AddScoped<IProjectService, ProjectService>();

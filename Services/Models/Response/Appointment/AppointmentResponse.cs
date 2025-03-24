@@ -7,8 +7,10 @@ public class AppointmentResponse : AuditableResponse
 {
     public Guid Id { get; set; }
     public Guid ProjectId { get; set; }
+    public string ProjectName { get; set; } = null!;
     public Guid GroupId { get; set; }
     public Guid MentorId { get; set; }
+    public string MentorName { get; set; } = null!;
     public DateTime StartTime { get; set; }
     public DateTime EndTime { get; set; }
     public int BaseSalaryPerHour { get; set; }
