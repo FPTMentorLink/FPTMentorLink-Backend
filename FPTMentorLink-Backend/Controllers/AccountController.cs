@@ -22,6 +22,7 @@ public class AccountController : ControllerBase
     }
 
     [HttpPost("import-accounts/role/{role}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> ImportAccounts(IFormFile formFile, AccountRole role,
         CancellationToken cancellationToken)
     {
@@ -30,6 +31,7 @@ public class AccountController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> GetAccounts([FromQuery] GetAccountsRequest request)
     {
         var result = await _accountService.GetPagedAsync(request);
@@ -37,6 +39,7 @@ public class AccountController : ControllerBase
     }
 
     [HttpGet("{id:guid}/role/{accountRole}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> GetAccountById(Guid id, AccountRole accountRole,
         CancellationToken cancellationToken)
     {
@@ -72,6 +75,7 @@ public class AccountController : ControllerBase
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpPost("admin")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> CreateAdmin([FromBody] CreateAdminRequest request,
         CancellationToken cancellationToken)
     {
@@ -86,6 +90,7 @@ public class AccountController : ControllerBase
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpPost("student")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> CreateStudent([FromBody] CreateStudentRequest request,
         CancellationToken cancellationToken)
     {
@@ -100,6 +105,7 @@ public class AccountController : ControllerBase
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpPost("mentor")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> CreateMentor([FromBody] CreateMentorRequest request,
         CancellationToken cancellationToken)
     {
@@ -114,6 +120,7 @@ public class AccountController : ControllerBase
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpPost("lecturer")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> CreateLecturer([FromBody] CreateLecturerRequest request,
         CancellationToken cancellationToken)
     {
@@ -122,6 +129,7 @@ public class AccountController : ControllerBase
     }
 
     [HttpPatch("admin/{id:Guid}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> UpdateAdminAccount(Guid id, [FromBody] UpdateAdminRequest request,
         CancellationToken cancellationToken)
     {
@@ -130,6 +138,7 @@ public class AccountController : ControllerBase
     }
 
     [HttpDelete("{id:Guid}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> DeleteAccount(Guid id, CancellationToken cancellationToken)
     {
         var result = await _accountService.DeleteAsync(id, cancellationToken);
@@ -137,6 +146,7 @@ public class AccountController : ControllerBase
     }
 
     [HttpPatch("lecturer/{id:guid}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> UpdateLecturer(Guid id, [FromBody] UpdateLecturerRequest request,
         CancellationToken cancellationToken)
     {
@@ -145,6 +155,7 @@ public class AccountController : ControllerBase
     }
 
     [HttpPatch("mentor/{id:guid}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> UpdateMentor(Guid id, [FromBody] UpdateMentorRequest request,
         CancellationToken cancellationToken)
     {
@@ -153,6 +164,7 @@ public class AccountController : ControllerBase
     }
 
     [HttpPatch("student/{id:guid}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> UpdateStudent(Guid id, [FromBody] UpdateStudentRequest request,
         CancellationToken cancellationToken)
     {

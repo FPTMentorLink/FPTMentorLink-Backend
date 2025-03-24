@@ -18,6 +18,7 @@ public class WeeklyReportController : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
+    [Authorize]
     public async Task<IActionResult> GetById(Guid id)
     {
         var result = await _weeklyReportService.GetByIdAsync(id);
@@ -25,6 +26,7 @@ public class WeeklyReportController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize]
     public async Task<IActionResult> GetPaged([FromQuery] GetWeeklyReportRequest request)
     {
         var result = await _weeklyReportService.GetPagedAsync(request);
@@ -32,13 +34,15 @@ public class WeeklyReportController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "Student")]
     public async Task<IActionResult> Create([FromBody] CreateWeeklyReportRequest request)
     {
         var result = await _weeklyReportService.CreateAsync(request);
         return result.IsSuccess ? Ok() : BadRequest(result);
     }
 
-    [HttpPut("{id:guid}")]
+    [HttpPatch("{id:guid}")]
+    [Authorize(Roles = "Student")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateWeeklyReportRequest request)
     {
         var result = await _weeklyReportService.UpdateAsync(id, request);
@@ -46,23 +50,25 @@ public class WeeklyReportController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [Authorize(Roles = "Student")]
     public async Task<IActionResult> Delete(Guid id)
     {
         var result = await _weeklyReportService.DeleteAsync(id);
         return result.IsSuccess ? Ok() : BadRequest(result);
     }
-    
+
     [HttpPost("{id:guid}/feedback")]
     [Authorize(Roles = "Lecturer")]
-    public async Task<IActionResult> CreateFeedback(Guid id,[FromBody] CreateWeeklyReportFeedback request)
+    public async Task<IActionResult> CreateFeedback(Guid id, [FromBody] CreateWeeklyReportFeedback request)
     {
         var lecturerId = User.GetUserId();
         if (lecturerId == null)
         {
             return BadRequest("Invalid lecturer ID");
         }
+
         request.LecturerId = lecturerId.Value;
-        var result = await _weeklyReportService.CreateFeedbackAsync(id,request);
+        var result = await _weeklyReportService.CreateFeedbackAsync(id, request);
         return result.IsSuccess ? Ok() : BadRequest(result);
     }
 }

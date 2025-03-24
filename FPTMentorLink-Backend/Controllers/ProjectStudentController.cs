@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Services.Interfaces;
 using Services.Models.Request.ProjectStudent;
 
@@ -29,6 +30,7 @@ public class ProjectStudentController : ControllerBase
     }
 
     [HttpPost("send-invitation")]
+    [Authorize(Roles = "Student")]
     public async Task<IActionResult> SendProjectInvitation([FromBody] SendProjectInvitationRequest request)
     {
         if (!ModelState.IsValid)
@@ -41,6 +43,7 @@ public class ProjectStudentController : ControllerBase
     }
 
     [HttpGet("accept-invitation")]
+    [Authorize(Roles = "Student")]
     public async Task<IActionResult> AcceptProjectInvitation([FromQuery] AcceptProjectInvitationRequest request)
     {
         if (!ModelState.IsValid)
@@ -53,6 +56,7 @@ public class ProjectStudentController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [Authorize(Roles = "Admin,Student")]
     public async Task<IActionResult> Delete([FromRoute] Guid id)
     {
         var result = await _projectStudentService.DeleteAsync(id);
