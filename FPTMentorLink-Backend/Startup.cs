@@ -167,7 +167,7 @@ public static class Startup
     {
         _ = builder.Configuration.GetSection("VnPaySettings").Get<VnPaySettings>()
             ?? throw new InvalidOperationException("VnPaySettings is not configured properly.");
-        
+
         builder.Services.Configure<VnPaySettings>(builder.Configuration.GetSection("VnPaySettings"));
         builder.Services.AddSingleton<IVnPayService, VnPayService>();
         builder.Services.AddSingleton<VnPayLibrary>();
@@ -207,9 +207,9 @@ public static class Startup
         builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
         builder.Services.AddScoped<ITermService, TermService>();
         builder.Services.AddScoped<ITransactionService, TransactionService>();
+        builder.Services.AddScoped<ILecturerService, LecturerService>();
+        builder.Services.AddScoped<IMentorService, MentorService>();
 
-        
-        
         // Register Utils
         builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
     }
