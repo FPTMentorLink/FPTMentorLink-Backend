@@ -23,7 +23,13 @@ public class MentoringProposalService : IMentoringProposalService
 
     public async Task<Result<MentoringProposalResponse>> GetByIdAsync(Guid id)
     {
-        var mentoringProposal = await _unitOfWork.MentoringProposals.FindByIdAsync(id);
+        var mentoringProposal = await _unitOfWork.MentoringProposals
+            .GetQueryable()
+            .Include(x => x.Project)
+            .Include(x => x.Mentor)
+                .ThenInclude(x => x.Account)
+            .FirstOrDefaultAsync(x => x.Id == id);
+
         if (mentoringProposal == null)
             return Result.Failure<MentoringProposalResponse>("mentoring proposal not found");
 
@@ -164,16 +170,11 @@ public class MentoringProposalService : IMentoringProposalService
 
         if (request.IsAccepted.HasValue)
         {
-            if (request.IsAccepted.Value)
-            {
-                mentoringProposal.Status = MentoringProposalStatus.Accepted;
+                mentoringProposal.Status = request.IsAccepted.Value
+                    ? MentoringProposalStatus.Accepted
+                    : MentoringProposalStatus.Rejected;
                 project.MentorId = mentoringProposal.MentorId;
                 _unitOfWork.Projects.Update(project);
-            }
-            else
-            {
-                mentoringProposal.Status = MentoringProposalStatus.Rejected;
-            }
         }
 
         _mapper.Map(request, mentoringProposal);
