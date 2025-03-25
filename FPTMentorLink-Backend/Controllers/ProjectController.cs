@@ -64,7 +64,7 @@ public class ProjectController : ControllerBase
     }
 
     [HttpPatch("{id:guid}/status")]
-    [Authorize(Roles = "Admin, Lecturer, Student")]
+    [Authorize(Roles = "Admin, Lecturer")]
     public async Task<IActionResult> UpdateStatus([FromRoute] Guid id,
         [FromBody] UpdateProjectStatusRequest request)
     {
@@ -90,5 +90,25 @@ public class ProjectController : ControllerBase
     {
         var result = await _projectService.DeleteAsync(id);
         return result.IsSuccess ? Ok() : BadRequest(result);
+    }
+    
+    
+    [HttpGet("my-projects")]
+    [Authorize(Roles = "Student, Mentor, Lecturer")]
+    public async Task<IActionResult> GetMyProjects([FromQuery] GetMyProjectsRequest request)
+    {
+        var userId = User.GetUserId();
+        var role = User.GetRole();
+        if (role == null)
+        {
+            return BadRequest(Result.Failure("Role not found"));
+        }
+        if (userId.IsNullOrGuidEmpty())
+        {
+            return BadRequest(Result.Failure("User not found"));
+        }
+        request.AccountId = userId!.Value;
+        var result = await _projectService.GetMyProjectPagedAsync(request, role!);
+        return result.IsSuccess ? Ok(result.Value) : BadRequest(result);
     }
 }

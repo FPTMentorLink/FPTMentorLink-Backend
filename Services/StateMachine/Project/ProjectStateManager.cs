@@ -68,7 +68,7 @@ public static class ProjectStateManager
     /// </summary>
     private static readonly Dictionary<ProjectStatus, HashSet<AccountRole>> AllowedRoles = new()
     {
-        { ProjectStatus.InProgress, [AccountRole.Lecturer] },
+        { ProjectStatus.InProgress, [AccountRole.Lecturer, AccountRole.Admin] },
         { ProjectStatus.PendingReview, [AccountRole.Lecturer] },
         { ProjectStatus.RevisionRequired, [AccountRole.Lecturer] },
         { ProjectStatus.Completed, [AccountRole.Lecturer] },
