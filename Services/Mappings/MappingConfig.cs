@@ -144,7 +144,11 @@ public static class MappingConfig
             .IgnoreNullValues(true);
 
         // MentoringProposal
-        TypeAdapterConfig<MentoringProposal, MentoringProposalResponse>.NewConfig();
+        TypeAdapterConfig<MentoringProposal, MentoringProposalResponse>.NewConfig()
+            .Map(dest => dest.ProjectName, src => src.Project != null ? src.Project.Name : null)
+            .Map(dest => dest.MentorName, src => src.Mentor != null && src.Mentor.Account != null ? 
+                $"{src.Mentor.Account.FirstName} {src.Mentor.Account.LastName}" : null);
+        
         TypeAdapterConfig<CreateMentoringProposalRequest, MentoringProposal>.NewConfig();
         TypeAdapterConfig<StudentUpdateMentoringProposalRequest, MentoringProposal>.NewConfig()
             .IgnoreNullValues(true);
@@ -204,7 +208,9 @@ public static class MappingConfig
 
         // WeeklyReportFeedback
         TypeAdapterConfig<WeeklyReportFeedback, WeeklyReportFeedBackResponse>.NewConfig()
-            .Map(dest => dest.LecturerName, src => src.Lecturer.Account.FirstName + " " + src.Lecturer.Account.LastName + " (" + src.Lecturer.Account.Email + ")");
+            .Map(dest => dest.LecturerName,
+                src => src.Lecturer.Account.FirstName + " " + src.Lecturer.Account.LastName + " (" +
+                       src.Lecturer.Account.Email + ")");
 
         // Term
         TypeAdapterConfig<Term, TermResponse>.NewConfig();

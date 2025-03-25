@@ -7,7 +7,7 @@ using Services.Utils;
 namespace FPTMentorLink_Backend.Controllers;
 
 [Route("api/students")]
-public class StudentController : ControllerBase
+public class  StudentController : ControllerBase
 {
     private readonly IStudentService _studentService;
 
@@ -84,6 +84,21 @@ public class StudentController : ControllerBase
 
         request.StudentId = userId!.Value;
         var result = await _studentService.GetMyCheckpointTaskPagedAsync(request);
+        return result.IsSuccess ? Ok(result.Value) : BadRequest(result);
+    }
+
+    [HttpGet("my-transactions")]
+    [Authorize(Roles = "Student")]
+    public async Task<IActionResult> GetMyTransactions([FromQuery] GetStudentTransactionsRequest request)
+    {
+        var userId = User.GetUserId();
+        if (userId.IsNullOrGuidEmpty())
+        {
+            return BadRequest(Result.Failure("User not found"));
+        }
+
+        request.StudentId = userId!.Value;
+        var result = await _studentService.GetMyTransactionPagedAsync(request);
         return result.IsSuccess ? Ok(result.Value) : BadRequest(result);
     }
 }

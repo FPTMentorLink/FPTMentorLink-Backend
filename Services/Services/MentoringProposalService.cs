@@ -23,7 +23,13 @@ public class MentoringProposalService : IMentoringProposalService
 
     public async Task<Result<MentoringProposalResponse>> GetByIdAsync(Guid id)
     {
-        var mentoringProposal = await _unitOfWork.MentoringProposals.FindByIdAsync(id);
+        var mentoringProposal = await _unitOfWork.MentoringProposals
+            .GetQueryable()
+            .Include(x => x.Project)
+            .Include(x => x.Mentor)
+                .ThenInclude(x => x.Account)
+            .FirstOrDefaultAsync(x => x.Id == id);
+
         if (mentoringProposal == null)
             return Result.Failure<MentoringProposalResponse>("mentoring proposal not found");
 
@@ -75,6 +81,12 @@ public class MentoringProposalService : IMentoringProposalService
         if (!isExistProject)
             return Result.Failure("Project not found");
 
+        // Check if project already has an accepted proposal
+        var hasAcceptedProposal = await _unitOfWork.MentoringProposals.AnyAsync(x =>
+            x.ProjectId == request.ProjectId && x.Status == MentoringProposalStatus.Accepted);
+        if (hasAcceptedProposal)
+            return Result.Failure("Project already has an accepted mentor proposal");
+
         var isExistMentor =
             await _unitOfWork.Accounts
                 .FindAll(x => x.Email == request.Email && x.Role == AccountRole.Mentor)
@@ -84,9 +96,9 @@ public class MentoringProposalService : IMentoringProposalService
             return Result.Failure("Mentor not found");
 
         var isExistProposal = await _unitOfWork.MentoringProposals.AnyAsync(x =>
-            x.ProjectId == request.ProjectId && x.MentorId == isExistMentor);
+            x.ProjectId == request.ProjectId && x.MentorId == isExistMentor && x.Status == MentoringProposalStatus.Pending);
         if (isExistProposal)
-            return Result.Failure("Mentoring proposal already exists");
+            return Result.Failure("Already invited mentor. Waiting for mentor to review");
 
         var mentoringProposal = _mapper.Map<MentoringProposal>(request);
         mentoringProposal.MentorId = isExistMentor;
@@ -158,16 +170,11 @@ public class MentoringProposalService : IMentoringProposalService
 
         if (request.IsAccepted.HasValue)
         {
-            if (request.IsAccepted.Value)
-            {
-                mentoringProposal.Status = MentoringProposalStatus.Accepted;
+                mentoringProposal.Status = request.IsAccepted.Value
+                    ? MentoringProposalStatus.Accepted
+                    : MentoringProposalStatus.Rejected;
                 project.MentorId = mentoringProposal.MentorId;
                 _unitOfWork.Projects.Update(project);
-            }
-            else
-            {
-                mentoringProposal.Status = MentoringProposalStatus.Rejected;
-            }
         }
 
         _mapper.Map(request, mentoringProposal);

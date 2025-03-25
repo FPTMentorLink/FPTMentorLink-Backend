@@ -4,6 +4,7 @@ using Services.Models.Response.Appointment;
 using Services.Models.Response.CheckpointTask;
 using Services.Models.Response.Project;
 using Services.Models.Response.Student;
+using Services.Models.Response.Transaction;
 using Services.Models.VnPay;
 using Services.Utils;
 
@@ -20,4 +21,7 @@ public interface IStudentService
 
     Task<Result<PaginationResult<CheckpointTaskResponse>>> GetMyCheckpointTaskPagedAsync(
         GetStudentCheckpointTasksRequest request);
+
+    Task<Result<PaginationResult<TransactionResponse>>> GetMyTransactionPagedAsync(
+        GetStudentTransactionsRequest request);
 }
