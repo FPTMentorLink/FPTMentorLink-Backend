@@ -75,6 +75,12 @@ public class MentoringProposalService : IMentoringProposalService
         if (!isExistProject)
             return Result.Failure("Project not found");
 
+        // Check if project already has an accepted proposal
+        var hasAcceptedProposal = await _unitOfWork.MentoringProposals.AnyAsync(x =>
+            x.ProjectId == request.ProjectId && x.Status == MentoringProposalStatus.Accepted);
+        if (hasAcceptedProposal)
+            return Result.Failure("Project already has an accepted mentor proposal");
+
         var isExistMentor =
             await _unitOfWork.Accounts
                 .FindAll(x => x.Email == request.Email && x.Role == AccountRole.Mentor)
@@ -84,9 +90,9 @@ public class MentoringProposalService : IMentoringProposalService
             return Result.Failure("Mentor not found");
 
         var isExistProposal = await _unitOfWork.MentoringProposals.AnyAsync(x =>
-            x.ProjectId == request.ProjectId && x.MentorId == isExistMentor);
+            x.ProjectId == request.ProjectId && x.MentorId == isExistMentor && x.Status == MentoringProposalStatus.Pending);
         if (isExistProposal)
-            return Result.Failure("Mentoring proposal already exists");
+            return Result.Failure("Already invited mentor. Waiting for mentor to review");
 
         var mentoringProposal = _mapper.Map<MentoringProposal>(request);
         mentoringProposal.MentorId = isExistMentor;
