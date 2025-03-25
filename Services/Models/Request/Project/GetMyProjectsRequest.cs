@@ -2,11 +2,11 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Repositories.Entities;
 using Services.Models.Request.Base;
 
-namespace Services.Models.Request.Student;
+namespace Services.Models.Request.Project;
 
-public class GetStudentProjectsRequest : PaginationQuery
+public class GetMyProjectsRequest : PaginationQuery
 {
-    [BindNever] public Guid? StudentId { get; set; }
+    [BindNever] public Guid? AccountId { get; set; }
     public Guid? TermId { get; set; }
     public ProjectStatus? Status { get; set; }
 }

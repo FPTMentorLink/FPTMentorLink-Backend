@@ -729,4 +729,49 @@ public class AccountService : IAccountService
 
                 _ => Result.Failure<object>(DomainError.Account.AccountNotFound)
             };
+    
+    public async Task<Result<object>> GetPublicProfileAsync(Guid id, CancellationToken cancellationToken)
+    {
+        var account = await _unitOfWork.Accounts
+            .FindAll()
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+
+        if (account == null)
+            return Result.Failure<object>("Account not found");
+
+        if (account.Role != AccountRole.Mentor && account.Role != AccountRole.Lecturer)
+            return Result.Failure<object>("Profile not available");
+
+        // Return mentor profile
+        if (account.Role == AccountRole.Mentor)
+        {
+            var mentor = await _unitOfWork.Mentors
+                .FindAll()
+                .Include(x => x.Account)
+                .FirstOrDefaultAsync(x => x.Account.Id == id, cancellationToken);
+
+            if (mentor == null)
+                return Result.Failure<object>("Mentor profile not found");
+
+            var mentorProfile = _mapper.Map<MentorResponse>(mentor);
+            return Result.Success<object>(mentorProfile);
+        }
+
+        // Return lecturer profile
+        if (account.Role == AccountRole.Lecturer)
+        {
+            var lecturer = await _unitOfWork.Lecturers
+                .FindAll()
+                .Include(x => x.Account)
+                .FirstOrDefaultAsync(x => x.Account.Id == id, cancellationToken);
+
+            if (lecturer == null)
+                return Result.Failure<object>("Lecturer profile not found");
+
+            var lecturerProfile = _mapper.Map<LecturerResponse>(lecturer);
+            return Result.Success<object>(lecturerProfile);
+        }
+
+        return Result.Failure<object>("Invalid account type");
+    }
 }

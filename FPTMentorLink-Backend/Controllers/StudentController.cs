@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services.Interfaces;
+using Services.Models.Request.Project;
 using Services.Models.Request.Student;
 using Services.Utils;
 
@@ -41,36 +42,7 @@ public class  StudentController : ControllerBase
         var result = await _studentService.HandleVnPayIpn(query);
         return Ok(result);
     }
-
-    [HttpGet("my-projects")]
-    [Authorize(Roles = "Student")]
-    public async Task<IActionResult> GetMyProjects([FromQuery] GetStudentProjectsRequest request)
-    {
-        var userId = User.GetUserId();
-        if (userId.IsNullOrGuidEmpty())
-        {
-            return BadRequest(Result.Failure("User not found"));
-        }
-
-        request.StudentId = userId!.Value;
-        var result = await _studentService.GetMyProjectPagedAsync(request);
-        return result.IsSuccess ? Ok(result.Value) : BadRequest(result);
-    }
-
-    [HttpGet("my-appointments")]
-    [Authorize(Roles = "Student")]
-    public async Task<IActionResult> GetMyAppointments([FromQuery] GetStudentAppointmentsRequest request)
-    {
-        var userId = User.GetUserId();
-        if (userId.IsNullOrGuidEmpty())
-        {
-            return BadRequest(Result.Failure("User not found"));
-        }
-
-        request.StudentId = userId!.Value;
-        var result = await _studentService.GetMyAppointmentPagedAsync(request);
-        return result.IsSuccess ? Ok(result.Value) : BadRequest(result);
-    }
+    
 
     [HttpGet("my-checkpoint-tasks")]
     [Authorize(Roles = "Student")]
@@ -87,18 +59,4 @@ public class  StudentController : ControllerBase
         return result.IsSuccess ? Ok(result.Value) : BadRequest(result);
     }
 
-    [HttpGet("my-transactions")]
-    [Authorize(Roles = "Student")]
-    public async Task<IActionResult> GetMyTransactions([FromQuery] GetStudentTransactionsRequest request)
-    {
-        var userId = User.GetUserId();
-        if (userId.IsNullOrGuidEmpty())
-        {
-            return BadRequest(Result.Failure("User not found"));
-        }
-
-        request.StudentId = userId!.Value;
-        var result = await _studentService.GetMyTransactionPagedAsync(request);
-        return result.IsSuccess ? Ok(result.Value) : BadRequest(result);
-    }
 }
