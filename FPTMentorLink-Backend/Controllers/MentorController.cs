@@ -1,8 +1,6 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services.Interfaces;
 using Services.Models.Request.Mentor;
-using Services.Utils;
 
 namespace FPTMentorLink_Backend.Controllers;
 
