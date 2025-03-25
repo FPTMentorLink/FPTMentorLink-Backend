@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services.Interfaces;
 using Services.Models.Request.Appointment;
+using Services.Models.Request.Student;
 using Services.Utils;
 
 namespace FPTMentorLink_Backend.Controllers;
@@ -72,6 +73,28 @@ public class AppointmentController : ControllerBase
     public async Task<IActionResult> GetById([FromRoute] Guid id)
     {
         var result = await _appointmentService.GetByIdAsync(id);
+        return result.IsSuccess ? Ok(result.Value) : BadRequest(result);
+    }
+    
+    [HttpGet("my-appointments")]
+    [Authorize(Roles = "Student,Mentor,Lecturer")]
+    public async Task<IActionResult> GetMyAppointments([FromQuery] GetMyAppointmentsRequest request)
+    {
+        var userId = User.GetUserId();
+        var role = User.GetRole();
+    
+        if (role == null)
+        {
+            return BadRequest(Result.Failure("Role not found"));
+        }
+    
+        if (userId.IsNullOrGuidEmpty())
+        {
+            return BadRequest(Result.Failure("User not found"));
+        }
+    
+        request.AccountId = userId!.Value;
+        var result = await _appointmentService.GetMyAppointmentPagedAsync(request, role!);
         return result.IsSuccess ? Ok(result.Value) : BadRequest(result);
     }
 }

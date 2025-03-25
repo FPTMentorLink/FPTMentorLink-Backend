@@ -4,8 +4,8 @@ using Services.Models.Request.Base;
 
 namespace Services.Models.Request.Student;
 
-public class GetStudentAppointmentsRequest : PaginationQuery
+public class GetMyAppointmentsRequest : PaginationQuery
 {
-    [BindNever] public Guid? StudentId { get; set; }
+    [BindNever] public Guid? AccountId { get; set; }
     public AppointmentStatus? Status { get; set; }
 }
