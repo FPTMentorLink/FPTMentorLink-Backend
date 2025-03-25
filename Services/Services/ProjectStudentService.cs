@@ -20,15 +20,17 @@ public class ProjectStudentService : IProjectStudentService
     private readonly IEmailService _emailService;
     private readonly JwtSettings _jwtSettings;
     private readonly IRedisService _redisService;
+    private readonly RedirectUrlSettings _redirectUrlSettings;
 
     public ProjectStudentService(IUnitOfWork unitOfWork, IMapper mapper, IEmailService emailService,
-        IOptions<JwtSettings> jwtSettings, IRedisService redisService)
+        IOptions<JwtSettings> jwtSettings, IRedisService redisService, IOptions<RedirectUrlSettings> redirectUrlSettings)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _emailService = emailService;
         _redisService = redisService;
         _jwtSettings = jwtSettings.Value;
+        _redirectUrlSettings = redirectUrlSettings.Value;
     }
 
     public async Task<Result<ProjectStudentResponse>> GetByIdAsync(Guid id)
@@ -144,7 +146,8 @@ public class ProjectStudentService : IProjectStudentService
         // Generate invitation token and send email
         var invitationToken =
             TokenGenerator.GenerateInvitationToken(_jwtSettings, student.Id, request.ProjectId);
-        var emailContent = EmailPresets.ProjectInvitationEmail(invitationToken, projectName);
+        var invitationLink = $"{_redirectUrlSettings.InvitationUrl}{invitationToken}";
+        var emailContent = EmailPresets.ProjectInvitationEmail(invitationLink, projectName);
 
         // Store token in Redis
         var key = RedisKeyGenerator.GenerateProjectInvitationKey(request.ProjectId, student.Id, invitationToken);
