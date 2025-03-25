@@ -763,6 +763,7 @@ public class AccountService : IAccountService
             var lecturer = await _unitOfWork.Lecturers
                 .FindAll()
                 .Include(x => x.Account)
+                .Include(x => x.Faculty)  
                 .FirstOrDefaultAsync(x => x.Account.Id == id, cancellationToken);
 
             if (lecturer == null)
