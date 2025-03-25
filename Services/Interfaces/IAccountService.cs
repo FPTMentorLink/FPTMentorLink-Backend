@@ -29,4 +29,5 @@ public interface IAccountService
     Task<Result> UpdateMentorAsync(Guid id, UpdateMentorRequest request, CancellationToken cancellationToken);
     Task<Result> UpdateStudentAsync(Guid id, UpdateStudentRequest request, CancellationToken cancellationToken);
     Task<Result<object>> GetProfileAsync(Guid userId, string role, CancellationToken cancellationToken);
+    Task<Result<object>> GetPublicProfileAsync(Guid id, CancellationToken cancellationToken);
 }

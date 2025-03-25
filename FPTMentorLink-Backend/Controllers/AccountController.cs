@@ -171,4 +171,11 @@ public class AccountController : ControllerBase
         var result = await _accountService.UpdateStudentAsync(id, request, cancellationToken);
         return result.IsSuccess ? Ok() : BadRequest(result);
     }
+    
+    [HttpGet("{id:guid}/profile")]
+    public async Task<IActionResult> GetPublicProfile([FromRoute] Guid id, CancellationToken cancellationToken)
+    {
+        var result = await _accountService.GetPublicProfileAsync(id, cancellationToken);
+        return result.IsSuccess ? Ok(result.Value) : BadRequest(result);
+    }
 }
