@@ -16,16 +16,21 @@ public class StudentController : ControllerBase
         _studentService = studentService;
     }
 
-    [HttpPost("{id:guid}/deposit")]
+    [HttpPost("deposit")]
     [Authorize(Roles = "Student")]
-    public async Task<IActionResult> Deposit([FromRoute] Guid id, StudentDepositRequest request)
+    public async Task<IActionResult> Deposit(StudentDepositRequest request)
     {
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
+        var id = User.GetUserId();
+        if (id.IsNullOrGuidEmpty())
+        {
+            return BadRequest(Result.Failure("User not found"));
+        }
 
-        var result = await _studentService.DepositAsync(id, request, HttpContext);
+        var result = await _studentService.DepositAsync(id!.Value, request, HttpContext);
         return result.IsSuccess ? Ok(result.Value) : BadRequest(result);
     }
 
