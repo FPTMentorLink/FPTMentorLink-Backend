@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services.Interfaces;
+using Services.Models.Request.Mentor;
 using Services.Models.Request.Transaction;
+using Services.Utils;
 
 namespace FPTMentorLink_Backend.Controllers;
 
@@ -23,5 +25,18 @@ public class TransactionController : ControllerBase
         return result.IsSuccess ? Ok(result.Value) : BadRequest(result);
     }
     
+    [HttpGet("my-transactions")]
+    [Authorize(Roles = "Mentor,Student")]
+    public async Task<IActionResult> GetMyTransactions([FromQuery] GetMyTransactionsRequest request)
+    {
+        var userId = User.GetUserId();
+        if (userId.IsNullOrGuidEmpty())
+        {
+            return BadRequest(Result.Failure("User not found"));
+        }
+        request.AccountId = userId!.Value;
+        var result = await _transactionService.GetMyTransactionsAsync(request);
+        return result.IsSuccess ? Ok(result.Value) : BadRequest(result);
+    }
     
 }

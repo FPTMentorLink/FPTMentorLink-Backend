@@ -1,7 +1,9 @@
 using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore;
 using Repositories.Entities;
 using Repositories.UnitOfWork.Interfaces;
 using Services.Interfaces;
+using Services.Models.Request.Mentor;
 using Services.Models.Request.Transaction;
 using Services.Models.Response.Transaction;
 using Services.Utils;
@@ -49,6 +51,35 @@ public class TransactionService : ITransactionService
         query = query.Where(condition);
 
         query = ApplySorting(query, request);
+
+        var result = await query.ProjectToPaginatedListAsync<Transaction, TransactionResponse>(request);
+        return Result.Success(result);
+    }
+
+    public async Task<Result<PaginationResult<TransactionResponse>>> GetMyTransactionsAsync(GetMyTransactionsRequest request)
+    {
+        var query = _unitOfWork.Transactions.FindAll()
+            .Include(x => x.Account)
+            .Where(x => x.AccountId == request.AccountId);
+
+        if (!string.IsNullOrEmpty(request.SearchTerm))
+        {
+            query = query.Where(x => 
+                x.Code.Contains(request.SearchTerm) || 
+                x.Description.Contains(request.SearchTerm));
+        }
+
+        if (request.FromDate.HasValue)
+        {
+            query = query.Where(x => x.CreatedAt >= request.FromDate.Value);
+        }
+
+        if (request.ToDate.HasValue)
+        {
+            query = query.Where(x => x.CreatedAt <= request.ToDate.Value);
+        }
+
+        query = query.OrderByDescending(x => x.CreatedAt);
 
         var result = await query.ProjectToPaginatedListAsync<Transaction, TransactionResponse>(request);
         return Result.Success(result);
