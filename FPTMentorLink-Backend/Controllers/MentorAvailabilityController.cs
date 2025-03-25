@@ -18,7 +18,6 @@ public class MentorAvailabilityController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    [Authorize]
     public async Task<IActionResult> GetById([FromRoute] Guid id)
     {
         var result = await _mentorAvailabilityService.GetByIdAsync(id);
@@ -26,7 +25,6 @@ public class MentorAvailabilityController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize]
     public async Task<IActionResult> GetPaged([FromQuery] GetMentorAvailabilitiesRequest request)
     {
         var result = await _mentorAvailabilityService.GetPagedAsync(request);

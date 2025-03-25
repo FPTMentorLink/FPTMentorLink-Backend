@@ -40,36 +40,7 @@ public class MentorService : IMentorService
             PageSize = request.PageSize
         });
     }
-
-    public async Task<Result<PaginationResult<TransactionResponse>>> GetMyTransactionPagedAsync(
-        GetMentorTransactionsRequest request)
-    {
-        var query = _unitOfWork.Transactions.FindAll()
-            .Include(x => x.Account)
-            .Where(x => x.AccountId == request.MentorId);
-
-        if (!string.IsNullOrEmpty(request.SearchTerm))
-        {
-            query = query.Where(x =>
-                x.Code.Contains(request.SearchTerm) ||
-                x.Description.Contains(request.SearchTerm));
-        }
-
-        if (request.FromDate.HasValue)
-        {
-            query = query.Where(x => x.CreatedAt >= request.FromDate.Value);
-        }
-
-        if (request.ToDate.HasValue)
-        {
-            query = query.Where(x => x.CreatedAt <= request.ToDate.Value);
-        }
-
-        query = query.OrderByDescending(x => x.CreatedAt);
-
-        var result = await query.ProjectToPaginatedListAsync<Transaction, TransactionResponse>(request);
-        return Result.Success(result);
-    }
+    
 
     public async Task<Result<PaginationResult<GetMentorResponse>>> GetMentorsPagedAsync(GetMentorsRequest request)
     {

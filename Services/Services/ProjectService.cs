@@ -197,7 +197,37 @@ public class ProjectService : IProjectService
             return Result.Failure($"Failed to update project: {ex.Message}");
         }
     }
+    public async Task<Result<PaginationResult<ProjectResponse>>> GetMyProjectPagedAsync(
+        GetMyProjectsRequest request, string role)
+    {
+        var projectRequest = new GetProjectsRequest
+        {
+            Status = request.Status,
+            TermId = request.TermId,
+            SearchTerm = request.SearchTerm,
+            OrderBy = request.OrderBy,
+            IsDescending = request.IsDescending,
+            PageNumber = request.PageNumber,
+            PageSize = request.PageSize
+        };
 
+        switch (role.ToLower())
+        {
+            case "student":
+                projectRequest.StudentId = request.AccountId;
+                break;
+            case "mentor":
+                projectRequest.MentorId = request.AccountId;
+                break;
+            case "lecturer":
+                projectRequest.LecturerId = request.AccountId;
+                break;
+            default:
+                return Result.Failure<PaginationResult<ProjectResponse>>("Invalid role");
+        }
+
+        return await GetPagedAsync(projectRequest);
+    }
     public async Task<Result> UpdateStatusAsync(Guid id, AccountRole role, UpdateProjectStatusRequest request)
     {
         var project = await _unitOfWork.Projects.FindByIdAsync(id);

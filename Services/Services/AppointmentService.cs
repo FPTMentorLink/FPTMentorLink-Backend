@@ -5,6 +5,7 @@ using Repositories.Entities;
 using Repositories.UnitOfWork.Interfaces;
 using Services.Interfaces;
 using Services.Models.Request.Appointment;
+using Services.Models.Request.Student;
 using Services.Models.Response.Appointment;
 using Services.StateMachine.Appointment;
 using Services.Utils;
@@ -37,17 +38,22 @@ public class AppointmentService : IAppointmentService
             .Include(x => x.Project)
             .Include(x => x.Mentor)
             .ThenInclude(x => x.Account).AsQueryable();
+        
         Expression<Func<Appointment, bool>> condition = x => true;
+        
         if (!request.ProjectId.IsNullOrGuidEmpty())
-            condition.CombineAndAlsoExpressions(x => x.ProjectId == request.ProjectId);
+            condition = condition.CombineAndAlsoExpressions(x => x.ProjectId == request.ProjectId);
+        
         if (!request.MentorId.IsNullOrGuidEmpty())
-            condition.CombineAndAlsoExpressions(x => x.MentorId == request.MentorId);
+            condition = condition.CombineAndAlsoExpressions(x => x.MentorId == request.MentorId);
+        
         if (request.Status.HasValue)
-            condition.CombineAndAlsoExpressions(x => x.Status == request.Status);
+            condition = condition.CombineAndAlsoExpressions(x => x.Status == request.Status);
+        
         if (!request.StudentId.IsNullOrGuidEmpty())
         {
             query = query.Include(x => x.Project).ThenInclude(x => x.ProjectStudents);
-            condition.CombineAndAlsoExpressions(x =>
+            condition = condition.CombineAndAlsoExpressions(x =>
                 x.Project.ProjectStudents.Any(y => y.StudentId == request.StudentId));
         }
 
@@ -535,5 +541,33 @@ public class AppointmentService : IAppointmentService
         _unitOfWork.MentorAvailabilities.Update(mentorAvailability);
 
         return Result.Success();
+    }
+    
+    public async Task<Result<PaginationResult<AppointmentResponse>>> GetMyAppointmentPagedAsync(
+        GetMyAppointmentsRequest request, string role)
+    {
+        var appointmentRequest = new GetAppointmentsRequest
+        {
+            Status = request.Status,
+            SearchTerm = request.SearchTerm,
+            OrderBy = request.OrderBy,
+            IsDescending = request.IsDescending,
+            PageNumber = request.PageNumber,
+            PageSize = request.PageSize
+        };
+
+        switch (role.ToLower())
+        {
+            case "student":
+                appointmentRequest.StudentId = request.AccountId;
+                break;
+            case "mentor":
+                appointmentRequest.MentorId = request.AccountId;
+                break;
+            default:
+                return Result.Failure<PaginationResult<AppointmentResponse>>("Invalid role");
+        }
+
+        return await GetPagedAsync(appointmentRequest);
     }
 }

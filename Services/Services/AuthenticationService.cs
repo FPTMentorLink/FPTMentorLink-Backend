@@ -125,7 +125,7 @@ public class AuthenticationService : IAuthenticationService
             return Result.Failure<RefreshTokenResponse>("User not found");
 
         var claims = principal.Claims.ToList();
-        var newAccessToken = TokenGenerator.GenerateAccessToken(_jwtSettings, claims);
+            var newAccessToken = TokenGenerator.GenerateAccessToken(_jwtSettings, claims);
         var newRefreshToken = TokenGenerator.GenerateRefreshToken();
 
         // TODO: implement refresh token invalidation and database update logic
