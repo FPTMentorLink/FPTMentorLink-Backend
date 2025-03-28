@@ -7,7 +7,9 @@ public class LecturingProposalResponse : AuditableResponse
 {
     public Guid Id { get; set; }
     public Guid LecturerId { get; set; }
+    public string? LecturerName { get; set; }
     public Guid ProjectId { get; set; }
+    public string? ProjectName { get; set; }
     public string? StudentNote { get; set; }
     public string? LecturerNote { get; set; }
     public LecturingProposalStatus Status { get; set; }

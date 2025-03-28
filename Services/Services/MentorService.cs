@@ -7,7 +7,6 @@ using Services.Models.Request.Appointment;
 using Services.Models.Request.Mentor;
 using Services.Models.Response.Appointment;
 using Services.Models.Response.Mentor;
-using Services.Models.Response.Transaction;
 using Services.Utils;
 
 
@@ -55,8 +54,7 @@ public class MentorService : IMentorService
             if (!string.IsNullOrWhiteSpace(request.SearchTerm))
             {
                 var searchTerm = request.SearchTerm.Trim().ToLower();
-                query = query.Where(m =>
-                    m.Code.Contains(searchTerm, StringComparison.CurrentCultureIgnoreCase));
+                query = query.Where(m => m.Code.Contains(searchTerm, StringComparison.CurrentCultureIgnoreCase));
             }
 
             if (!string.IsNullOrWhiteSpace(request.Code))

@@ -210,6 +210,7 @@ public static class Startup
         builder.Services.AddScoped<ITransactionService, TransactionService>();
         builder.Services.AddScoped<ILecturerService, LecturerService>();
         builder.Services.AddScoped<IMentorService, MentorService>();
+        builder.Services.AddScoped<INotificationService, NotificationService>();
 
         // Register Utils
         builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();

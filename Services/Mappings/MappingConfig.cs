@@ -11,6 +11,7 @@ using Services.Models.Request.LecturingProposal;
 using Services.Models.Request.Mentor;
 using Services.Models.Request.MentorAvailability;
 using Services.Models.Request.MentoringProposal;
+using Services.Models.Request.Notification;
 using Services.Models.Request.Project;
 using Services.Models.Request.ProjectStudent;
 using Services.Models.Request.Proposal;
@@ -29,6 +30,7 @@ using Services.Models.Response.LecturingProposal;
 using Services.Models.Response.Mentor;
 using Services.Models.Response.MentorAvailability;
 using Services.Models.Response.MentoringProposal;
+using Services.Models.Response.Notification;
 using Services.Models.Response.Project;
 using Services.Models.Response.ProjectStudent;
 using Services.Models.Response.Proposal;
@@ -113,7 +115,9 @@ public static class MappingConfig
             .Map(dest => dest.Role, src => src.Account.Role.ToString());
 
         // LecturingProposal
-        TypeAdapterConfig<LecturingProposal, LecturingProposalResponse>.NewConfig();
+        TypeAdapterConfig<LecturingProposal, LecturingProposalResponse>.NewConfig()
+            .Map(dest => dest.ProjectName, src => src.Project.Name)
+            .Map(dest => dest.LecturerName, src => src.Lecturer.Account.FirstName + " " + src.Lecturer.Account.LastName);
         TypeAdapterConfig<CreateLecturingProposalRequest, LecturingProposal>.NewConfig();
         TypeAdapterConfig<StudentUpdateLecturingProposalRequest, LecturingProposal>.NewConfig()
             .IgnoreNullValues(true);
@@ -217,5 +221,9 @@ public static class MappingConfig
         TypeAdapterConfig<CreateTermRequest, Term>.NewConfig();
         TypeAdapterConfig<UpdateTermRequest, Term>.NewConfig()
             .IgnoreNullValues(true);
+
+        // Notification mappings
+        TypeAdapterConfig<Notification, NotificationResponse>.NewConfig();
+        TypeAdapterConfig<CreateNotificationRequest, Notification>.NewConfig();
     }
 }
