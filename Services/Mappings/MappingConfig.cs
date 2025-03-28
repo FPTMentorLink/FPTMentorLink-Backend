@@ -115,7 +115,9 @@ public static class MappingConfig
             .Map(dest => dest.Role, src => src.Account.Role.ToString());
 
         // LecturingProposal
-        TypeAdapterConfig<LecturingProposal, LecturingProposalResponse>.NewConfig();
+        TypeAdapterConfig<LecturingProposal, LecturingProposalResponse>.NewConfig()
+            .Map(dest => dest.ProjectName, src => src.Project.Name)
+            .Map(dest => dest.LecturerName, src => src.Lecturer.Account.FirstName + " " + src.Lecturer.Account.LastName);
         TypeAdapterConfig<CreateLecturingProposalRequest, LecturingProposal>.NewConfig();
         TypeAdapterConfig<StudentUpdateLecturingProposalRequest, LecturingProposal>.NewConfig()
             .IgnoreNullValues(true);

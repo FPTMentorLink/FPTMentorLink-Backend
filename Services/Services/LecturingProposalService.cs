@@ -23,7 +23,11 @@ public class LecturingProposalService : ILecturingProposalService
 
     public async Task<Result<LecturingProposalResponse>> GetByIdAsync(Guid id)
     {
-        var lecturingProposal = await _unitOfWork.LecturingProposals.FindByIdAsync(id);
+        var lecturingProposal = await _unitOfWork.LecturingProposals.FindAll()
+            .Include(x => x.Project)
+            .Include(x => x.Lecturer)
+            .ThenInclude(x => x.Account)
+            .FirstOrDefaultAsync(x => x.Id == id);
         if (lecturingProposal == null)
             return Result.Failure<LecturingProposalResponse>("lecturing proposal not found");
 
@@ -33,7 +37,10 @@ public class LecturingProposalService : ILecturingProposalService
     public async Task<Result<PaginationResult<LecturingProposalResponse>>> GetPagedAsync(
         GetLecturingProposalsRequest request)
     {
-        var query = _unitOfWork.LecturingProposals.FindAll();
+        var query = _unitOfWork.LecturingProposals.FindAll()
+            .Include(x => x.Project)
+            .Include(x => x.Lecturer)
+            .ThenInclude(x => x.Account).AsQueryable();
         Expression<Func<LecturingProposal, bool>> condition = x => true;
         if (!request.ProjectId.IsNullOrGuidEmpty())
             condition.CombineAndAlsoExpressions(x => x.ProjectId == request.ProjectId);
